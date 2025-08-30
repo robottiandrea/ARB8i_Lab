@@ -6,7 +6,7 @@
       "name": "Mello",
       "author": "ARB8i",
       "badge": "NEW",
-      "badgeColor": "#0F1116",
+      "badgeColor": "#FFFF",
       "file": "Overlay_Mello.svg",
       "thumb": "thumbs/mello.png",
       "skinId": "Skin_fill",
@@ -14,6 +14,7 @@
     }
   ]
 }
+
 
 
 
