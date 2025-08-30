@@ -88,8 +88,11 @@
     gap:0; margin:10px 0 0;
     font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   }
-  .footer-madeby a{ text-decoration:none }
-  .footer-madeby a:hover{ text-decoration:underline }
+  .madeby-link{
+    display:inline-flex; align-items:center; gap:0;
+    text-decoration:none; color:inherit;
+  }
+  .madeby-link:hover{ text-decoration:underline; }
 
   
   /* Testo lucido */
@@ -143,11 +146,11 @@
       
       <!-- Made by (legato all'overlay) -->
       <div id="madeBy" class="footer-madeby" style="display:none">
-        <span class="shimmer">made by&nbsp;</span>
-        <span id="mbName" class="shimmer">author</span>
-        <span id="mbSep" class="shimmer">–</span>
-        <a id="mbHandle" class="shimmer" href="#" target="_blank" rel="noopener">@handle</a>
+        <a id="madeByLink" class="shimmer madeby-link" href="#" target="_blank" rel="noopener">
+          made by&nbsp;<span id="mbName">author</span><span id="mbSep">–</span><span id="mbHandle">@handle</span>
+        </a>
       </div>
+
 
 
 
@@ -182,9 +185,10 @@ const ovName = $('#ovName');
 const ovAuthor = $('#ovAuthor');
 const ovBadge = $('#ovBadge');
 const madeBy = $('#madeBy');
-const madeByName = $('#madeByName');
-const madeByHandle = $('#madeByHandle');
-const madeBySep = $('#madeBySep');
+const madeByLink = $('#madeByLink');
+const mbName = $('#mbName');
+const mbHandle = $('#mbHandle');
+const mbSep = $('#mbSep');
 
 
 /* ===== State ===== */
@@ -353,7 +357,7 @@ function applyBadge(badgeEl, cfg){
    
     applyBadge(ovBadge, currentCfg);
     
-    // Footer: "made by ARB8i–@robottiandrea"
+    // Footer: "made by ARB8i–@robottiandrea" (tutto cliccabile)
     (function(){
       const name = (currentCfg.author || '').toString().trim();
       const handleRaw = (currentCfg.authorHandle || currentCfg.x || currentCfg.twitter || '').toString().trim();
@@ -371,27 +375,27 @@ function applyBadge(badgeEl, cfg){
     
       madeBy.style.display = 'flex';
     
-      // Nome
-      mbName.textContent = hasName ? name : (hasHandle ? '@' + handle : '');
-    
-      // Separatore "–" solo se ci sono entrambi
+      // Testi
+      mbName.textContent = hasName ? name : (hasHandle ? '@'+handle : '');
       mbSep.style.display = (hasName && hasHandle) ? '' : 'none';
     
-      // Handle (link se possibile)
       if(hasHandle){
         mbHandle.textContent = '@' + handle;
-        if(url){
-          mbHandle.href = url;
-          mbHandle.style.pointerEvents = '';
-        }else{
-          mbHandle.removeAttribute('href');
-          mbHandle.style.pointerEvents = 'none';
-        }
         mbHandle.style.display = '';
       }else{
         mbHandle.style.display = 'none';
       }
+    
+      // Link su tutta la frase (se c'è un URL)
+      if(url){
+        madeByLink.href = url;
+        madeByLink.style.pointerEvents = '';
+      }else{
+        madeByLink.removeAttribute('href');      // niente URL → resta testo
+        madeByLink.style.pointerEvents = 'none'; // evita cursor "link" se non cliccabile
+      }
     })();
+
 
 
 
@@ -410,6 +414,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
