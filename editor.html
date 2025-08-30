@@ -139,11 +139,15 @@
       <div class="frame">
         <img id="composite" alt="Preview">
       </div>
+      
       <!-- Made by (legato all'overlay) -->
       <div id="madeBy" class="footer-madeby" style="display:none">
         <span class="shimmer">made by</span>
-        <a id="madeByLink" class="shimmer" href="#" target="_blank" rel="noopener">@author</a>
+        &nbsp;<span id="madeByName" class="shimmer">author</span>
+        &nbsp;<span id="madeBySep" class="shimmer">–</span>
+        &nbsp;<a id="madeByHandle" class="shimmer" href="#" target="_blank" rel="noopener">@handle</a>
       </div>
+
 
     </section>
   </main>
@@ -175,7 +179,10 @@ const ovName = $('#ovName');
 const ovAuthor = $('#ovAuthor');
 const ovBadge = $('#ovBadge');
 const madeBy = $('#madeBy');
-const madeByLink = $('#madeByLink');
+const madeByName = $('#madeByName');
+const madeByHandle = $('#madeByHandle');
+const madeBySep = $('#madeBySep');
+
 
 /* ===== State ===== */
 let OVERLAYS=null, currentCfg=null;
@@ -343,31 +350,46 @@ function applyBadge(badgeEl, cfg){
    
     applyBadge(ovBadge, currentCfg);
     
-    // Footer "made by" legato all'overlay
+    // Footer Es: "made by ARB8i – @robottiandrea" legato all'overlay
     (function(){
-      // Supportiamo più campi possibili dal manifest
-      // authorUrl diretto oppure handle X/Twitter per costruire il link
-      const handle = (currentCfg.authorHandle || currentCfg.x || currentCfg.twitter || '').toString().trim();
-      const link =
-        (currentCfg.authorUrl && currentCfg.authorUrl.trim()) ||
-        (handle ? `https://x.com/${handle.replace(/^@/,'')}` : '');
+      const name = (currentCfg.author || '').toString().trim();
+      const handleRaw = (currentCfg.authorHandle || currentCfg.x || currentCfg.twitter || '').toString().trim();
+      const handle = handleRaw.replace(/^@/,''); // togli @ se presente
+      const url = (currentCfg.authorUrl && currentCfg.authorUrl.trim())
+        || (handle ? `https://x.com/${handle}` : '');
     
-      if(link){
-        madeBy.style.display = 'flex';
-        madeByLink.href = link;
-        madeByLink.textContent = handle ? '@' + handle.replace(/^@/,'') : (currentCfg.author || 'author');
-        madeByLink.style.pointerEvents = ''; // cliccabile
-      }else if(currentCfg.author){
-        // Nessun link ma autore presente: mostriamo lo stesso (non cliccabile)
-        madeBy.style.display = 'flex';
-        madeByLink.removeAttribute('href');
-        madeByLink.textContent = currentCfg.author;
-        madeByLink.style.pointerEvents = 'none';
-      }else{
-        // Niente autore → niente footer
+      const hasName = !!name;
+      const hasHandle = !!handle;
+    
+      if(!hasName && !hasHandle){
         madeBy.style.display = 'none';
+        return;
+      }
+    
+      madeBy.style.display = 'flex';
+    
+      // Nome (sempre testo)
+      madeByName.textContent = hasName ? name : (hasHandle ? '@'+handle : '');
+    
+      // Separatore “–” visibile solo se ci sono entrambi
+      madeBySep.style.display = (hasName && hasHandle) ? '' : 'none';
+    
+      // Handle (link se possibile)
+      if(hasHandle){
+        madeByHandle.textContent = '@' + handle;
+        if(url){
+          madeByHandle.href = url;
+          madeByHandle.style.pointerEvents = '';
+        }else{
+          madeByHandle.removeAttribute('href');
+          madeByHandle.style.pointerEvents = 'none';
+        }
+        madeByHandle.style.display = '';
+      }else{
+        madeByHandle.style.display = 'none';
       }
     })();
+
 
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
@@ -384,6 +406,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
