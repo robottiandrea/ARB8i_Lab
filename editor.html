@@ -217,17 +217,17 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
 async function openImage(){
   setStatus('Just a sec…');
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
-  if(!Number.isFinite(id) || id<1){ setStatus('Enter a valid ID (≥1).'); return; }
+  if(!Number.isFinite(id) || id<1){ setStatus('Oops! That ID doesn’t work. Try again.'); return; }
 
   try{
     await loadMaps();
     const data = '0xc87b56dd' + (BigInt(id).toString(16).padStart(64,'0'));
     const res  = await rpcCall('eth_call', [{to:DEFAULT_CONTRACT, data}, 'latest']);
-    if(!res) throw new Error('RPC endpoint not responding');
+    if(!res) throw new Error('Uh-oh… chain is napping');
     const tokenUri = decodeAbiString(res);
     if(!tokenUri) throw new Error('Could not read tokenURI');
     const meta = await fetchJsonAny(ipfsUrls(tokenUri));
-    if(!meta) throw new Error('Metadata not available');
+    if(!meta) throw new Error('Metadata went doodling elsewhere');
 
     let baseBlob = null;
     const imageUri = meta.image || meta.image_url || meta.imageIpfs;
@@ -262,20 +262,33 @@ async function openImage(){
     currentCfg = getCfg(ovId) || OVERLAYS.items[0];
     if(!currentCfg) throw new Error('No overlays in manifest');
 
+    // header UI
     ovName.textContent = currentCfg.name || currentCfg.id;
     ovAuthor.textContent = currentCfg.author ? `by ${currentCfg.author}` : '';
-    if(currentCfg.badge){
+    
+    if (currentCfg.badge) {
       ovBadge.textContent = currentCfg.badge;
       ovBadge.style.display = 'inline-block';
-      if(currentCfg.badgeColor) ovBadge.style.background = currentCfg.badgeColor;
+    
+      if (currentCfg.badgeColor) {
+        ovBadge.style.background = currentCfg.badgeColor;
+      }
+    
+      // Colore testo: usa quello esplicito se presente, altrimenti auto-contrasto
+      if (currentCfg.badgeText) {
+        ovBadge.style.color = currentCfg.badgeText;
+      } else {
+        const m = getComputedStyle(ovBadge).backgroundColor.match(/\d+/g);
+        if (m) {
+          const [r,g,b] = m.map(Number);
+          const yiq = (r*299 + g*587 + b*114) / 1000; // luminanza YIQ
+          ovBadge.style.color = yiq >= 150 ? '#000' : '#fff';
+        }
+      }
+    } else {
+      ovBadge.style.display = 'none';
     }
 
-    const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
-    imgEl.src = thumb;
-    imgEl.alt = currentCfg.name || currentCfg.id;
-
-    const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
-  }catch(e){ setStatus(e?.message || 'Init error'); }
 })();
 
 /* ===== Events ===== */
@@ -284,5 +297,6 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
