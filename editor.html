@@ -213,52 +213,21 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
   return canvas.toDataURL('image/png');
 }
 
-/* ===== Badge helper (auto-contrasto) ===== */
-function applyBadge(badgeEl, cfg){
-  if(!badgeEl) return;
-  if(!cfg || !cfg.badge){
-    badgeEl.style.display = 'none';
-    return;
-  }
-  badgeEl.textContent = cfg.badge;
-  badgeEl.style.display = 'inline-block';
-
-  if(cfg.badgeColor) badgeEl.style.background = cfg.badgeColor;
-
-  if(cfg.badgeText){
-    badgeEl.style.color = cfg.badgeText;
-    return;
-  }
-  try{
-    const bg = getComputedStyle(badgeEl).backgroundColor;
-    const m = bg && bg.match(/\d+(\.\d+)?/g);
-    if(m){
-      const [r,g,b] = m.map(Number);
-      const yiq = (r*299 + g*587 + b*114) / 1000;
-      badgeEl.style.color = yiq >= 150 ? '#000' : '#fff';
-    } else {
-      badgeEl.style.color = '#000';
-    }
-  }catch{
-    badgeEl.style.color = '#000';
-  }
-}
-
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Just a sec…');
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
-  if(!Number.isFinite(id) || id<1){ setStatus('Oops! That ID doesn’t work. Try again.'); return; }
+  if(!Number.isFinite(id) || id<1){ setStatus('Enter a valid ID (≥1).'); return; }
 
   try{
     await loadMaps();
     const data = '0xc87b56dd' + (BigInt(id).toString(16).padStart(64,'0'));
     const res  = await rpcCall('eth_call', [{to:DEFAULT_CONTRACT, data}, 'latest']);
-    if(!res) throw new Error('Uh-oh… chain is napping');
+    if(!res) throw new Error('RPC endpoint not responding');
     const tokenUri = decodeAbiString(res);
     if(!tokenUri) throw new Error('Could not read tokenURI');
     const meta = await fetchJsonAny(ipfsUrls(tokenUri));
-    if(!meta) throw new Error('Metadata went doodling elsewhere');
+    if(!meta) throw new Error('Metadata not available');
 
     let baseBlob = null;
     const imageUri = meta.image || meta.image_url || meta.imageIpfs;
@@ -277,7 +246,7 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
-    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save);
+    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
@@ -293,25 +262,20 @@ async function openImage(){
     currentCfg = getCfg(ovId) || OVERLAYS.items[0];
     if(!currentCfg) throw new Error('No overlays in manifest');
 
-    // Header
     ovName.textContent = currentCfg.name || currentCfg.id;
     ovAuthor.textContent = currentCfg.author ? `by ${currentCfg.author}` : '';
-    applyBadge(ovBadge, currentCfg);
+    if(currentCfg.badge){
+      ovBadge.textContent = currentCfg.badge;
+      ovBadge.style.display = 'inline-block';
+      if(currentCfg.badgeColor) ovBadge.style.background = currentCfg.badgeColor;
+    }
 
-    // PNG di esempio (thumb) finché non carichi un ID
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
     imgEl.alt = currentCfg.name || currentCfg.id;
 
-    // Se c'è ?id= nell'URL, apri subito
-    const qid = p.get('id');
-    if(qid){
-      $('#tokenId').value = qid;
-      await openImage();
-    }
-  }catch(e){
-    setStatus(e?.message || 'Init error');
-  }
+    const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
+  }catch(e){ setStatus(e?.message || 'Init error'); }
 })();
 
 /* ===== Events ===== */
@@ -320,3 +284,4 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
