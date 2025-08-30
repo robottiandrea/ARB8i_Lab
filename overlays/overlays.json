@@ -25,10 +25,22 @@
         "thumb": "thumbs/popcorn.png",
         "sleeveId": "Sleeve_fill",
         "skinId": "Skin_fill"
-      }
-    ]
-  }
-
+      },
+        {
+          "id": "Italian_Pinch",
+          "name": "Eh?!",
+          "author": "ARB8i",
+          "authorHandle": "robottiandrea",
+          "authorUrl": "https://x.com/robottiandrea",
+          "badge": "NEW",
+          "badgeColor": "#FFFF",
+          "file": "Overlay_Italian_Pinch.svg",
+          "thumb": "thumbs/italian_pinch.png",
+          "sleeveId": "Sleeve_fill",
+          "skinId": "Skin_fill"
+        }
+      ]
+    }
 
 
 
