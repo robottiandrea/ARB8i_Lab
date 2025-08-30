@@ -44,7 +44,6 @@
 <script>
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
-
 let overlays = null;
 
 function cardHTML(item){
@@ -71,23 +70,23 @@ function cardHTML(item){
 
 function render(){
   if(!overlays || !overlays.items || overlays.items.length===0){
-    GRID.innerHTML=''; EMPTY.style.display='';
+    GRID.innerHTML = '';
+    if (EMPTY) EMPTY.style.display = '';
     return;
   }
-  EMPTY.style.display='none';
+  if (EMPTY) EMPTY.style.display = 'none';
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
 }
 
 async function loadManifest(){
-  // prova /overlays/overlays.json poi ./overlays.json
-  for(const url of ['./overlays/overlays.json','./overlays.json']){
-    try{ const r=await fetch(url); if(r.ok){ overlays=await r.json(); return; } }catch{}
+  for (const url of ['./overlays/overlays.json','./overlays.json']){
+    try{ const r = await fetch(url); if(r.ok){ overlays = await r.json(); return; } }catch{}
   }
-  overlays={items:[]};
+  overlays = { items: [] };
 }
 
-ID_INPUT.addEventListener('input', render);
-loadManifest().then(render).catch(()=>{ overlays={items:[]}; render(); });
+loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
+
 </body>
 </html>
