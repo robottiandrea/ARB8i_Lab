@@ -23,10 +23,52 @@
   .card{background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px; box-shadow:0 10px 30px rgba(0,0,0,.25)}
 
   label{display:block; margin:10px 0 6px; color:var(--muted); font-size:13px}
-  input,button{width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text)}
+  /* input e button base */
+  input,button{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:#0d1016;
+    color:var(--text);
+    font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+
   .row{display:grid; grid-template-columns:1fr auto; gap:10px}
-  .btn{background:linear-gradient(180deg,#2b62ff,#2753d7); border:0; font-weight:600; cursor:pointer}
-  .btn:disabled{opacity:.6; cursor:not-allowed}
+
+  /* ── Bottone outline stile Tailwind (tradotto in CSS puro) ── */
+  .btn-outline{
+    width:auto;                     /* override del width:100% globale */
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    padding:6px 16px;               /* ≈ py-1.5 px-6 */
+    border-radius:10px;
+    max-height:32px;
+    box-sizing:border-box;
+
+    background:transparent;
+    color:#fff;
+    border:2px solid #fff;
+
+    font-weight:500;                /* font-medium */
+    letter-spacing:.3px;            /* tracking-wide */
+    font-size:14px;
+    cursor:pointer;
+    transition:all .2s ease-in-out;
+    white-space:nowrap;
+  }
+  .btn-outline:hover:enabled{
+    background:#fff;
+    color:#000;
+  }
+  .btn-outline:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+
   .status{min-height:22px; color:var(--muted); font-size:13px; margin-top:10px}
 
   /* viewer: una sola immagine salvabile con tasto destro */
@@ -49,7 +91,7 @@
       <label for="tokenId">ID</label>
       <div class="row">
         <input id="tokenId" type="number" inputmode="numeric" min="1" placeholder="es. 8929" />
-        <button id="go" class="btn">Apri immagine</button>
+        <button id="go" class="btn-outline" aria-label="Show the image">Show me!</button>
       </div>
 
       <div id="status" class="status"></div>
