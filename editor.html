@@ -46,7 +46,6 @@
 
     padding:6px 16px;               /* ≈ py-1.5 px-6 */
     border-radius:10px;
-    max-height:32px;
     box-sizing:border-box;
 
     background:transparent;
@@ -75,6 +74,35 @@
   .frame{position:relative; width:640px; max-width:100%; margin:18px auto 8px; border:1px dashed var(--border); border-radius:12px; background:#0d1016}
   #composite{display:block; width:100%; height:auto; border-radius:12px}
   .hint{font-size:12px; color:var(--muted); text-align:center}
+  /* Uniforma altezza e allineamento input + bottone */
+  :root{
+    --ctrl-h: 40px; /* prova 36 / 40 / 44 a gusto */
+  }
+  
+  .row{
+    align-items: stretch; /* fa “tirare” entrambi alla stessa altezza */
+  }
+  
+  .row input{
+    height: var(--ctrl-h);
+    padding: 0 12px;          /* solo orizzontale */
+    line-height: var(--ctrl-h);
+    border-width: 2px;        /* opzionale: per pareggiare il bordo col bottone */
+  }
+  
+  /* Sovrascrive la vecchia .btn-outline */
+  .btn-outline{
+    height: var(--ctrl-h);
+    max-height: none;         /* <-- override della vecchia max-height:32px */
+    padding: 0 16px;          /* solo orizzontale */
+    line-height: var(--ctrl-h);
+    width: auto;              /* tiene il bottone compatto */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-width: 2px;        /* opzionale: match con input */
+  }
+
 </style>
 </head>
 <body>
@@ -99,8 +127,7 @@
       <div class="frame">
         <!-- PNG di esempio (thumb) finché non carichi l’ID -->
         <img id="composite" alt="Anteprima">
-      </div>
-      <div class="hint">Suggerimento: tasto destro sull’immagine → “Salva immagine con nome”.</div>
+      </div>      
     </section>
   </main>
 
@@ -288,4 +315,5 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
