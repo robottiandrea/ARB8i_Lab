@@ -64,10 +64,22 @@
               "thumb": "thumbs/Mc_fries.png",
               "sleeveId": "Sleeve_fill",
               "skinId": "Skin_fill"
-            }
-          ]
-        }
-
-
-
-
+            },
+              {
+                "id": "Gamepad",
+                "name": "Gamepad",
+                "author": "ARB8i",
+                "authorHandle": "robottiandrea",
+                "authorUrl": "https://x.com/robottiandrea",
+                "badge": "NEW",
+                "badgeColor": "#FFFF",
+                "file": "Overlay_Gamepad.svg",
+                "thumb": "thumbs/gamepad.png",
+                "sleeveId": "Sleeve_fill",
+                "skinId": "Skin_fill"
+              }
+            ]
+          }
+  
+  
+  
