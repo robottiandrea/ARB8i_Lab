@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Doodles Overlays — Gallery</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{ --bg:#0f1115; --card:#171a21; --text:#eef2ff; --muted:#9aa3b2; --acc:#8ab4ff; --border:#232938; }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--text); font:15px/1.45 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1100px; margin:0 auto; padding:28px}
+  h1{margin:0 0 14px; font-size:22px; font-weight:600}
+  p{margin:0 0 12px; color:var(--muted)}
+  .toolbar{display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:end; margin:12px 0 18px}
+  .toolbar .field{display:flex; gap:8px; align-items:center}
+  .toolbar input{padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text); width:220px}
+  .grid{display:grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap:18px}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.25); position:relative; transition:transform .08s ease, box-shadow .08s ease}
+  .card:hover{transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,.35)}
+  .thumb{position:relative; aspect-ratio:1/1; background:#0d1016}
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .badge{position:absolute; top:8px; left:8px; padding:4px 8px; border-radius:10px; font-size:11px; font-weight:600; background:#2b62ff; }
+  .titlebar{padding:10px 12px; border-top:1px solid var(--border); background:linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,.15))}
+  .name{font-size:15px; font-weight:600}
+  .by{font-size:12px; color:var(--muted)}
+  a.cardlink{position:absolute; inset:0; display:block; text-decoration:none; color:inherit}
+  .empty{opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px}
+</style>
+</head>
+<body>
+  <main class="wrap">
+    <h1>Choose an overlay</h1>
+    <p>Anteprime statiche (quadrate). Clicca per aprire l’editor.</p>
+
+    <div class="toolbar">
+      <div class="field">
+        <label for="qid">ID (opzionale):</label>
+        <input id="qid" type="number" inputmode="numeric" placeholder="es. 8929" />
+      </div>
+      <div class="field" style="justify-self:end;">
+        <span style="font-size:12px;color:var(--muted)">Suggerimento: puoi passare anche <code>?id=…</code> direttamente nell’URL dell’editor.</span>
+      </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" style="display:none">Nessun overlay nel manifest.</div>
+  </main>
+
+<script>
+const GRID = document.getElementById('grid');
+const EMPTY = document.getElementById('empty');
+const ID_INPUT = document.getElementById('qid');
+
+let overlays = null;
+
+function cardHTML(item){
+  const href = new URL('editor.html', location.href);
+  href.searchParams.set('overlay', item.id);
+  const id = (ID_INPUT.value||'').trim();
+  if(id) href.searchParams.set('id', id);
+
+  const thumb = item.thumb || `thumbs/${item.id}.png`; // supporta .gif se lo metti nel campo "thumb"
+  const badge = item.badge ? `<div class="badge" style="${item.badgeColor?`background:${item.badgeColor}`:''}">${item.badge}</div>` : '';
+  const by = item.author ? `<div class="by">by ${item.author}</div>` : '';
+
+  return `
+  <article class="card">
+    <div class="thumb">
+      ${badge}
+      <img loading="lazy" src="${thumb}" alt="${item.name||item.id}" />
+    </div>
+    <div class="titlebar">
+      <div class="name">${item.name||item.id}</div>
+      ${by}
+    </div>
+    <a class="cardlink" href="${href.toString()}"></a>
+  </article>`;
+}
+
+function render(){
+  if(!overlays || !overlays.items || overlays.items.length===0){
+    GRID.innerHTML=''; EMPTY.style.display='';
+    return;
+  }
+  EMPTY.style.display='none';
+  GRID.innerHTML = overlays.items.map(cardHTML).join('');
+}
+
+async function loadManifest(){
+  // prova /overlays/overlays.json poi ./overlays.json
+  for(const url of ['./overlays/overlays.json','./overlays.json']){
+    try{ const r=await fetch(url); if(r.ok){ overlays=await r.json(); return; } }catch{}
+  }
+  overlays={items:[]};
+}
+
+ID_INPUT.addEventListener('input', render);
+loadManifest().then(render).catch(()=>{ overlays={items:[]}; render(); });
+</script>
+</body>
+</html>
