@@ -84,12 +84,13 @@
 
   /* Footer "made by" con shimmer */
   .footer-madeby{
-    display:flex; justify-content:center; align-items:center; gap:6px;
-    margin:10px 0 0;
+    display:flex; justify-content:center; align-items:center;
+    gap:0; margin:10px 0 0;
     font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   }
   .footer-madeby a{ text-decoration:none }
   .footer-madeby a:hover{ text-decoration:underline }
+
   
   /* Testo lucido */
   .shimmer{
@@ -141,11 +142,13 @@
       </div>
       
       <!-- Made by (legato all'overlay) -->
-     <div id="madeBy" class="footer-madeby" style="display:none">
-        <span id="madeByName" class="shimmer">author</span>
-        <span id="madeBySep" class="shimmer">–</span>
-        <a id="madeByHandle" class="shimmer" href="#" target="_blank" rel="noopener">@handle</a>
+      <div id="madeBy" class="footer-madeby" style="display:none">
+        <span class="shimmer">made by </span>
+        <span id="mbName" class="shimmer">author</span>
+        <span id="mbSep" class="shimmer">–</span>
+        <a id="mbHandle" class="shimmer" href="#" target="_blank" rel="noopener">@handle</a>
       </div>
+
 
 
 
@@ -350,13 +353,13 @@ function applyBadge(badgeEl, cfg){
    
     applyBadge(ovBadge, currentCfg);
     
-    // Footer Es: "made by ARB8i – @robottiandrea" legato all'overlay
+    // Footer: "made by ARB8i–@robottiandrea"
     (function(){
       const name = (currentCfg.author || '').toString().trim();
       const handleRaw = (currentCfg.authorHandle || currentCfg.x || currentCfg.twitter || '').toString().trim();
-      const handle = handleRaw.replace(/^@/,''); // togli @ se presente
+      const handle = handleRaw.replace(/^@/, '');
       const url = (currentCfg.authorUrl && currentCfg.authorUrl.trim())
-        || (handle ? `https://x.com/${handle}` : '');
+               || (handle ? `https://x.com/${handle}` : '');
     
       const hasName = !!name;
       const hasHandle = !!handle;
@@ -368,27 +371,28 @@ function applyBadge(badgeEl, cfg){
     
       madeBy.style.display = 'flex';
     
-      // Nome (sempre testo)
-      madeByName.textContent = hasName ? name : (hasHandle ? '@'+handle : '');
+      // Nome
+      mbName.textContent = hasName ? name : (hasHandle ? '@' + handle : '');
     
-      // Separatore “–” visibile solo se ci sono entrambi
-      madeBySep.style.display = (hasName && hasHandle) ? '' : 'none';
+      // Separatore "–" solo se ci sono entrambi
+      mbSep.style.display = (hasName && hasHandle) ? '' : 'none';
     
       // Handle (link se possibile)
       if(hasHandle){
-        madeByHandle.textContent = '@' + handle;
+        mbHandle.textContent = '@' + handle;
         if(url){
-          madeByHandle.href = url;
-          madeByHandle.style.pointerEvents = '';
+          mbHandle.href = url;
+          mbHandle.style.pointerEvents = '';
         }else{
-          madeByHandle.removeAttribute('href');
-          madeByHandle.style.pointerEvents = 'none';
+          mbHandle.removeAttribute('href');
+          mbHandle.style.pointerEvents = 'none';
         }
-        madeByHandle.style.display = '';
+        mbHandle.style.display = '';
       }else{
-        madeByHandle.style.display = 'none';
+        mbHandle.style.display = 'none';
       }
     })();
+
 
 
 
@@ -406,6 +410,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
