@@ -37,16 +37,6 @@
     <h1>Choose an overlay</h1>
     <p>Anteprime statiche (quadrate). Clicca per aprire l’editor.</p>
 
-    <div class="toolbar">
-      <div class="field">
-        <label for="qid">ID (opzionale):</label>
-        <input id="qid" type="number" inputmode="numeric" placeholder="es. 8929" />
-      </div>
-      <div class="field" style="justify-self:end;">
-        <span style="font-size:12px;color:var(--muted)">Suggerimento: puoi passare anche <code>?id=…</code> direttamente nell’URL dell’editor.</span>
-      </div>
-    </div>
-
     <div id="grid" class="grid"></div>
     <div id="empty" class="empty" style="display:none">Nessun overlay nel manifest.</div>
   </main>
@@ -54,17 +44,14 @@
 <script>
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
-const ID_INPUT = document.getElementById('qid');
 
 let overlays = null;
 
 function cardHTML(item){
   const href = new URL('editor.html', location.href);
   href.searchParams.set('overlay', item.id);
-  const id = (ID_INPUT.value||'').trim();
-  if(id) href.searchParams.set('id', id);
 
-  const thumb = item.thumb || `thumbs/${item.id}.png`; // supporta .gif se lo metti nel campo "thumb"
+  const thumb = item.thumb || `thumbs/${item.id}.png`;
   const badge = item.badge ? `<div class="badge" style="${item.badgeColor?`background:${item.badgeColor}`:''}">${item.badge}</div>` : '';
   const by = item.author ? `<div class="by">by ${item.author}</div>` : '';
 
