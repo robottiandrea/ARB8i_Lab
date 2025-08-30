@@ -34,7 +34,13 @@
   .toolbar{display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:end; margin:12px 0 18px}
   .toolbar .field{display:flex; gap:8px; align-items:center}
   .toolbar input{padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text); width:220px}
-  .grid{display:grid; grid-template-columns: repeat(auto-fill,minmax(256px,256px)); gap:18px}
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(256px, 256px));
+    gap:18px;
+    justify-content: center; /* <-- centra le colonne dentro il contenitore */
+  }
+  .grid{ justify-items: center; } /* opzionale */
   .card{background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.25); position:relative; transition:transform .08s ease, box-shadow .08s ease}
   .card:hover{transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,.35)}
   .thumb{position:relative; aspect-ratio:1/1; background:#0d1016}
