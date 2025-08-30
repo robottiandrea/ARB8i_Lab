@@ -91,7 +91,7 @@
       <label for="tokenId">ID</label>
       <div class="row">
         <input id="tokenId" type="number" inputmode="numeric" min="1" placeholder="es. 8929" />
-        <button id="go" class="btn-outline" aria-label="Show the image">Show me!</button>
+        <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
       </div>
 
       <div id="status" class="status"></div>
@@ -216,20 +216,20 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
 
 /* ===== pipeline: on-chain → IPFS → composizione ===== */
 async function openImage(){
-  setStatus('Carico…');
+  setStatus('Just a sec…');
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
-  if(!Number.isFinite(id) || id<0){ setStatus('Inserisci un ID valido (≥1).'); return; }
+  if(!Number.isFinite(id) || id<0){ setStatus('Oops! That ID doesn’t work. Try again.'); return; }
 
   try{
     await loadMaps(); // CSV+JSON
     // tokenURI
     const data = '0xc87b56dd' + (BigInt(id).toString(16).padStart(64,'0'));
     const res  = await rpcCall('eth_call', [{to:DEFAULT_CONTRACT, data}, 'latest']);
-    if(!res) throw new Error('RPC non disponibile');
+    if(!res) throw new Error('Uh-oh… chain is napping');
     const tokenUri = decodeAbiString(res);
-    if(!tokenUri) throw new Error('Decodifica tokenURI fallita');
+    if(!tokenUri) throw new Error('Could not read tokenURI');
     const meta = await fetchJsonAny(ipfsUrls(tokenUri));
-    if(!meta) throw new Error('Metadata non disponibili');
+    if(!meta) throw new Error('Metadata went doodling elsewhere');
 
     // base image (blob per evitare CORS canvas-tainted)
     const imageUri = meta.image || meta.image_url || meta.imageIpfs;
@@ -237,7 +237,7 @@ async function openImage(){
     if(imageUri) baseBlob = await fetchBlobAny(ipfsUrls(imageUri));
     if(!baseBlob){
       for(const p of [`./doodles/${id}.png`, `./${id}.png`]){ try{ const rr=await fetch(p); if(rr.ok){ baseBlob=await rr.blob(); break; } }catch{} }
-      if(!baseBlob) throw new Error('Immagine non disponibile (IPFS + fallback falliti)');
+      if(!baseBlob) throw new Error('No Doodle image found');
     }
 
     // colori da JSON locale
@@ -251,10 +251,10 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
-    setStatus(`ID ${id}: pronto. (Right-click → Save image as)`);
+    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
   }catch(e){
     if(location.protocol==='file:') setStatus('Usa un server (es. py -m http.server 5500).');
-    else setStatus('❌ ' + (e?.message || 'Errore'));
+    else setStatus('❌ ' + (e?.message || 'Oops!'));
   }
 }
 
@@ -288,3 +288,4 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
