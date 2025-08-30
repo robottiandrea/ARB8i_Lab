@@ -253,6 +253,40 @@ async function openImage(){
   }
 }
 
+function applyBadge(badgeEl, cfg){
+  if(!badgeEl) return;
+  if(!cfg || !cfg.badge){
+    badgeEl.style.display = 'none';
+    return;
+  }
+  badgeEl.textContent = cfg.badge;
+  badgeEl.style.display = 'inline-block';
+
+  // Sfondo dal JSON, se presente
+  if(cfg.badgeColor) badgeEl.style.background = cfg.badgeColor;
+
+  // Se il JSON fornisce un colore testo esplicito, usalo e basta
+  if(cfg.badgeText){
+    badgeEl.style.color = cfg.badgeText;
+    return;
+  }
+
+  // Altrimenti calcola automaticamente bianco/nero in base allo sfondo
+  try{
+    const bg = getComputedStyle(badgeEl).backgroundColor;   // es. "rgb(255, 255, 255)"
+    const m = bg && bg.match(/\d+(\.\d+)?/g);
+    if(m){
+      const [r,g,b] = m.map(Number);
+      const yiq = (r*299 + g*587 + b*114) / 1000;           // luminanza YIQ
+      badgeEl.style.color = yiq >= 150 ? '#000' : '#fff';
+    }else{
+      badgeEl.style.color = '#000';                         // fallback
+    }
+  }catch{
+    badgeEl.style.color = '#000';
+  }
+}
+
 /* ===== Init ===== */
 (async function init(){
   try{
@@ -264,11 +298,9 @@ async function openImage(){
 
     ovName.textContent = currentCfg.name || currentCfg.id;
     ovAuthor.textContent = currentCfg.author ? `by ${currentCfg.author}` : '';
-    if(currentCfg.badge){
-      ovBadge.textContent = currentCfg.badge;
-      ovBadge.style.display = 'inline-block';
-      if(currentCfg.badgeColor) ovBadge.style.background = currentCfg.badgeColor;
-    }
+   
+    applyBadge(ovBadge, currentCfg);
+
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
@@ -284,4 +316,5 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
