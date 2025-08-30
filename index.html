@@ -47,41 +47,51 @@
   .empty{opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px}
 
   /* Firma */
-  .credits {
-    position: fixed;       /* sempre in basso */
-    bottom: 16px;          /* distanza dal bordo */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 13px;
-    color: var(--muted);
-    text-align: center;
-    z-index: 1000;
-    animation: glow 2.5s ease-in-out infinite alternate;
-  }
-  
-  .credits a {
-    color: var(--acc);         /* colore accento */
-    text-decoration: none;
-    font-weight: 600;
-  }
-  
-  .credits a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Effetto glow morbido */
-  @keyframes glow {
-    from { text-shadow: 0 0 2px var(--acc), 0 0 4px var(--acc); }
-    to   { text-shadow: 0 0 6px var(--acc), 0 0 12px var(--acc); }
-  }
+.credits {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  text-align: center;
+  font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+.credits a {
+  color: var(--acc);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* shimmer effect sul "made by" */
+.shine {
+  display:inline-block;
+  background: linear-gradient(
+    120deg,
+    rgba(192,192,192,0.8) 40%,
+    rgba(255,255,255,1) 50%,
+    rgba(192,192,192,0.8) 60%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer 8s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 
 </style>
 </head>
 <body>
   <main class="wrap">
     <header class="hero">
-      <h1>Doodles Overlaye Lab</h1>
-      <p>Pick a vibe! Overlay the fun 💛</p>
+      <h1>Arb8i 💛 Stoodio</h1>
+      <p>Pick a vibe! Overlay the fun!</p>
     </header>
 
     <div id="grid" class="grid"></div>
@@ -138,7 +148,9 @@ loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </body>
 
 <footer class="credits">
-  Made by <a href="https://x.com/robottiandrea" target="_blank" rel="noopener">@robottiandrea</a>
+  <span class="shine">made by</span>
+  <a href="https://x.com/robottiandrea" target="_blank" rel="noopener">@robottiandrea</a>
 </footer>
+
 
 </html>
