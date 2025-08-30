@@ -213,6 +213,37 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
   return canvas.toDataURL('image/png');
 }
 
+/* ===== Badge helper (auto-contrasto) ===== */
+function applyBadge(badgeEl, cfg){
+  if(!badgeEl) return;
+  if(!cfg || !cfg.badge){
+    badgeEl.style.display = 'none';
+    return;
+  }
+  badgeEl.textContent = cfg.badge;
+  badgeEl.style.display = 'inline-block';
+
+  if(cfg.badgeColor) badgeEl.style.background = cfg.badgeColor;
+
+  if(cfg.badgeText){
+    badgeEl.style.color = cfg.badgeText;
+    return;
+  }
+  try{
+    const bg = getComputedStyle(badgeEl).backgroundColor;
+    const m = bg && bg.match(/\d+(\.\d+)?/g);
+    if(m){
+      const [r,g,b] = m.map(Number);
+      const yiq = (r*299 + g*587 + b*114) / 1000;
+      badgeEl.style.color = yiq >= 150 ? '#000' : '#fff';
+    } else {
+      badgeEl.style.color = '#000';
+    }
+  }catch{
+    badgeEl.style.color = '#000';
+  }
+}
+
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Just a sec…');
@@ -246,51 +277,17 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
-    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
+    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save);
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
   }
 }
-<script>
-function applyBadge(badgeEl, cfg){
-  if(!badgeEl) return;
-  if(!cfg || !cfg.badge){
-    badgeEl.style.display = 'none';
-    return;
-  }
-  badgeEl.textContent = cfg.badge;
-  badgeEl.style.display = 'inline-block';
-
-  // Sfondo dal JSON (se presente)
-  if(cfg.badgeColor) badgeEl.style.background = cfg.badgeColor;
-
-  // Colore testo: usa badgeText se c’è, altrimenti calcola bianco/nero per contrasto
-  if(cfg.badgeText){
-    badgeEl.style.color = cfg.badgeText;
-    return;
-  }
-  try{
-    const bg = getComputedStyle(badgeEl).backgroundColor; // es. "rgb(255, 255, 255)"
-    const m = bg && bg.match(/\d+(\.\d+)?/g);
-    if(m){
-      const [r,g,b] = m.map(Number);
-      const yiq = (r*299 + g*587 + b*114) / 1000;
-      badgeEl.style.color = yiq >= 150 ? '#000' : '#fff';
-    } else {
-      badgeEl.style.color = '#000';
-    }
-  }catch{
-    badgeEl.style.color = '#000';
-  }
-}
 
 /* ===== Init ===== */
-<script>
 (async function init(){
   try{
     await loadManifest();
-
     const p = new URLSearchParams(location.search);
     const ovId = p.get('overlay') || OVERLAYS.default || (OVERLAYS.items[0] && OVERLAYS.items[0].id);
     currentCfg = getCfg(ovId) || OVERLAYS.items[0];
@@ -316,8 +313,6 @@ function applyBadge(badgeEl, cfg){
     setStatus(e?.message || 'Init error');
   }
 })();
-</script>
-
 
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
@@ -325,7 +320,3 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
-
-
-
-
