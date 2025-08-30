@@ -14,8 +14,12 @@
   *{box-sizing:border-box}
   body{margin:0; background:var(--bg); color:var(--text); font:15px/1.45 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
   .wrap{max-width:1100px; margin:0 auto; padding:28px}
-  h1{margin:0 0 14px; font-size:22px; font-weight:600}
-  p{margin:0 0 12px; color:var(--muted)}
+
+  /* centratura SOLO del blocco titolo+descrizione */
+  .hero{ text-align:center; margin:8px 0 18px }
+  .hero h1{ margin:0 0 6px; font-size:22px; font-weight:600 }
+  .hero p{ margin:0; color:var(--muted) }
+
   .toolbar{display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:end; margin:12px 0 18px}
   .toolbar .field{display:flex; gap:8px; align-items:center}
   .toolbar input{padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text); width:220px}
@@ -34,8 +38,10 @@
 </head>
 <body>
   <main class="wrap">
-    <h1>Choose an overlay</h1>
-    <p>Anteprime statiche (quadrate). Clicca per aprire l’editor.</p>
+    <header class="hero">
+      <h1>Doodles Layer Lab</h1>
+      <p>Anteprime statiche (quadrate). Clicca per aprire l’editor.</p>
+    </header>
 
     <div id="grid" class="grid"></div>
     <div id="empty" class="empty" style="display:none">Nessun overlay nel manifest.</div>
