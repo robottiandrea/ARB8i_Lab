@@ -51,10 +51,22 @@
             "thumb": "thumbs/rainbow_mug.png",
             "sleeveId": "Sleeve_fill",
             "skinId": "Skin_fill"
-          }
-        ]
-      }
-
+          },
+            {
+              "id": "Mc_Fries",
+              "name": "Mc Fries",
+              "author": "ARB8i",
+              "authorHandle": "robottiandrea",
+              "authorUrl": "https://x.com/robottiandrea",
+              "badge": "NEW",
+              "badgeColor": "#FFFF",
+              "file": "Overlay_Mc_Fries.svg",
+              "thumb": "thumbs/Mc_fries.png",
+              "sleeveId": "Sleeve_fill",
+              "skinId": "Skin_fill"
+            }
+          ]
+        }
 
 
 
