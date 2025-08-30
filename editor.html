@@ -117,6 +117,25 @@
     0%{ background-position:200% 0 }
     100%{ background-position:-200% 0 }
   }
+ 
+  /* --- Example state --- */
+  #composite.is-example{
+    filter: grayscale(85%) opacity(.8);
+  }
+  
+  .example-badge{
+    position:absolute; top:8px; left:8px;
+    padding:4px 8px; border-radius:10px;
+    font-size:11px; font-weight:700;
+    color:#fff; background:rgba(0,0,0,.55);
+    backdrop-filter: blur(2px);
+    z-index:2; pointer-events:none;
+  }
+  
+  .example-caption{
+    text-align:center; font-size:12px; color:var(--muted);
+    margin-top:6px;
+  }
 
   
 </style>
@@ -141,8 +160,11 @@
       <div id="status" class="status"></div>
 
       <div class="frame">
+        <div id="exampleBadge" class="example-badge" aria-hidden="true">EXAMPLE</div>
         <img id="composite" alt="Preview">
       </div>
+      <div id="exampleCaption" class="example-caption">Example image — enter a Doodles ID to render yours.</div>
+
       
       <!-- Made by (legato all'overlay) -->
       <div id="madeBy" class="footer-madeby" style="display:none">
@@ -189,6 +211,8 @@ const madeByLink = $('#madeByLink');
 const mbName = $('#mbName');
 const mbHandle = $('#mbHandle');
 const mbSep = $('#mbSep');
+const exBadge = document.querySelector('#exampleBadge');
+const exCap   = document.querySelector('#exampleCaption');
 
 
 /* ===== State ===== */
@@ -301,6 +325,11 @@ async function openImage(){
 
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
+    // Modalità esempio OFF (abbiamo il render vero)
+    imgEl.classList.remove('is-example');
+    if(exBadge) exBadge.style.display = 'none';
+    if(exCap)   exCap.style.display   = 'none';
+
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
   }catch(e){
@@ -402,7 +431,13 @@ function applyBadge(badgeEl, cfg){
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
+    // Modalità esempio ON finché non c'è un ID renderizzato
+    imgEl.classList.add('is-example');
+    if(exBadge) exBadge.style.display = 'inline-block';
+    if(exCap)   exCap.style.display   = '';
     imgEl.alt = currentCfg.name || currentCfg.id;
+    
+
 
     const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
   }catch(e){ setStatus(e?.message || 'Init error'); }
