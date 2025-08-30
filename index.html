@@ -45,6 +45,36 @@
   .by{font-size:12px; color:var(--muted)}
   a.cardlink{position:absolute; inset:0; display:block; text-decoration:none; color:inherit}
   .empty{opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px}
+
+  /* Firma */
+  .credits {
+    position: fixed;       /* sempre in basso */
+    bottom: 16px;          /* distanza dal bordo */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+    z-index: 1000;
+    animation: glow 2.5s ease-in-out infinite alternate;
+  }
+  
+  .credits a {
+    color: var(--acc);         /* colore accento */
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .credits a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Effetto glow morbido */
+  @keyframes glow {
+    from { text-shadow: 0 0 2px var(--acc), 0 0 4px var(--acc); }
+    to   { text-shadow: 0 0 6px var(--acc), 0 0 12px var(--acc); }
+  }
+
 </style>
 </head>
 <body>
@@ -106,4 +136,9 @@ loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
 
 </body>
+
+<footer class="credits">
+  Made by <a href="https://x.com/robottiandrea" target="_blank" rel="noopener">@robottiandrea</a>
+</footer>
+
 </html>
