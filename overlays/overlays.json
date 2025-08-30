@@ -38,10 +38,22 @@
           "thumb": "thumbs/italian_pinch.png",
           "sleeveId": "Sleeve_fill",
           "skinId": "Skin_fill"
-        }
-      ]
-    }
-
+        },
+          {
+            "id": "Rainbow_Mug",
+            "name": "Rainbow Mug",
+            "author": "ARB8i",
+            "authorHandle": "robottiandrea",
+            "authorUrl": "https://x.com/robottiandrea",
+            "badge": "NEW",
+            "badgeColor": "#FFFF",
+            "file": "Overlay_Rainbow_Mug.svg",
+            "thumb": "thumbs/rainbow_mug.png",
+            "sleeveId": "Sleeve_fill",
+            "skinId": "Skin_fill"
+          }
+        ]
+      }
 
 
 
