@@ -17,8 +17,19 @@
 
   /* centratura SOLO del blocco titolo+descrizione */
   .hero{ text-align:center; margin:8px 0 18px }
-  .hero h1{ margin:0 0 6px; font-size:22px; font-weight:600 }
-  .hero p{ margin:0; color:var(--muted) }
+  .hero h1 {
+    margin: 0 0 6px;
+    font-size: clamp(26px, 3vw, 36px); /* circa il doppio di p */
+    font-weight: 600;
+  }
+  
+  .hero p {
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(13px, 1.5vw, 18px);
+    line-height: 1.35;
+  }
+
 
   .toolbar{display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:end; margin:12px 0 18px}
   .toolbar .field{display:flex; gap:8px; align-items:center}
@@ -40,7 +51,7 @@
   <main class="wrap">
     <header class="hero">
       <h1>Doodles Layer Lab</h1>
-      <p>Anteprime statiche (quadrate). Clicca per aprire l’editor.</p>
+      <p>Customaize your PFP.</p>
     </header>
 
     <div id="grid" class="grid"></div>
