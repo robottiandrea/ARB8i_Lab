@@ -1,0 +1,16 @@
+{
+  "default": "mello",
+  "items": [
+    {
+      "id": "mello",
+      "name": "Mello (cat)",
+      "author": "ARB8i",
+      "badge": "NEW",
+      "badgeColor": "#30a46c",
+      "file": "Overlay_Mello.svg",
+      "thumb": "../thumbs/mello.png",
+      "skinId": "Skin_fill",
+      "sleeveId": "Sleeve_fill"
+    }
+  ]
+}
