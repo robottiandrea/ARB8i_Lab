@@ -73,7 +73,7 @@
                 "authorUrl": "https://x.com/robottiandrea",
                 "badge": "NEW",
                 "badgeColor": "#FFFF",
-                "file": "Overlay_gamepad.svg",
+                "file": "Overlay_Gamepad.svg",
                 "thumb": "thumbs/gamepad.png",
                 "sleeveId": "Sleeve_fill",
                 "skinId": "Skin_fill"
@@ -83,4 +83,5 @@
   
   
   
+
 
