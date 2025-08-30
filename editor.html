@@ -246,7 +246,7 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
-    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save.`);
+    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
@@ -284,4 +284,5 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
