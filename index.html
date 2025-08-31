@@ -86,11 +86,18 @@
   100% { background-position: 200% 0; }
 }
 
-/* --- Top nav chip (senza tailwind) --- */
-.navchip-wrap{
-  position:fixed; top:16px; left:50%; transform:translateX(-50%);
-  z-index:9999; max-width:90%;
+/* barra sticky che occupa spazio e centra il chip */
+.navchip-bar{
+  position: sticky;
+  top: calc(12px + env(safe-area-inset-top)); /* sicuro anche con notch */
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
 }
+
+/* puoi riusare le tue regole .navchip già messe;
+   se non le hai, queste vanno bene: */
 .navchip{
   display:inline-flex; align-items:center; gap:8px;
   padding:8px 14px; border-radius:999px;
@@ -100,22 +107,23 @@
   box-shadow:0 8px 24px rgba(0,0,0,.35);
   font:600 14px/1 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   color:var(--text); text-decoration:none; white-space:nowrap;
-  transition: border-color .15s ease, color .15s ease, transform .05s ease;
+  transition:border-color .15s ease, color .15s ease, transform .05s ease;
 }
 .navchip:hover{ color:var(--acc); border-color:var(--acc); }
-.navchip:active{ transform:translateY(1px); }
+.navchip:active{ transform: translateY(1px); }
+
   
 
 
 </style>
 </head>
 <body>
-  <div class="navchip-wrap">
+  <div class="navchip-bar">
     <a class="navchip" href="./Doodles_trait-viewer.html" title="Apri Trait Viewer">
       Trait Viewer
     </a>
   </div>
-
+  
   <main class="wrap">
     <header class="hero">
       <h1>ARB8i 💛 Lab</h1>
