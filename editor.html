@@ -303,7 +303,7 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
 async function openImage(){
   setStatus('Just a sec…');
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
-  if(!Number.isFinite(id) || id<1){ setStatus('Enter a valid ID (≥1).'); return; }
+  if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
 
   try{
     await loadMaps();
@@ -471,6 +471,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
