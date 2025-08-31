@@ -289,12 +289,7 @@ details .filter-search.control { margin-bottom: 12px; }
 
 <script>
 /*** Config ***/
-const IPFS_GW = [
-  'https://dweb.link/ipfs/',
-  'https://ipfs.io/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
-];
+const IPFS_GW = ['https://dweb.link/ipfs/'];
 
 /*** DOM ***/
 const $ = s => document.querySelector(s);
@@ -346,7 +341,7 @@ let idFilterRaw = '';
 let idFilterSet = null;
 
 /*** Utils ***/
-const IMG_TIMEOUT_MS = 4000;   // dopo 4s passa al gateway successivo
+const IMG_TIMEOUT_MS = 800;   // dopo 4s passa al gateway successivo
 const PLACEHOLDER_SVG =
   'data:image/svg+xml;utf8,' + encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
