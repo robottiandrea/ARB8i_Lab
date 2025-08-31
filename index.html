@@ -105,22 +105,43 @@
 }
 .navchip:hover{ color:var(--acc); border-color:var(--acc); }
 .navchip:active{ transform: translateY(1px); }
-.navchip{ position:relative; overflow:hidden; }
-.navchip::after{
-  content:""; position:absolute; top:0; bottom:0; width:48px;
-  transform:skewX(-20deg) translateX(-150%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
-  pointer-events:none;
-  animation: sweep 3.5s ease-in-out infinite;
-}
-@keyframes sweep{
-  0% { transform:skewX(-20deg) translateX(-150%); }
-  60%,100% { transform:skewX(-20deg) translateX(250%); }
+:root{
+  --sheen-width: 56px;     /* fascia un po’ più larga = più morbida */
+  --sheen-alpha: .18;      /* meno brillantezza */
+  --sheen-angle: -14deg;   /* inclinazione più dolce */
+  --sheen-from: -120%;     /* entra poco fuori a sinistra */
+  --sheen-to: 220%;        /* esce poco fuori a destra */
+  --sheen-dur: 5.2s;       /* passata più lenta */
+  --sheen-delay: 1.2s;     /* piccola pausa tra le passate */
 }
 
-/* accessibilità: spegni le animazioni se l’utente lo chiede */
+.navchip{ position:relative; overflow:hidden; }
+
+.navchip::after{
+  content:""; position:absolute; top:0; bottom:0; width:var(--sheen-width);
+  transform: skewX(var(--sheen-angle)) translateX(var(--sheen-from));
+  /* stop più larghi = bordo meno netto */
+  background: linear-gradient(
+    90deg,
+    transparent 42%,
+    rgba(255,255,255,var(--sheen-alpha)) 50%,
+    transparent 58%
+  );
+  pointer-events:none;
+  animation: sweep var(--sheen-dur) ease-in-out var(--sheen-delay) infinite;
+}
+
+@keyframes sweep{
+  0%   { transform:skewX(var(--sheen-angle)) translateX(var(--sheen-from)); }
+  60%,
+  100% { transform:skewX(var(--sheen-angle)) translateX(var(--sheen-to)); }
+}
+
+/* opzionale: ammorbidisci anche l’ombra del chip */
+.navchip{ box-shadow:0 6px 18px rgba(0,0,0,.25); }
+
+/* accessibilità */
 @media (prefers-reduced-motion: reduce){
-  .navchip .shine{ animation:none; }
   .navchip::after{ animation:none; }
 }
 
