@@ -172,6 +172,7 @@ details .filter-search.control { margin-bottom: 12px; }
 .meta{ padding:8px 10px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border) }
 /* bottoni dentro la barra meta della card */
 .meta .actions{ display:flex; gap:8px; align-items:center; }
+.meta .actions:empty{ display:none; } /* nasconde il contenitore se vuoto */
 .id{ font-weight:600 }
 .open{ font-size:12px; border-radius:9px; padding:6px 10px; border:1px solid var(--border); background:#0d1016; color:var(--text); text-decoration:none }
 .empty{ opacity:.85; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px }
@@ -318,7 +319,13 @@ const LAST_OVERLAY = localStorage.getItem('lastOverlay') || '';
     history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
   }
 })();
-
+const FROM_EDITOR = (() => {
+  try {
+    if (!document.referrer) return false;
+    const u = new URL(document.referrer);
+    return u.origin === location.origin && /editor\.html(\?|#|$)/.test(u.pathname);
+  } catch { return false; }
+})();
 /*** State ***/
 let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
 let ALL_IDS = new Set();       // all ids
@@ -655,12 +662,21 @@ function renderPage(){
   const slice = results.slice(start, start+pageSize);
   if(page===0) gridEl.innerHTML = '';
 
-  for(const id of slice){
+  for (const id of slice) {
     const obj = BY_ID.get(id);
-    if(!obj) continue;
+    if (!obj) continue;
     const urls = ipfsToUrls(obj.image);
+  
     const a = document.createElement('article');
     a.className = 'card';
+  
+    // Mostra il link solo se arrivi dall'editor
+    const editorLinkHTML = FROM_EDITOR ? (() => {
+      const u = new URL('./editor.html', location.href);
+      u.searchParams.set('id', id); // SOLO id, nessun overlay
+      return `<a class="open" href="${u.toString()}">Open in Editor</a>`;
+    })() : '';
+  
     a.innerHTML = `
       <div class="thumb">
         <img loading="lazy" decoding="async" alt="Doodle #${id}">
@@ -668,24 +684,16 @@ function renderPage(){
       <div class="meta">
         <div class="id">#${id}</div>
         <div class="actions">
-          <button class="open copy-id" data-id="${id}" aria-label="Copy ID">Copy ID</button>
-          <a class="open" href="${(() => {
-            const u = new URL('./editor.html', location.href);
-            u.searchParams.set('id', id); // SOLO id, niente overlay
-            return u.toString();
-          })()}">Open in Editor</a>
+          ${editorLinkHTML}
         </div>
       </div>
     `;
 
+  const img = a.querySelector('img');
+  attachImgFallback(img, urls);
+  gridEl.appendChild(a);
+}
 
-
-
-    const img = a.querySelector('img');
-    attachImgFallback(img, urls);
-    gridEl.appendChild(a);
-
-  }
 
   emptyEl.style.display = (results.length===0) ? '' : 'none';
 
@@ -849,21 +857,6 @@ activeChipsEl.addEventListener('click', (e)=>{
 // Pagination + reset
 resetBtn.addEventListener('click', resetFilters);
 
-// Copy ID
-gridEl.addEventListener('click', async (e)=>{
-  const btn = e.target.closest('.copy-id');
-  if(!btn) return;
-  const id = btn.getAttribute('data-id');
-  const ok = await copyTextToClipboard(String(id));
-  const old = btn.textContent;
-  if(ok){
-    btn.textContent = 'Copied ✓';
-    setStatus(`ID ${id} copied to clipboard`);
-    setTimeout(()=>{ btn.textContent = old; }, 1000);
-  }else{
-    setStatus("❌ Couldn't copy to clipboard");
-  }
-});
 
 /*** Init ***/
 (async function init(){
