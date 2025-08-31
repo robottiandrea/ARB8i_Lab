@@ -156,7 +156,10 @@
         <input id="tokenId" type="number" inputmode="numeric" min="1" placeholder="es. 8929" />
         <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
       </div>
-
+      <p class="sub" style="margin:6px 0 0">
+        Missing your Doodle’s ID?
+        <a class="back" href="./Doodles_trait-viewer.html">Find it here!</a>
+      </p>
       <div id="status" class="status"></div>
 
       <div class="frame">
@@ -212,7 +215,7 @@ const mbName = $('#mbName');
 const mbHandle = $('#mbHandle');
 const mbSep = $('#mbSep');
 const exBadge = document.querySelector('#exampleBadge');
-const exCap   = document.querySelector('#exampleCaption');
+
 
 
 /* ===== State ===== */
@@ -449,6 +452,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
