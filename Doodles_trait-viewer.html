@@ -358,13 +358,13 @@ const PLACEHOLDER_SVG =
       <circle cx="96" cy="96" r="40"/>
     </g>
   </svg>`);
-// cache-bust: cambia ogni 60s per bucare cache marce (browser/CDN)
+// aggiunge un cache-bust che cambia ogni 60s (buca cache marce)
 function addBust(u){
   const sep = u.includes('?') ? '&' : '?';
   return u + sep + 't=' + Math.floor(Date.now()/60000);
 }
 
-// ipfs:// → due URL dweb (path + subdomain) normalizzati
+// ipfs:// → 2 URL dweb: path + subdomain
 function ipfsToUrls(uri){
   if(!uri) return [];
   let p = String(uri).trim();
@@ -373,66 +373,45 @@ function ipfsToUrls(uri){
 
   const m = p.match(/^([^/]+)(\/.*)?$/);
   if(!m) return [];
-  const cid = m[1];
+  const cid  = m[1];
   const rest = m[2] || '';
 
-  return [
-    `https://dweb.link/ipfs/${cid}${rest}`,
-    `https://${cid}.ipfs.dweb.link${rest}`,
-  ];
+  // se è CID "nudo" (senza /file), aiuta alcuni gateway con filename=…
+  const needsFilename = !rest;
+  const basePath = `https://dweb.link/ipfs/${cid}${rest}`;
+  const baseSubd = `https://${cid}.ipfs.dweb.link${rest}`;
+
+  const pathURL = needsFilename ? addBust(basePath + (basePath.includes('?')?'&':'?') + 'filename=image.png')
+                                : addBust(basePath);
+  const subdURL = addBust(baseSubd);
+
+  return [pathURL, subdURL];
 }
 
-// Fallback sicuro: se <img> fallisce/ritarda → fetch→blob (mai rilancia eccezioni)
-async function tryFetchBlobSafe(img, urls){
-  try{
-    // se CID nudo (niente /file), aggiungi filename=… per educare i gateway
-    const naked = !/\/.+$/.test(urls[0].replace(/^https?:\/\/[^/]+\/ipfs\/[^/]+/,''));
-    const hint  = naked ? (urls[0].includes('?') ? '&' : '?') + 'filename=image.png' : '';
-
-    const candidates = [
-      addBust(urls[0] + hint),
-      addBust(urls[1]),
-    ];
-
-    for (const u of candidates){
-      try{
-        const r = await fetch(u, { mode:'cors', cache:'reload' });
-        if (!r.ok) continue;
-        const b = await r.blob();
-        const obj = URL.createObjectURL(b);
-        img.onload  = () => { URL.revokeObjectURL(obj); img.classList.add('ok'); };
-        img.onerror = () => { URL.revokeObjectURL(obj); img.src = PLACEHOLDER_SVG; img.classList.add('ok'); };
-        img.src = obj;
-        return;
-      }catch(_){ /* passa al prossimo */ }
+// Caricamento in cascata con <img> diretto (niente fetch/blob)
+function attachImgCascade(img, urls){
+  let i = 0, timer = null, done = false;
+  const stop = ()=>{ done = true; if (timer) clearTimeout(timer); };
+  const next = ()=>{
+    if (done) return;
+    const url = urls[i++];
+    if (!url){
+      img.src = PLACEHOLDER_SVG;
+      img.classList.add('ok');
+      return;
     }
-  }catch(_){ /* ignora */ }
-
-  // ultima spiaggia
-  img.src = PLACEHOLDER_SVG;
-  img.classList.add('ok');
+    img.decoding = 'async';
+    img.referrerPolicy = 'no-referrer';
+    img.crossOrigin = 'anonymous';
+    img.onload = ()=>{ stop(); img.classList.add('ok'); };
+    img.onerror = ()=>{ if(done) return; next(); };
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(()=>{ if(!done) next(); }, IMG_TIMEOUT_MS);
+    img.src = url;
+  };
+  next();
 }
 
-// Primo tentativo rapido via <img>; se errore/timeout → tryFetchBlobSafe
-function attachImgSmart(img, uri){
-  const urls = ipfsToUrls(uri);
-  if (!urls.length){ img.src = PLACEHOLDER_SVG; img.classList.add('ok'); return; }
-
-  let done = false;
-  const stop = () => { done = true; if (timer) clearTimeout(timer); };
-
-  img.decoding = 'async';
-  img.referrerPolicy = 'no-referrer';
-  img.crossOrigin = 'anonymous';
-
-  img.onload  = () => { stop(); img.classList.add('ok'); };
-  img.onerror = () => { if (done) return; stop(); tryFetchBlobSafe(img, urls); };
-
-  const timer = setTimeout(() => { if (!done){ stop(); tryFetchBlobSafe(img, urls); } }, IMG_TIMEOUT_MS);
-
-  // dweb (path) con cache-bust
-  img.src = addBust(urls[0]);
-}
 
 
   
@@ -743,8 +722,9 @@ function renderPage(){
       </div>
     `;
 
-  const img = a.querySelector('img');
-  attachImgSmart(img, obj.image);
+  const urls = ipfsToUrls(obj.image);
+  const img  = a.querySelector('img');
+  attachImgCascade(img, urls);
   gridEl.appendChild(a);
 }
 
