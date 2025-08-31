@@ -117,7 +117,11 @@
     0%{ background-position:200% 0 }
     100%{ background-position:-200% 0 }
   }
- 
+
+  @media (prefers-reduced-motion: reduce){
+    .shimmer{ animation: none !important; }
+  }
+
   /* --- Example state --- */
   #composite.is-example{
     filter: grayscale(50%) opacity(.9);
@@ -153,14 +157,14 @@
     <section class="card">
       <label for="tokenId">Doodles ID</label>
       <div class="row">
-        <input id="tokenId" type="number" inputmode="numeric" min="1" placeholder="es. 8929" />
+        <input id="tokenId" type="number" inputmode="numeric" min="1" placeholder="8929" />
         <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
       </div>
       <p class="sub" style="margin:6px 0 0">
         Missing your Doodle ID?
-        <a class="back" href="./Doodles_trait-viewer.html">Find it here!</a>
-
+        <a class="back shimmer" href="./Doodles_trait-viewer.html">Find it here!</a>
       </p>
+
 
 
       <div id="status" class="status"></div>
@@ -471,6 +475,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
