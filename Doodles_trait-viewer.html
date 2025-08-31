@@ -383,7 +383,24 @@ function attachImgFallback(img, urls){
 }
   
 function setStatus(t){ statusEl.textContent = t || ''; }
-function ipfsToUrls(uri){ if(!uri) return []; if(uri.startsWith('ipfs://')){ const p = uri.slice(7); return IPFS_GW.map(g=>g+p); } return [uri]; }
+function ipfsToUrls(uri){
+  if(!uri) return [];
+  let p = String(uri).trim();
+  if (p.startsWith('ipfs://')) p = p.slice(7);
+  p = p.replace(/^ipfs\//i, '').replace(/^\/+/, '');
+
+  // split: <cid> + resto (se presente)
+  const m = p.match(/^([^/]+)(\/.*)?$/);
+  if(!m) return [];
+  const cid  = m[1];
+  const rest = m[2] || '';
+
+  // 👇 se non c'è un path/filename, aggiungi un nome file fittizio
+  const fname = rest ? '' : '?filename=image.png';
+
+  return IPFS_GW.map(g => g + cid + rest + fname);
+}
+
 function esc(str){ return String(str).replace(/[&<>"'`=\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','=':'&#x3D;','`':'&#x60;'}[s])); }
 
 function unionSets(a,b){ if(!a) return new Set(b); if(!b) return new Set(a); const res=new Set(a); for(const x of b) res.add(x); return res; }
