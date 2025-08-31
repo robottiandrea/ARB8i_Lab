@@ -18,7 +18,7 @@
     /* Controls */
     --ctrl-h:40px;         /* altezza controlli (36/40/44 a gusto) */
     --ctrl-br:10px;        /* raggio */
-    --ctrl-bw:2px;         /* spessore bordo */
+    --ctrl-bw:1px;         /* spessore bordo */
     --ctrl-bc:#fff;        /* colore bordo (bianco come il bottone) */
   }
 
@@ -94,6 +94,16 @@
   }
   .madeby-link:hover{ text-decoration:underline; }
 
+  .idhelp{
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    margin-left: 4px;
+  }
+  @media (min-width: 640px){
+    .idhelp{ font-size: 15px; }
+  }
+
   
   /* Testo lucido */
   .shimmer{
@@ -162,8 +172,9 @@
       </div>
       <p class="sub" style="margin:6px 0 0">
         Missing your Doodle ID?
-        <a class="back shimmer" href="./Doodles_trait-viewer.html">Find it here!</a>
+        <a class="back shimmer idhelp" href="./Doodles_trait-viewer.html">Find it here!</a>
       </p>
+
 
 
 
@@ -475,6 +486,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
