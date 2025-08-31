@@ -157,9 +157,10 @@
         <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
       </div>
       <p class="sub" style="margin:6px 0 0">
-        Missing your Doodle’s ID?
-        <a class="back" href="./Doodles_trait-viewer.html">Find it here!</a>
+        Missing your Doodle ID?
+        <a id="viewerLink" class="back" href="./Doodles_trait-viewer.html">Find it here!</a>
       </p>
+
       <div id="status" class="status"></div>
 
       <div class="frame">
@@ -386,7 +387,17 @@ function applyBadge(badgeEl, cfg){
 
     ovName.textContent = currentCfg.name || currentCfg.id;
     ovAuthor.textContent = currentCfg.author ? `by ${currentCfg.author}` : '';
-   
+    // ricorda overlay corrente
+    localStorage.setItem('lastOverlay', currentCfg.id);
+    
+    // aggiorna il link al Viewer per portarsi dietro l’overlay
+    const viewerLink = document.getElementById('viewerLink');
+    if (viewerLink) {
+      const u = new URL('./Doodles_trait-viewer.html', location.href);
+      u.searchParams.set('overlay', currentCfg.id);
+      viewerLink.href = u.toString();
+    }
+ 
     applyBadge(ovBadge, currentCfg);
     
     // Footer: "made by ARB8i–@robottiandrea" (tutto cliccabile)
@@ -452,6 +463,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
