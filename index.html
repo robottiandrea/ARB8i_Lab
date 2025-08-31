@@ -64,27 +64,21 @@
   font-weight: 600;
 }
 
-/* effetto shimmer sul link intero */
-.credits .shine {
+/* rendi riutilizzabile lo shine anche fuori dal footer */
+.credits .shine, .navchip .shine{
   display:inline-block;
-  background: linear-gradient(
-    120deg,
-    rgba(192,192,192,0.8) 40%,
-    rgba(255,255,255,1) 50%,
-    rgba(192,192,192,0.8) 60%
-  );
+  background: linear-gradient(120deg, rgba(192,192,192,.85) 40%, #fff 50%, rgba(192,192,192,.85) 60%);
   background-size: 200% 100%;
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
-  animation: shimmer 8s infinite;
-  text-decoration: none;
+  animation: shimmer 8s infinite linear;
+}
+@keyframes shimmer {
+  0% { background-position:-200% 0; }
+  100% { background-position:200% 0; }
 }
 
-@keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 
 /* barra sticky che occupa spazio e centra il chip */
 .navchip-bar{
@@ -111,6 +105,24 @@
 }
 .navchip:hover{ color:var(--acc); border-color:var(--acc); }
 .navchip:active{ transform: translateY(1px); }
+.navchip{ position:relative; overflow:hidden; }
+.navchip::after{
+  content:""; position:absolute; top:0; bottom:0; width:48px;
+  transform:skewX(-20deg) translateX(-150%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent);
+  pointer-events:none;
+  animation: sweep 3.5s ease-in-out infinite;
+}
+@keyframes sweep{
+  0% { transform:skewX(-20deg) translateX(-150%); }
+  60%,100% { transform:skewX(-20deg) translateX(250%); }
+}
+
+/* accessibilità: spegni le animazioni se l’utente lo chiede */
+@media (prefers-reduced-motion: reduce){
+  .navchip .shine{ animation:none; }
+  .navchip::after{ animation:none; }
+}
 
   
 
@@ -120,7 +132,7 @@
 <body>
   <div class="navchip-bar">
     <a class="navchip" href="./Doodles_trait-viewer.html" title="Apri Trait Viewer">
-      Trait Viewer
+      <span class="shine">Trait Viewer</span>
     </a>
   </div>
   
