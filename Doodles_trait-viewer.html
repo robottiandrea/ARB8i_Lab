@@ -170,6 +170,8 @@ details .filter-search.control { margin-bottom: 12px; }
 .thumb{ aspect-ratio:1/1; background:#0d1016; display:flex; align-items:center; justify-content:center }
 .thumb img{ width:100%; height:100%; object-fit:cover; display:block }
 .meta{ padding:8px 10px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border) }
+/* bottoni dentro la barra meta della card */
+.meta .actions{ display:flex; gap:8px; align-items:center; }
 .id{ font-weight:600 }
 .open{ font-size:12px; border-radius:9px; padding:6px 10px; border:1px solid var(--border); background:#0d1016; color:var(--text); text-decoration:none }
 .empty{ opacity:.85; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px }
@@ -304,6 +306,7 @@ const resetBtn = $('#resetBtn');
 const idSearchEl = $('#idSearch');
 const activeWrapEl = $('#activeWrap');
 const activeChipsEl = $('#activeChips');
+const OVERLAY_PARAM = new URLSearchParams(location.search).get('overlay') || '';
 
 /*** State ***/
 let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
@@ -653,9 +656,18 @@ function renderPage(){
       </div>
       <div class="meta">
         <div class="id">#${id}</div>
-        <button class="open copy-id" data-id="${id}" aria-label="Copy ID">Copy ID</button>
+        <div class="actions">
+          <button class="open copy-id" data-id="${id}" aria-label="Copy ID">Copy ID</button>
+          <a class="open" href="${(() => {
+            const u = new URL('./editor.html', location.href);
+            if (OVERLAY_PARAM) u.searchParams.set('overlay', OVERLAY_PARAM);
+            u.searchParams.set('id', id);
+            return u.toString();
+          })()}">Open in Editor</a>
+        </div>
       </div>
     `;
+
     const img = a.querySelector('img');
     attachImgFallback(img, urls);
     gridEl.appendChild(a);
