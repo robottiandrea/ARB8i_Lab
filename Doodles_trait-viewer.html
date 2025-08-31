@@ -207,9 +207,49 @@ details .filter-search.control { margin-bottom: 12px; }
     -webkit-overflow-scrolling: auto;
   }
 }
+.backbar{
+  position: sticky;
+  top: calc(12px + env(safe-area-inset-top));
+  z-index: 9999;
+  display: flex;
+  padding: 4px 0 0 12px;
+}
+
+.backchip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:999px;
+  background: color-mix(in oklab, var(--card) 85%, transparent);
+  border:1px solid var(--border);
+  backdrop-filter: blur(8px);
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+  font:600 14px/1 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color:var(--text); text-decoration:none; white-space:nowrap;
+  transition:border-color .15s ease, color .15s ease, transform .05s ease;
+}
+.backchip:hover{ color:var(--acc); border-color:var(--acc); }
+.backchip:active{ transform: translateY(1px); }
+  
 </style>
 </head>
 <body>
+  <div class="backbar">
+    <a class="backchip" href="./" title="Torna alla gallery" onclick="return backToGallery()">
+      ← Torna alla gallery
+    </a>
+  </div>
+  
+  <script>
+    function backToGallery(){
+      if (document.referrer) {
+        try {
+          const u = new URL(document.referrer);
+          if (u.origin === location.origin) { history.back(); return false; }
+        } catch(_) {}
+      }
+      return true; // fallback: segue l'href="./"
+    }
+  </script>
+
   <main class="wrap">
     <section class="hero">
       <h1>Doodles — Trait Viewer</h1>
@@ -828,6 +868,21 @@ gridEl.addEventListener('click', async (e)=>{
   loadFromURL();
   applyFilters();         // popola griglia + contatori (opzioni e summary)
 })();
-</script>
+<script>
+    function backToGallery(){
+      // Se arrivi da una pagina dello stesso sito, torna indietro
+      if (document.referrer) {
+        try {
+          const u = new URL(document.referrer);
+          if (u.origin === location.origin) {
+            history.back();
+            return false; // blocca l'href e usa la history
+          }
+        } catch(_) {}
+      }
+      // Altrimenti segui l'href="./" (torna alla index)
+      return true;
+    }
+  </script>
 </body>
 </html>
