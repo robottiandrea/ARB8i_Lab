@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-:root{
+  :root{
   --bg:#0f1115; --card:#171a21; --text:#eef2ff; --muted:#9aa3b2; --acc:#8ab4ff; --border:#232938;
   --side-w: clamp(260px, 33vw, 330px);
   --gap: 18px;
@@ -18,92 +18,153 @@
 
 *{box-sizing:border-box}
 body{
-  margin:0; background:var(--bg); color:var(--text);
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
   font-family:'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  font-size:15px; line-height:1.45; font-weight:400;
+  font-size:15px;
+  line-height:1.45;
+  font-weight:400; /* usa Fredoka 400 che ora è caricato */
 }
-input,button,select,textarea{ font:inherit; }
-button,[role="button"]{ -webkit-appearance:none; appearance:none; }
+/* Assicura che anche i controlli usino Fredoka */
+input, button, select, textarea { font: inherit; font-family: inherit; }
 
-/* wrapper */
+/* I button su Safari/iOS tengono l'aspetto (e il font) nativo: toglilo */
+button, [role="button"] { -webkit-appearance: none; appearance: none; }
+
+/* Classi dei tuoi bottoni: forza famiglia e peso */
+.btn, .open, .chip, .control { font-family: inherit; }
+.btn  { font-weight:600; }   /* Reset */
+.open { font-weight:500; }   /* Copy ID */
+
+
+/* wrapper a piena larghezza, sidebar attaccata a sx */
 .wrap{ max-width:none; margin:0; padding:0; }
 
-/* header */
+/* header in alto centrato */
 .hero{ text-align:center; padding:20px 28px 12px; }
 .hero h1{ margin:0 0 6px; font-size:28px; font-weight:600 }
 .hero p{ margin:0; color:var(--muted) }
 
-/* layout 2 colonne */
+/* layout 2 colonne: [sidebar | contenuto] */
 .layout{
-  display:grid; grid-template-columns: var(--side-w) 1fr;
-  gap:var(--gap); align-items:start; padding:0 28px 28px 0;
+  display:grid;
+  grid-template-columns: var(--side-w) 1fr;
+  gap: var(--gap);
+  align-items:start;
+  padding: 0 28px 28px 0;
 }
 
 /* pannelli */
 .panel{
-  background:var(--card); border:1px solid var(--border); border-radius:16px;
-  padding:18px; box-shadow:0 10px 30px rgba(0,0,0,.25);
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
 
-/* sidebar sticky */
+/* SIDEBAR sticky (una sola scrollbar: di pagina) */
 .sidebar{
-  grid-column:1; position:sticky; top:max(12px, env(safe-area-inset-top));
-  align-self:start; z-index:10;
+  grid-column:1;
+  position: sticky;
+  top: max(12px, env(safe-area-inset-top));
+  align-self:start;
+  z-index:10;
 }
-.sidebar .sticky{ position:static; }
-.filters-scroll{ max-height:none; overflow:visible; padding-right:0; }
+.sidebar .sticky{ position: static; }
+.filters-scroll{ max-height: none; overflow: visible; padding-right: 0; }
 
-/* contenuto */
-.results{ grid-column:2; width:100%; max-width:none; justify-self:stretch; }
+/* contenuto: riempie tutto lo spazio a destra */
+.results{
+  grid-column:2;
+  width:100%;
+  max-width:none;
+  justify-self:stretch;
+}
 
-/* griglia */
+/* griglia card */
 .grid{
-  display:grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
-  gap:14px; justify-content:center;
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+  gap:14px;
+  justify-content:center;
 }
 
-/* controlli */
 .id-search{ display:grid; gap:6px; margin-bottom:10px }
 .id-search label{ font-size:12px; color:var(--muted) }
 .control{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0d1016; color:var(--text); font-size:13px }
-.filters{ display:grid; grid-template-columns:1fr; gap:12px }
 
-/* details + summary */
+.filters{ display:grid; grid-template-columns: 1fr; gap:12px }
+
+/* summary con contatore a destra */
 summary{
   cursor:pointer; outline:none; user-select:none; font-weight:600;
   display:flex; align-items:center; justify-content:space-between; gap:8px;
 }
-summary .sum-count{ color:var(--muted); font-weight:600; opacity:.9; }
+summary .sum-count{
+  color: var(--muted);
+  font-weight:600;
+  opacity:.9;
+}
+
 details{ border:1px solid var(--border); border-radius:12px; padding:10px; background:#0d1016; }
-details .filter-search.control{ margin-bottom:12px; }
+details .filter-search.control { margin-bottom: 12px; }
 
-/* lista valori con scroll */
+/* --- Scroll SOLO dentro la lista dei checkbox, con poche righe visibili --- */
 .values{
-  --rows:5; --row-min:28px; --row-gap:6px;
-  display:grid; row-gap:var(--row-gap);
-  max-height: calc(var(--rows)*var(--row-min) + (var(--rows)-1)*var(--row-gap));
-  overflow:auto; scrollbar-gutter:stable;
-}
-@supports not (scrollbar-gutter: stable){ .values{ padding-inline-end:12px; } }
-.values label{
-  display:grid; grid-template-columns:auto 1fr 6ch; align-items:start; column-gap:12px;
-  min-height:var(--row-min);
-}
-.values input{ margin-top:2px; }
-.values label span{ line-height:1.2; }
-.values label .count{ white-space:nowrap; opacity:.8; justify-self:end; text-align:right; font-variant-numeric:tabular-nums; }
-.values::-webkit-scrollbar{ width:10px; }
-.values::-webkit-scrollbar-thumb{ background:#2a3142; border-radius:8px; border:2px solid #0d1016; }
+  --rows: 5;        /* quante righe visibili prima della scrollbar */
+  --row-min: 28px;  /* altezza minima di una riga */
+  --row-gap: 6px;   /* SPAZIO TRA LE RIGHE */
 
-/* toolbar */
+  display: grid;
+  row-gap: var(--row-gap);
+
+  /* include anche i gap nel max-height, così vedi davvero N righe */
+  max-height: calc(var(--rows) * var(--row-min) + (var(--rows) - 1) * var(--row-gap));
+  overflow: auto;
+
+  /* riserva il canale della scrollbar, così non copre i numeri */
+  scrollbar-gutter: stable;
+}
+/* Fallback dove scrollbar-gutter non c'è (alcuni Safari/vecchi) */
+@supports not (scrollbar-gutter: stable){
+  .values{ padding-inline-end: 12px; }  /* spazio fisso a destra */
+}
+
+.values label{
+  display: grid;
+  grid-template-columns: auto 1fr 6ch; /* [☑] [testo] [(123)] */
+  /* ↑ 6ch basta per "(123)". Se arrivi a 4 cifre usa 7ch/8ch. */
+  align-items: start;
+  column-gap: 12px;
+  min-height: var(--row-min);
+}
+
+.values input{ margin-top: 2px; }
+.values label span{ line-height: 1.2; }
+.values label .count{
+  white-space: nowrap;
+  opacity: .8;
+  justify-self: end;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  padding-inline-end: 0;
+}
+
+.values::-webkit-scrollbar{ width:10px; }
+.values::-webkit-scrollbar-thumb{
+  background:#2a3142; border-radius:8px; border:2px solid #0d1016;
+}
+
 .toolbar{ display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:12px }
-.left,.right{ display:flex; gap:10px; align-items:center }
+.left, .right{ display:flex; gap:10px; align-items:center }
 .chip{ background:#0d1016; border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:999px; font-size:12px }
+
 .btn{ padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text); cursor:pointer }
 .btn-primary{ background:linear-gradient(180deg,#2b62ff,#2753d7); border:0; font-weight:600 }
 .btn:disabled{ opacity:.6; cursor:not-allowed }
 
-/* card */
 .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; position:relative; transition:transform .08s ease, box-shadow .08s ease }
 .card:hover{ transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,.35) }
 .thumb{ aspect-ratio:1/1; background:#0d1016; display:flex; align-items:center; justify-content:center }
@@ -112,9 +173,10 @@ details .filter-search.control{ margin-bottom:12px; }
 .id{ font-weight:600 }
 .open{ font-size:12px; border-radius:9px; padding:6px 10px; border:1px solid var(--border); background:#0d1016; color:var(--text); text-decoration:none }
 .empty{ opacity:.85; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px }
+
 .status{ min-height:22px; color:var(--muted); font-size:13px; margin:10px 0 0 }
 
-/* active chips */
+/* Active chips */
 .active-wrap{ margin-top:10px; }
 .active-label{ font-size:12px; color:var(--muted); margin:6px 0 4px }
 .active-chips{ display:flex; flex-wrap:wrap; gap:6px }
@@ -126,17 +188,32 @@ details .filter-search.control{ margin-bottom:12px; }
 .chip-active .x{ cursor:pointer; opacity:.75; }
 .chip-active .x:hover{ opacity:1; }
 
-/* mobile */
-@media (max-width:768px){
-  .layout{ grid-template-columns: var(--side-w) 1fr; padding:0 12px 16px 0; }
-  .sidebar{ grid-column:1; position:sticky; top:max(12px, env(safe-area-inset-top)); z-index:10; }
-  .filters-scroll{ max-height:none; overflow:visible; -webkit-overflow-scrolling:auto; }
+/* iPhone/telefoni */
+@media (max-width: 768px){
+  .layout{
+    grid-template-columns: var(--side-w) 1fr;
+    padding: 0 12px 16px 0;
+  }
+  .sidebar{
+    grid-column:1;
+    position: sticky;
+    top: max(12px, env(safe-area-inset-top));
+    align-self:start;
+    z-index:10;
+  }
+  .filters-scroll{
+    max-height: none;
+    overflow: visible;
+    -webkit-overflow-scrolling: auto;
+  }
 }
-
 /* back-to-gallery pill (sticky, occupa spazio) */
 .backbar{
-  position:sticky; top:calc(12px + env(safe-area-inset-top));
-  z-index:9999; display:flex; padding:4px 0 0 12px;
+  position: sticky;
+  top: calc(12px + env(safe-area-inset-top));
+  z-index: 9999;
+  display: flex;
+  padding: 4px 0 0 12px;
 }
 .backchip{
   display:inline-flex; align-items:center; gap:8px;
@@ -150,15 +227,14 @@ details .filter-search.control{ margin-bottom:12px; }
   transition:border-color .15s ease, color .15s ease, transform .05s ease;
 }
 .backchip:hover{ color:var(--acc); border-color:var(--acc); }
-.backchip:active{ transform:translateY(1px); }
+.backchip:active{ transform: translateY(1px); }
+  
 </style>
 </head>
 <body>
-
-  <!-- Back to gallery -->
   <div class="backbar">
-    <a class="backchip" href="./" title="Torna alla gallery" onclick="return backToGallery()">
-      ← Torna alla gallery
+    <a class="backchip" href="./" title="Gallery" onclick="return backToGallery()">
+      ← Gallery
     </a>
   </div>
 
@@ -172,23 +248,32 @@ details .filter-search.control{ margin-bottom:12px; }
       <!-- Sidebar -->
       <aside class="panel sidebar">
         <div class="sticky">
+          <!-- ID search -->
           <div class="id-search">
             <label for="idSearch">Filter by ID</label>
-            <input id="idSearch" class="control" type="text" inputmode="numeric" placeholder="8929" />
+            <input id="idSearch" class="control" type="text" inputmode="numeric"
+                   placeholder="8929" />
           </div>
 
+          <!-- Trait filters -->
           <div class="filters-scroll">
             <div class="filters" id="filters"><!-- dynamic --></div>
           </div>
 
+          <!-- Active filters -->
           <div id="activeWrap" class="active-wrap" style="display:none">
             <div class="active-label">Active filters</div>
             <div id="activeChips" class="active-chips"></div>
           </div>
 
+          <!-- Toolbar -->
           <div class="toolbar">
-            <div class="left"><span id="summary" class="chip">0 results</span></div>
-            <div class="right"><button class="btn" id="resetBtn">Reset</button></div>
+            <div class="left">
+              <span id="summary" class="chip">0 results</span>
+            </div>
+            <div class="right">
+              <button class="btn" id="resetBtn">Reset</button>
+            </div>
           </div>
         </div>
       </aside>
@@ -199,7 +284,7 @@ details .filter-search.control{ margin-bottom:12px; }
         <div id="sentinel" aria-hidden="true" style="height:1px"></div>
         <div id="empty" class="empty" style="display:none">No results for the selected filters.</div>
         <div class="toolbar" style="margin-top:16px">
-          <!-- optional: <button class="btn btn-primary" id="moreBtn" style="display:none">Load more</button> -->
+          <button class="btn btn-primary" id="moreBtn" style="display:none">Load more</button>
           <div class="status" id="status"></div>
         </div>
       </section>
@@ -207,21 +292,7 @@ details .filter-search.control{ margin-bottom:12px; }
   </main>
 
 <script>
-/* ---------- Back to gallery ---------- */
-function backToGallery(){
-  if (document.referrer) {
-    try {
-      const u = new URL(document.referrer);
-      if (u.origin === location.origin) {
-        history.back();
-        return false; // usa la history, non seguire l'href
-      }
-    } catch(_) {}
-  }
-  return true; // fallback: vai a "./"
-}
-
-/* ---------- Config ---------- */
+/*** Config ***/
 const IPFS_GW = [
   'https://dweb.link/ipfs/',
   'https://ipfs.io/ipfs/',
@@ -229,7 +300,7 @@ const IPFS_GW = [
   'https://gateway.pinata.cloud/ipfs/',
 ];
 
-/* ---------- DOM ---------- */
+/*** DOM ***/
 const $ = s => document.querySelector(s);
 const filtersEl = $('#filters');
 const gridEl = $('#grid');
@@ -241,26 +312,27 @@ const idSearchEl = $('#idSearch');
 const activeWrapEl = $('#activeWrap');
 const activeChipsEl = $('#activeChips');
 
-/* ---------- State ---------- */
-let ALL = [];
-let ALL_IDS = new Set();
-let BY_ID = new Map();
-let TRAITS = {};
-let VALUE_COUNTS = {};
-let INDEX = {};
-let TRAIT_BLOCKS = new Map();
+/*** State ***/
+let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
+let ALL_IDS = new Set();       // all ids
+let BY_ID = new Map();         // id -> obj
+let TRAITS = {};               // { trait: Set(values) }
+let VALUE_COUNTS = {};         // { trait: { value: count } }
+let INDEX = {};                // { trait: { value: Set(ids) } }
+let TRAIT_BLOCKS = new Map();  // trait -> <details> node
 
-let selected = {};
-let results = [];
-let page = 0, pageSize = 40;
+let selected = {};             // { trait: Set(values) }
+let results = [];              // current filtered ids
+let page = 0, pageSize = 40;   // pagination
+// infinite scroll
 let io = null, ioBusy = false;
-
+  
 // ID filter
 let idFilterRaw = '';
 let idFilterSet = null;
 
-/* ---------- Utils ---------- */
-const IMG_TIMEOUT_MS = 4000;
+/*** Utils ***/
+const IMG_TIMEOUT_MS = 4000;   // dopo 4s passa al gateway successivo
 const PLACEHOLDER_SVG =
   'data:image/svg+xml;utf8,' + encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
@@ -271,25 +343,35 @@ const PLACEHOLDER_SVG =
     </g>
   </svg>`);
 
+// Prova i gateway in cascata con timeout
 function attachImgFallback(img, urls){
   let i = 0, timer = null, done = false;
+
   const stop = () => { done = true; if(timer) clearTimeout(timer); };
   const next = () => {
     if (done) return;
     const url = urls[i++];
-    if (!url){ img.src = PLACEHOLDER_SVG; img.classList.add('ok'); return; }
+    if (!url){
+      img.src = PLACEHOLDER_SVG;
+      img.classList.add('ok');
+      return;
+    }
+    // prepara handlers per questo tentativo
     img.onload = () => { stop(); img.classList.add('ok'); };
     img.onerror = () => { if(done) return; next(); };
+    // timeout “gateway impallato”
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => { if(!done) next(); }, IMG_TIMEOUT_MS);
     img.src = url;
   };
+
   next();
 }
-
+  
 function setStatus(t){ statusEl.textContent = t || ''; }
 function ipfsToUrls(uri){ if(!uri) return []; if(uri.startsWith('ipfs://')){ const p = uri.slice(7); return IPFS_GW.map(g=>g+p); } return [uri]; }
 function esc(str){ return String(str).replace(/[&<>"'`=\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','/':'&#x2F;','=':'&#x3D;','`':'&#x60;'}[s])); }
+
 function unionSets(a,b){ if(!a) return new Set(b); if(!b) return new Set(a); const res=new Set(a); for(const x of b) res.add(x); return res; }
 function intersectSets(a,b){ if(!a) return new Set(b); if(!b) return new Set(a); const small=a.size<=b.size?a:b, big=a.size<=b.size?b:a; const res=new Set(); for(const x of small) if(big.has(x)) res.add(x); return res; }
 function intersectMany(arr){ if(!arr.length) return null; arr.sort((x,y)=>x.size-y.size); let acc=new Set(arr[0]); for(let i=1;i<arr.length;i++){ if(!acc.size) return acc; acc=intersectSets(acc,arr[i]); } return acc; }
@@ -306,13 +388,12 @@ async function copyTextToClipboard(text){
     const ta=document.createElement('textarea');
     ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
     document.body.appendChild(ta); ta.focus(); ta.select();
-    const ok=document.execCommand('copy');
-    document.body.removeChild(ta);
+    const ok=document.execCommand('copy'); document.body.removeChild(ta);
     return !!ok;
   }catch{ return false; }
 }
 
-/* ---------- Parse ID filter ---------- */
+/*** Parse ID filter ***/
 function parseIdQuery(raw){
   const txt = String(raw||'').trim();
   if(!txt){ idFilterRaw=''; idFilterSet=null; return; }
@@ -332,7 +413,7 @@ function parseIdQuery(raw){
   idFilterSet = ids.size ? ids : new Set();
 }
 
-/* ---------- Load metadata ---------- */
+/*** Load local metadata ***/
 async function loadMeta(){
   setStatus('Loading local metadata…');
   const data = await fetch('./Doodles_all_metadata.json').then(r=>r.ok?r.json():null).catch(()=>null);
@@ -367,7 +448,7 @@ async function loadMeta(){
   return true;
 }
 
-/* ---------- Filters UI ---------- */
+/*** Filters UI ***/
 function makeTraitBlock(trait, values){
   const idBase = trait.toLowerCase().replace(/\s+/g,'_').replace(/[^\w\-]/g,'');
   const labels = Array.from(values).sort((a,b)=>String(a).localeCompare(String(b)));
@@ -376,19 +457,28 @@ function makeTraitBlock(trait, values){
   wrap.open = false;
   wrap.setAttribute('data-trait', trait);
 
+  // summary con nome + contatore dinamico
   const summary = document.createElement('summary');
-  const sName = document.createElement('span'); sName.className='sum-name'; sName.textContent = trait;
-  const sCount = document.createElement('span'); sCount.className='sum-count'; sCount.textContent='';
-  summary.appendChild(sName); summary.appendChild(sCount);
+  const sName = document.createElement('span');
+  sName.className = 'sum-name';
+  sName.textContent = trait;
+  const sCount = document.createElement('span');
+  sCount.className = 'sum-count';
+  sCount.textContent = ''; // verrà popolato in updateAvailability
+  summary.appendChild(sName);
+  summary.appendChild(sCount);
   wrap.appendChild(summary);
 
   const search = document.createElement('input');
-  search.type='search'; search.className='filter-search control';
-  search.placeholder='Search…'; search.setAttribute('data-trait', trait);
+  search.type = 'search';
+  search.className = 'filter-search control';
+  search.placeholder = 'Search…';
+  search.setAttribute('data-trait', trait);
   wrap.appendChild(search);
 
   const valuesEl = document.createElement('div');
-  valuesEl.className='values'; wrap.appendChild(valuesEl);
+  valuesEl.className = 'values';
+  wrap.appendChild(valuesEl);
 
   for(const val of labels){
     const cid = `${idBase}__${String(val).toLowerCase().replace(/\s+/g,'_').replace(/[^\w\-]/g,'')}`;
@@ -399,14 +489,21 @@ function makeTraitBlock(trait, values){
     lbl.dataset.impossible = '0';
 
     const input = document.createElement('input');
-    input.type='checkbox'; input.id=cid;
+    input.type = 'checkbox';
+    input.id = cid;
     input.setAttribute('data-trait', trait);
     input.setAttribute('data-value', val);
 
-    const spanText = document.createElement('span'); spanText.textContent = val;
-    const spanCount = document.createElement('span'); spanCount.className='count'; spanCount.textContent = `(${count})`;
+    const spanText = document.createElement('span');
+    spanText.textContent = val;
 
-    lbl.appendChild(input); lbl.appendChild(spanText); lbl.appendChild(spanCount);
+    const spanCount = document.createElement('span');
+    spanCount.className = 'count';
+    spanCount.textContent = `(${count})`;
+
+    lbl.appendChild(input);
+    lbl.appendChild(spanText);
+    lbl.appendChild(spanCount);
     valuesEl.appendChild(lbl);
   }
 
@@ -414,7 +511,8 @@ function makeTraitBlock(trait, values){
 }
 
 function renderFilters(){
-  filtersEl.innerHTML = ''; TRAIT_BLOCKS.clear();
+  filtersEl.innerHTML = '';
+  TRAIT_BLOCKS.clear();
   const traits = Object.keys(TRAITS).sort((a,b)=>a.localeCompare(b));
   for(const trait of traits){
     const block = makeTraitBlock(trait, TRAITS[trait]);
@@ -423,7 +521,7 @@ function renderFilters(){
   }
 }
 
-/* ---------- Active chips ---------- */
+/*** Active chips ***/
 function renderActiveChips(){
   activeChipsEl.innerHTML = '';
   const entries = [];
@@ -437,7 +535,7 @@ function renderActiveChips(){
 
   for(const it of entries){
     const chip = document.createElement('div');
-    chip.className='chip-active';
+    chip.className = 'chip-active';
     chip.setAttribute('data-type', it.type);
     chip.setAttribute('data-trait', it.trait);
     chip.setAttribute('data-value', it.val);
@@ -446,7 +544,7 @@ function renderActiveChips(){
   }
 }
 
-/* ---------- Availability ---------- */
+/*** Dynamic availability (always on) ***/
 function updateAvailability(){
   const selectedTraits = Object.keys(selected);
   const unions = {};
@@ -461,7 +559,10 @@ function updateAvailability(){
 
   for(const trait of Object.keys(TRAITS)){
     const otherSets = [];
-    for(const t of selectedTraits){ if(t!==trait) otherSets.push(unions[t]); }
+    for(const t of selectedTraits){
+      if(t===trait) continue;
+      otherSets.push(unions[t]);
+    }
     let pool = intersectMany(otherSets); // null = all
 
     if(idFilterSet !== null){
@@ -473,7 +574,7 @@ function updateAvailability(){
     if(!block) continue;
     const labels = block.querySelectorAll('.values label');
 
-    let availableCount = 0;
+    let availableCount = 0; // quante opzioni di questo tratto sono selezionabili ora
 
     for(const lbl of labels){
       const cb = lbl.querySelector('input[type="checkbox"]');
@@ -481,7 +582,8 @@ function updateAvailability(){
       const setVal = INDEX[trait]?.[val] || new Set();
       const cnt = (pool===null) ? setVal.size : countIntersection(pool, setVal);
 
-      const cntEl = lbl.querySelector('.count'); if(cntEl) cntEl.textContent = `(${cnt})`;
+      const cntEl = lbl.querySelector('.count');
+      if(cntEl) cntEl.textContent = `(${cnt})`;
 
       const isChecked = cb.checked;
       const impossible = (!isChecked && cnt===0);
@@ -490,19 +592,22 @@ function updateAvailability(){
       cb.disabled = impossible;
       lbl.classList.toggle('no-available', impossible);
 
+      // conteggio disponibili: se porta risultati o è già selezionata
       if (cnt > 0 || isChecked) availableCount++;
 
+      // filtro testo locale
       const q = (block.querySelector('.filter-search')?.value || '').trim().toLowerCase();
       const matchesSearch = !q || (lbl.dataset.value||'').includes(q);
       lbl.style.display = (impossible || !matchesSearch) ? 'none' : '';
     }
 
+    // aggiorna "(N)" nel summary del tratto
     const sc = block.querySelector('.sum-count');
     if (sc) sc.textContent = `(${availableCount})`;
   }
 }
 
-/* ---------- Apply filters ---------- */
+/*** Filtering ***/
 function applyFilters(){
   const selectedTraits = Object.keys(selected);
   const arr = [];
@@ -530,13 +635,14 @@ function applyFilters(){
   syncURL();
   updateAvailability();
   setupInfiniteScroll();
+
 }
 
 function updateSummary(){
   summaryEl.textContent = `${results.length} result${results.length===1?'':'s'}`;
 }
 
-/* ---------- Render page ---------- */
+/*** Render page ***/
 function renderPage(){
   const start = page*pageSize;
   const slice = results.slice(start, start+pageSize);
@@ -560,12 +666,14 @@ function renderPage(){
     const img = a.querySelector('img');
     attachImgFallback(img, urls);
     gridEl.appendChild(a);
+
   }
 
   emptyEl.style.display = (results.length===0) ? '' : 'none';
+
 }
 
-/* ---------- Deep link ---------- */
+/*** Deep link ***/
 function syncURL(){
   const sp = new URLSearchParams();
   for(const [trait,set] of Object.entries(selected)){
@@ -577,7 +685,9 @@ function syncURL(){
 }
 function loadFromURL(){
   const sp = new URLSearchParams(location.search);
-  selected = {}; idFilterRaw = ''; idFilterSet = null;
+  selected = {};
+  idFilterRaw = '';
+  idFilterSet = null;
 
   for(const [key,val] of sp.entries()){
     if(key === '_ids'){ idFilterRaw = val; continue; }
@@ -596,39 +706,49 @@ function loadFromURL(){
   parseIdQuery(idFilterRaw);
 }
 
-/* ---------- Reset ---------- */
+/*** Reset ***/
 function resetFilters(){
-  selected = {}; idFilterRaw = ''; idFilterSet = null;
+  selected = {};
+  idFilterRaw = '';
+  idFilterSet = null;
   idSearchEl.value = '';
   for(const cb of filtersEl.querySelectorAll('input[type="checkbox"]')) cb.checked = false;
   applyFilters();
-  setupInfiniteScroll();
+  setupInfiniteScroll();  // attiva l’infinite scroll
+
 }
 
-/* ---------- Accordion (una aperta) ---------- */
+/*** Accordion: una sola sezione aperta ***/
 function enableAccordion(){
+  // 1) toggle in CAPTURE: prende l'evento anche se non bubbla (Safari/iOS)
   filtersEl.addEventListener('toggle', (e) => {
     const det = e.target;
-    if (!(det instanceof HTMLDetailsElement) || !det.open) return;
+    if (!(det instanceof HTMLDetailsElement) || !det.open) return; // solo quando si APRE
     for (const other of filtersEl.querySelectorAll('details[open]')) {
       if (other !== det) other.open = false;
     }
   }, true);
 
+  // 2) Fallback: chiudi le altre quando clicchi un summary che sta per aprirsi
   filtersEl.addEventListener('click', (e) => {
-    const sum = e.target.closest('summary'); if (!sum) return;
-    const det = sum.parentElement; if (!(det instanceof HTMLDetailsElement)) return;
-    const willOpen = !det.open; if (!willOpen) return;
+    const sum = e.target.closest('summary');
+    if (!sum) return;
+    const det = sum.parentElement;
+    if (!(det instanceof HTMLDetailsElement)) return;
+    const willOpen = !det.open;
+    if (!willOpen) return; // sta chiudendo: lascia stare
     for (const other of filtersEl.querySelectorAll('details[open]')) {
       if (other !== det) other.open = false;
     }
   });
 }
-
-/* ---------- Infinite scroll ---------- */
+/*** Infinite scroll ***/
 function setupInfiniteScroll(){
   const sentinel = document.getElementById('sentinel');
+
+  // pulizia precedente
   if (io){ io.disconnect(); io = null; }
+
   if (!sentinel || !('IntersectionObserver' in window)) return;
 
   io = new IntersectionObserver((entries) => {
@@ -644,7 +764,9 @@ function setupInfiniteScroll(){
   io.observe(sentinel);
 }
 
-/* ---------- Events ---------- */
+/*** Events ***/
+  
+// Per-trait search (always hides impossible)
 filtersEl.addEventListener('input', e=>{
   if(e.target && e.target.matches('.filter-search')){
     const q = e.target.value.trim().toLowerCase();
@@ -659,6 +781,7 @@ filtersEl.addEventListener('input', e=>{
   }
 });
 
+// Checkbox change
 filtersEl.addEventListener('change', e=>{
   const cb = e.target;
   if(cb && cb.matches('input[type="checkbox"][data-trait]')){
@@ -679,13 +802,16 @@ idSearchEl.addEventListener('input', ()=>{
 
 // Active chip remove
 activeChipsEl.addEventListener('click', (e)=>{
-  const chip = e.target.closest('.chip-active'); if(!chip) return;
+  const chip = e.target.closest('.chip-active');
+  if(!chip) return;
   const type = chip.getAttribute('data-type');
   const trait = chip.getAttribute('data-trait');
   const value = chip.getAttribute('data-value');
 
   if(type === 'ids'){
-    idFilterRaw = ''; idFilterSet = null; idSearchEl.value = '';
+    idFilterRaw = '';
+    idFilterSet = null;
+    idSearchEl.value = '';
   }else if(type === 'trait'){
     const set = selected[trait];
     if(set){
@@ -694,19 +820,21 @@ activeChipsEl.addEventListener('click', (e)=>{
     }
     for(const cb of filtersEl.querySelectorAll('input[type="checkbox"][data-trait]')){
       if(cb.getAttribute('data-trait') === trait && cb.getAttribute('data-value') === value){
-        cb.checked = false; break;
+        cb.checked = false;
+        break;
       }
     }
   }
   applyFilters();
 });
 
-// Reset
+// Pagination + reset
 resetBtn.addEventListener('click', resetFilters);
 
 // Copy ID
 gridEl.addEventListener('click', async (e)=>{
-  const btn = e.target.closest('.copy-id'); if(!btn) return;
+  const btn = e.target.closest('.copy-id');
+  if(!btn) return;
   const id = btn.getAttribute('data-id');
   const ok = await copyTextToClipboard(String(id));
   const old = btn.textContent;
@@ -719,15 +847,28 @@ gridEl.addEventListener('click', async (e)=>{
   }
 });
 
-/* ---------- Init ---------- */
+/*** Init ***/
 (async function init(){
   const ok = await loadMeta();
   if(!ok) return;
   renderFilters();
-  enableAccordion();
+  enableAccordion();      // una sola sezione aperta
   loadFromURL();
-  applyFilters();
+  applyFilters();         // popola griglia + contatori (opzioni e summary)
 })();
 </script>
+  
+<script>
+  function backToGallery(){
+    if (document.referrer) {
+      try {
+        const u = new URL(document.referrer);
+        if (u.origin === location.origin) { history.back(); return false; }
+      } catch(_) {}
+    }
+    return true; // fallback: vai a "./"
+  }
+</script>
+  
 </body>
 </html>
