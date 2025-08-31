@@ -306,11 +306,9 @@ const resetBtn = $('#resetBtn');
 const idSearchEl = $('#idSearch');
 const activeWrapEl = $('#activeWrap');
 const activeChipsEl = $('#activeChips');
-// prendi overlay dalla URL o, se manca, da localStorage
-const OVERLAY_PARAM = new URLSearchParams(location.search).get('overlay')
-  || localStorage.getItem('lastOverlay')
-  || '';
-if (OVERLAY_PARAM) localStorage.setItem('lastOverlay', OVERLAY_PARAM);
+// overlay ricordato dall’editor
+const LAST_OVERLAY = localStorage.getItem('lastOverlay') || '';
+
 
 /*** State ***/
 let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
@@ -664,13 +662,14 @@ function renderPage(){
           <button class="open copy-id" data-id="${id}" aria-label="Copy ID">Copy ID</button>
           <a class="open" href="${(() => {
             const u = new URL('./editor.html', location.href);
-            if (OVERLAY_PARAM) u.searchParams.set('overlay', OVERLAY_PARAM);
+            if (LAST_OVERLAY) u.searchParams.set('overlay', LAST_OVERLAY);
             u.searchParams.set('id', id);
             return u.toString();
           })()}">Open in Editor</a>
         </div>
       </div>
     `;
+
 
 
     const img = a.querySelector('img');
