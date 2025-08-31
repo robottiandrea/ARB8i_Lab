@@ -306,7 +306,11 @@ const resetBtn = $('#resetBtn');
 const idSearchEl = $('#idSearch');
 const activeWrapEl = $('#activeWrap');
 const activeChipsEl = $('#activeChips');
-const OVERLAY_PARAM = new URLSearchParams(location.search).get('overlay') || '';
+// prendi overlay dalla URL o, se manca, da localStorage
+const OVERLAY_PARAM = new URLSearchParams(location.search).get('overlay')
+  || localStorage.getItem('lastOverlay')
+  || '';
+if (OVERLAY_PARAM) localStorage.setItem('lastOverlay', OVERLAY_PARAM);
 
 /*** State ***/
 let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
@@ -667,6 +671,7 @@ function renderPage(){
         </div>
       </div>
     `;
+
 
     const img = a.querySelector('img');
     attachImgFallback(img, urls);
