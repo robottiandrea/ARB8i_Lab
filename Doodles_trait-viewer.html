@@ -8,8 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://dweb.link" crossorigin>
-<link rel="dns-prefetch" href="https://dweb.link">
 
 <style>
   :root{
@@ -339,7 +337,7 @@ let TRAIT_BLOCKS = new Map();  // trait -> <details> node
 
 let selected = {};             // { trait: Set(values) }
 let results = [];              // current filtered ids
-let page = 0, pageSize = 20;   // pagination
+let page = 0, pageSize = 40;   // pagination
 // infinite scroll
 let io = null, ioBusy = false;
   
@@ -348,7 +346,7 @@ let idFilterRaw = '';
 let idFilterSet = null;
 
 /*** Utils ***/
-const IMG_TIMEOUT_MS = 5000;
+const IMG_TIMEOUT_MS = 4000;   // dopo 4s passa al gateway successivo
 const PLACEHOLDER_SVG =
   'data:image/svg+xml;utf8,' + encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
@@ -358,44 +356,31 @@ const PLACEHOLDER_SVG =
       <circle cx="96" cy="96" r="40"/>
     </g>
   </svg>`);
-// aggiunge un cache-bust che cambia ogni 60s (buca cache marce)
-function addBust(u){
-  const sep = u.includes('?') ? '&' : '?';
-  return u + sep + 't=' + Math.floor(Date.now()/60000);
+
+// Prova i gateway in cascata con timeout
+function attachImgFallback(img, urls){
+  let i = 0, timer = null, done = false;
+
+  const stop = () => { done = true; if(timer) clearTimeout(timer); };
+  const next = () => {
+    if (done) return;
+    const url = urls[i++];
+    if (!url){
+      img.src = PLACEHOLDER_SVG;
+      img.classList.add('ok');
+      return;
+    }
+    // prepara handlers per questo tentativo
+    img.onload = () => { stop(); img.classList.add('ok'); };
+    img.onerror = () => { if(done) return; next(); };
+    // timeout “gateway impallato”
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => { if(!done) next(); }, IMG_TIMEOUT_MS);
+    img.src = url;
+  };
+
+  next();
 }
-
-function ipfsToUrls(uri){
-  if(!uri) return [];
-  let p = String(uri).trim();
-  if (p.startsWith('ipfs://')) p = p.slice(7);
-  p = p.replace(/^ipfs\//i, '').replace(/^\/+/, '');
-
-  const m = p.match(/^([^/]+)(\/.*)?$/);
-  if (!m) return [];
-  const cid  = m[1];
-  const rest = m[2] || '';
-
-  // Se il CID è "nudo" (nessun /file) aiuta il gateway con un nome file
-  const filenameHint = rest ? '' : '?filename=image.png';
-
-  // SOLO dweb path
-  return [`https://dweb.link/ipfs/${cid}${rest}${filenameHint}`];
-}
-  
-function attachImgDirect(img, uri){
-  const urls = ipfsToUrls(uri);
-  if (!urls.length){ img.src = PLACEHOLDER_SVG; img.classList.add('ok'); return; }
-
-  img.decoding = 'async';
-  img.referrerPolicy = 'no-referrer';
-  img.crossOrigin = 'anonymous';
-
-  img.onload  = () => { img.classList.add('ok'); };
-  img.onerror = () => { img.src = PLACEHOLDER_SVG; img.classList.add('ok'); };
-
-  img.src = urls[0]; // una sola richiesta, niente timer
-}
-
   
 function setStatus(t){ statusEl.textContent = t || ''; }
 function ipfsToUrls(uri){ if(!uri) return []; if(uri.startsWith('ipfs://')){ const p = uri.slice(7); return IPFS_GW.map(g=>g+p); } return [uri]; }
@@ -680,7 +665,7 @@ function renderPage(){
   for (const id of slice) {
     const obj = BY_ID.get(id);
     if (!obj) continue;
-    
+    const urls = ipfsToUrls(obj.image);
   
     const a = document.createElement('article');
     a.className = 'card';
@@ -692,12 +677,9 @@ function renderPage(){
       return `<a class="open" href="${u.toString()}">Open in Editor</a>`;
     })() : '';
   
-    const eager = (page===0 && gridEl.childElementCount < 8) ? 'eager' : 'lazy';
     a.innerHTML = `
       <div class="thumb">
-        <img loading="${eager}" fetchpriority="${eager==='eager'?'high':'low'}"
-             decoding="async" referrerpolicy="no-referrer" crossorigin="anonymous"
-             alt="Doodle #${id}">
+        <img loading="lazy" decoding="async" alt="Doodle #${id}">
       </div>
       <div class="meta">
         <div class="id">#${id}</div>
@@ -707,10 +689,8 @@ function renderPage(){
       </div>
     `;
 
-
   const img = a.querySelector('img');
-  attachImgDirect(img, obj.image);
-
+  attachImgFallback(img, urls);
   gridEl.appendChild(a);
 }
 
@@ -805,7 +785,7 @@ function setupInfiniteScroll(){
     page++;
     renderPage();
     requestAnimationFrame(() => { ioBusy = false; });
-  }, { root: null, rootMargin: '1200px 0px', threshold: 0.01 });
+  }, { root: null, rootMargin: '800px 0px', threshold: 0.01 });
 
   io.observe(sentinel);
 }
