@@ -233,8 +233,8 @@ details .filter-search.control { margin-bottom: 12px; }
 </head>
 <body>
   <div class="backbar">
-    <a class="backchip" href="./" title="Torna alla gallery" onclick="return backToGallery()">
-      ← Torna alla gallery
+    <a class="backchip" href="./" title="Gallery" onclick="return backToGallery()">
+      ← Gallery
     </a>
   </div>
   
@@ -869,21 +869,6 @@ gridEl.addEventListener('click', async (e)=>{
   loadFromURL();
   applyFilters();         // popola griglia + contatori (opzioni e summary)
 })();
-<script>
-    function backToGallery(){
-      // Se arrivi da una pagina dello stesso sito, torna indietro
-      if (document.referrer) {
-        try {
-          const u = new URL(document.referrer);
-          if (u.origin === location.origin) {
-            history.back();
-            return false; // blocca l'href e usa la history
-          }
-        } catch(_) {}
-      }
-      // Altrimenti segui l'href="./" (torna alla index)
-      return true;
-    }
-  </script>
+
 </body>
 </html>
