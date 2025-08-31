@@ -117,37 +117,6 @@
 
 .navchip{ position:relative; overflow:hidden; }
 
-.navchip::after{
-  content:""; position:absolute; top:0; bottom:0; width:var(--sheen-width);
-  transform: skewX(var(--sheen-angle)) translateX(var(--sheen-from));
-  /* stop più larghi = bordo meno netto */
-  background: linear-gradient(
-    90deg,
-    transparent 42%,
-    rgba(255,255,255,var(--sheen-alpha)) 50%,
-    transparent 58%
-  );
-  pointer-events:none;
-  animation: sweep var(--sheen-dur) ease-in-out var(--sheen-delay) infinite;
-}
-
-@keyframes sweep{
-  0%   { transform:skewX(var(--sheen-angle)) translateX(var(--sheen-from)); }
-  60%,
-  100% { transform:skewX(var(--sheen-angle)) translateX(var(--sheen-to)); }
-}
-
-/* opzionale: ammorbidisci anche l’ombra del chip */
-.navchip{ box-shadow:0 6px 18px rgba(0,0,0,.25); }
-
-/* accessibilità */
-@media (prefers-reduced-motion: reduce){
-  .navchip::after{ animation:none; }
-}
-
-  
-
-
 </style>
 </head>
 <body>
