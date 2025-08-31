@@ -334,7 +334,7 @@ async function openImage(){
     // Modalità esempio OFF (abbiamo il render vero)
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
-    if(exCap)   exCap.style.display   = 'none';
+   
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
@@ -456,7 +456,7 @@ function applyBadge(badgeEl, cfg){
     // Modalità esempio ON finché non c'è un ID renderizzato
     imgEl.classList.add('is-example');
     if(exBadge) exBadge.style.display = 'inline-block';
-    if(exCap)   exCap.style.display   = '';
+    
     imgEl.alt = currentCfg.name || currentCfg.id;
     
 
@@ -471,6 +471,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
