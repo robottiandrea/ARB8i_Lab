@@ -309,6 +309,15 @@ const activeChipsEl = $('#activeChips');
 // overlay ricordato dall’editor
 const LAST_OVERLAY = localStorage.getItem('lastOverlay') || '';
 
+// rimuovi "overlay" dall'URL se qualcuno l'ha messo
+(function(){
+  const sp = new URLSearchParams(location.search);
+  if (sp.has('overlay')) {
+    sp.delete('overlay');
+    const q = sp.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+  }
+})();
 
 /*** State ***/
 let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
@@ -662,13 +671,13 @@ function renderPage(){
           <button class="open copy-id" data-id="${id}" aria-label="Copy ID">Copy ID</button>
           <a class="open" href="${(() => {
             const u = new URL('./editor.html', location.href);
-            if (LAST_OVERLAY) u.searchParams.set('overlay', LAST_OVERLAY);
-            u.searchParams.set('id', id);
+            u.searchParams.set('id', id); // SOLO id, niente overlay
             return u.toString();
           })()}">Open in Editor</a>
         </div>
       </div>
     `;
+
 
 
 
