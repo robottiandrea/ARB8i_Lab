@@ -327,15 +327,34 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
   return canvas.toDataURL('image/png');
 }
 
-/* ===== OOPS: match tratti solo da META ===== */
+/* ===== OOPS: match tratti SOLO nei value di attributes ===== */
 function rowHasAnyNeedle(row, needles){
   if(!row || !Array.isArray(needles) || needles.length===0) return false;
-  const vals = Object.values(row).filter(v => typeof v === 'string').map(v => v.toLowerCase());
-  return needles.some(n => {
-    const k = (n||'').toString().trim().toLowerCase();
-    return k && vals.some(v => v.includes(k));
-  });
+
+  const keys = needles
+    .map(n => (n??'').toString().trim().toLowerCase())
+    .filter(Boolean);
+
+  // 1) PRIMA cerchiamo nei value dell'array attributes
+  const vals = Array.isArray(row.attributes)
+    ? row.attributes
+        .map(a => a && a.value)
+        .filter(v => typeof v === 'string')
+        .map(v => v.toLowerCase())
+    : [];
+
+  // 2) Se per qualche ID non ci sono attributes, fallback soft: altre stringhe piatte della riga
+  if(vals.length === 0){
+    vals.push(
+      ...Object.values(row)
+        .filter(v => typeof v === 'string')
+        .map(v => v.toLowerCase())
+    );
+  }
+
+  return keys.some(k => vals.some(v => v.includes(k)));
 }
+
   
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
@@ -527,6 +546,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
