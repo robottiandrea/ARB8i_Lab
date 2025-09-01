@@ -109,7 +109,9 @@ button, [role="button"] { -webkit-appearance: none; appearance: none; }
 .id-search{ display:grid; gap:6px; margin-bottom:10px }
 .id-search label{ font-size:12px; color:var(--muted) }
 .control{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0d1016; color:var(--text); font-size:13px }
-
+/* Allinea la dimensione testo di TUTTI gli input nella sidebar */
+.sidebar .control { font-size:16px; }
+.sidebar .control::placeholder { font-size:inherit; opacity:.75; }
 .filters{ display:grid; grid-template-columns: 1fr; gap:12px }
 
   /* --- Global trait search --- */
@@ -117,7 +119,7 @@ button, [role="button"] { -webkit-appearance: none; appearance: none; }
   display:flex; align-items:center; gap:10px;
   margin: 8px 0 12px 0;
 }
-.traits-search .control{ font-size:16px; } /* evita zoom iOS */
+
 
 /* Utility per nascondere gruppi/label */
 .is-hidden{ display:none !important; }
