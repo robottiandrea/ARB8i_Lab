@@ -615,7 +615,7 @@ function renderActiveChips(){
 function updateAvailability(){
   const selectedTraits = Object.keys(selected);
 
-  // unione per tratto selezionato (OR tra i valori)
+  // OR per ciascun tratto selezionato
   const unions = {};
   for (const t of selectedTraits){
     let u = null;
@@ -627,7 +627,7 @@ function updateAvailability(){
   }
 
   for (const trait of Object.keys(TRAITS)){
-    // intersezione tra gli altri tratti (AND tra i tratti)
+    // AND tra gli altri tratti
     const otherSets = [];
     for (const t of selectedTraits){
       if (t === trait) continue;
@@ -635,7 +635,7 @@ function updateAvailability(){
     }
     let pool = intersectMany(otherSets); // null = all
 
-    // filtro per ID (se attivo)
+    // filtro per ID
     if (idFilterSet !== null){
       if (idFilterSet.size === 0){
         pool = new Set();
@@ -648,8 +648,13 @@ function updateAvailability(){
     if (!block) continue;
 
     const labels = block.querySelectorAll('.values label');
-    let availableCount = 0;   // quante opzioni di questo tratto sono selezionabili ORA
-    let visibleInGroup = 0;   // quante label restano visibili dopo i filtri testuali
+
+    // >>> [INSERIMENTO ESATTO] query locale normalizzata (UNA VOLTA, fuori dal loop)
+    const qLocalNorm = norm(block.querySelector('.filter-search')?.value || '');
+    // <<<
+
+    let availableCount = 0; // opzioni attivabili (cnt>0 o già selezionate)
+    let visibleInGroup = 0; // opzioni VISIBILI dopo filtri testuali
 
     for (const lbl of labels){
       const cb = lbl.querySelector('input[type="checkbox"]');
@@ -671,26 +676,32 @@ function updateAvailability(){
 
       if (cnt > 0 || isChecked) availableCount++;
 
-      // --- filtro testo: GLOBALE + LOCALE ---
-      const qLocal = (block.querySelector('.filter-search')?.value || '');
-      const valText = lbl.dataset.value || ''; // NB: nome diverso da valueKey, niente shadowing
-
-      const matchesGlobal = !GLOBAL_QN || norm(valText).includes(GLOBAL_QN);
-      const matchesLocal  = !qLocal   || norm(valText).includes(norm(qLocal));
+      // --- filtro testo: GLOBALE + LOCALE (entrambi inclusivi)
+      const valText = lbl.dataset.value || '';
+      const matchesGlobal = !GLOBAL_QN  || norm(valText).includes(GLOBAL_QN);
+      const matchesLocal  = !qLocalNorm || norm(valText).includes(qLocalNorm);
 
       const show = !impossible && matchesGlobal && matchesLocal;
       lbl.style.display = show ? '' : 'none';
       if (show) visibleInGroup++;
     }
 
-    // nascondi l'intero gruppo se non resta nulla visibile
+    // nascondi l’intero gruppo se non resta nulla visibile
     block.classList.toggle('is-hidden', visibleInGroup === 0);
 
-    // aggiorna badge del summary (quante opzioni ancora “attivabili”)
+    // badge nel summary:
+    // - SENZA ricerca testuale: (availableCount)
+    // - CON ricerca (globale o locale): (visibili/totali)
     const sc = block.querySelector('.sum-count');
-    if (sc) sc.textContent = `(${availableCount})`;
+    if (sc){
+      const totalInGroup = labels.length;
+      const textFilterOn = !!GLOBAL_QN || !!qLocalNorm;
+      sc.textContent = textFilterOn ? `(${visibleInGroup}/${totalInGroup})`
+                                    : `(${availableCount})`;
+    }
   }
 }
+
 
 
 /*** Filtering ***/
