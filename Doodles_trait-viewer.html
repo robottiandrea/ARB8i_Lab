@@ -692,7 +692,7 @@ function renderPage(){
     const editorLinkHTML = FROM_EDITOR ? (() => {
       const u = new URL('./editor.html', location.href);
       u.searchParams.set('id', id); // SOLO id, nessun overlay
-      return `<a class="open" href="${u.toString()}">Open in Editor</a>`;
+      return `<a class="open" href="${u.toString()}">Cook it!</a>`;
     })() : '';
   
     a.innerHTML = `
