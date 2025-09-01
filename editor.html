@@ -316,7 +316,7 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
 
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
-  setStatus('Just a sec…');
+  setStatus('Cooking…');
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
   if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
 
@@ -486,6 +486,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
