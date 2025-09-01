@@ -109,9 +109,24 @@ button, [role="button"] { -webkit-appearance: none; appearance: none; }
 .id-search{ display:grid; gap:6px; margin-bottom:10px }
 .id-search label{ font-size:12px; color:var(--muted) }
 .control{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:#0d1016; color:var(--text); font-size:13px }
-/* Allinea la dimensione testo di TUTTI gli input nella sidebar */
-.sidebar .control { font-size:16px; }
-.sidebar .control::placeholder { font-size:inherit; opacity:.75; }
+/* wrapper con X interna */
+.input-clear{ position:relative; }
+.input-clear .control{ padding-right: 34px; } /* spazio per la X */
+
+.clear-btn{
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  width:22px; height:22px; border-radius:999px;
+  display:none; align-items:center; justify-content:center;
+  border:1px solid var(--border); background:#0d1016; color:var(--muted);
+  cursor:pointer; line-height:1; font-weight:600;
+}
+.clear-btn.show{ display:flex; }
+.clear-btn:hover{ color:#e9ecf1; border-color:#2a3142; }
+
+/* allinea le dimensioni testo in sidebar */
+.sidebar .control{ font-size:16px; }
+.sidebar .control::placeholder{ font-size:inherit; opacity:.75; }
+
 .filters{ display:grid; grid-template-columns: 1fr; gap:12px }
 
   /* --- Global trait search --- */
@@ -289,19 +304,22 @@ details .filter-search.control { margin-bottom: 12px; }
       <aside class="panel sidebar">
         <div class="sticky">
           <!-- ID search -->
-          <div class="id-search">
+          <div class="id-search input-clear">
             <input id="idSearch" class="control" type="search" inputmode="numeric"
-                   placeholder="Filter by ID: 8929"
-                   autocomplete="off" />
+                   placeholder="Filter by ID (es. 8929, 12-34, 1 2 3)" autocomplete="off" />
+            <button type="button" class="clear-btn" data-clear-for="idSearch" aria-label="Pulisci">×</button>
           </div>
+
 
 
           <!-- 🔍 Global trait search -->
-          <div class="traits-search">
+          <div class="traits-search input-clear">
             <input id="traitSearch" class="control" type="search"
-                   placeholder="Search Traits: Puke"
+                   placeholder="Cerca tratti… (pink, beanie, none)"
                    inputmode="search" autocomplete="off" autocapitalize="off" autocorrect="off" />
+            <button type="button" class="clear-btn" data-clear-for="traitSearch" aria-label="Pulisci">×</button>
           </div>
+
           
           <!-- Trait filters -->
           <div class="filters-scroll">
@@ -959,6 +977,24 @@ activeChipsEl.addEventListener('click', (e)=>{
 
 // Pagination + reset
 resetBtn.addEventListener('click', resetFilters);
+// --- clear buttons inside inputs (iOS-safe) ---
+function wireClear(inputId, afterClear){
+  const inp = document.getElementById(inputId);
+  const btn = document.querySelector(`[data-clear-for="${inputId}"]`);
+  if(!inp || !btn) return;
+
+  const toggle = () => btn.classList.toggle('show', !!inp.value);
+  inp.addEventListener('input', toggle);
+
+  btn.addEventListener('click', () => {
+    inp.value = '';
+    inp.focus();
+    inp.dispatchEvent(new Event('input', { bubbles:true })); // trigga i tuoi listener
+    if (afterClear) afterClear();
+  });
+
+  toggle(); // stato iniziale
+}
 
 
 /*** Init ***/
@@ -969,6 +1005,9 @@ resetBtn.addEventListener('click', resetFilters);
   enableAccordion();      // una sola sezione aperta
   loadFromURL();
   applyFilters();         // popola griglia + contatori (opzioni e summary)
+  // --- clear buttons hook (iOS/PWA friendly)
+  wireClear('traitSearch', () => { GLOBAL_QN = ''; updateAvailability(); });
+  wireClear('idSearch');
   // --- Global trait search wiring ---
   const traitSearchEl = document.getElementById('traitSearch');
   let tSearch = 0;
