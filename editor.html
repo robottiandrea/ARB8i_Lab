@@ -150,6 +150,17 @@
     text-align:center; font-size:12px; color:var(--muted);
     margin-top:6px;
   }
+ 
+  /* OOPS badge */
+  .oops-badge{
+    position:absolute; top:8px; right:8px;
+    padding:4px 10px; border-radius:999px;
+    font-size:12px; font-weight:800;
+    color:#fff; background:#ff4d4f;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);
+    z-index:3; pointer-events:none;
+    letter-spacing:.2px;
+  }
 
   
 </style>
@@ -182,8 +193,10 @@
 
       <div class="frame">
         <div id="exampleBadge" class="example-badge" aria-hidden="true">EXAMPLE</div>
+        <div id="oopsBadge" class="oops-badge" style="display:none" aria-hidden="true"></div>
         <img id="composite" alt="Preview">
       </div>
+
      
 
       
@@ -314,6 +327,16 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
   return canvas.toDataURL('image/png');
 }
 
+/* ===== OOPS: match tratti solo da META ===== */
+function rowHasAnyNeedle(row, needles){
+  if(!row || !Array.isArray(needles) || needles.length===0) return false;
+  const vals = Object.values(row).filter(v => typeof v === 'string').map(v => v.toLowerCase());
+  return needles.some(n => {
+    const k = (n||'').toString().trim().toLowerCase();
+    return k && vals.some(v => v.includes(k));
+  });
+}
+  
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
@@ -353,9 +376,27 @@ async function openImage(){
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
+    // --- OOPS badge, solo se overlay definisce sia tratti che messaggio ---
+    const traits = Array.isArray(currentCfg.oopsTraits) ? currentCfg.oopsTraits : [];
+    const message = (currentCfg.oopsMessage || '').trim();
+    
+    const showOops = (traits.length > 0) && message && rowHasAnyNeedle(row, traits);
+    const oopsEl = document.getElementById('oopsBadge');
+    
+    if (oopsEl){
+      if (showOops){
+        oopsEl.textContent = message;
+        oopsEl.style.display = 'inline-block';
+      }else{
+        oopsEl.style.display = 'none';
+      }
+    }
+
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
+    const oopsEl = document.getElementById('oopsBadge');
+    if (oopsEl) oopsEl.style.display = 'none';
   }
 }
 
@@ -470,11 +511,11 @@ function applyBadge(badgeEl, cfg){
     imgEl.src = thumb;
     // Modalità esempio ON finché non c'è un ID renderizzato
     imgEl.classList.add('is-example');
-    if(exBadge) exBadge.style.display = 'inline-block';
-    
+    if(exBadge) exBadge.style.display = 'inline-block';    
     imgEl.alt = currentCfg.name || currentCfg.id;
-    
 
+    const oopsEl = document.getElementById('oopsBadge');
+    if (oopsEl) oopsEl.style.display = 'none';
 
     const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
   }catch(e){ setStatus(e?.message || 'Init error'); }
@@ -486,6 +527,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
