@@ -150,13 +150,6 @@ button, [role="button"] { -webkit-appearance: none; appearance: none; }
 .clear-btn:hover::before{ opacity:1; }
 .clear-btn:focus-visible{ outline:2px solid #2b62ff; outline-offset:2px; border-radius:6px; }
 
-/* spacing della barra di ricerca globale */
-.traits-search{
-  display:flex; align-items:center; gap:10px;
-  margin: 8px 0 12px 0;
-}
-
-
   /* --- Global trait search --- */
 .traits-search{
   display:flex; align-items:center; gap:10px;
@@ -335,7 +328,6 @@ details .filter-search.control { margin-bottom: 12px; }
           <div class="id-search input-clear">
             <input id="idSearch" class="control" type="text"
                    inputmode="numeric" placeholder="8929" autocomplete="off">
-            <button type="button" class="clear-btn" data-clear-for="idSearch" aria-label="Pulisci">×</button>
           </div>
 
 
@@ -344,8 +336,7 @@ details .filter-search.control { margin-bottom: 12px; }
           <div class="traits-search input-clear">
             <input id="traitSearch" class="control" type="text"
              inputmode="search" enterkeyhint="search"
-             placeholder="Puke)" autocomplete="off" autocapitalize="off" autocorrect="off">
-            <button type="button" class="clear-btn" data-clear-for="traitSearch" aria-label="Pulisci">×</button>
+             placeholder="green mullet" autocomplete="off" autocapitalize="off" autocorrect="off">
           </div>
 
           
@@ -586,11 +577,18 @@ function makeTraitBlock(trait, values){
   wrap.appendChild(summary);
 
   const search = document.createElement('input');
-  search.type = 'search';
+  search.type = 'text'; // <- niente X blu nativa su iOS
   search.className = 'filter-search control';
   search.placeholder = 'Search…';
   search.setAttribute('data-trait', trait);
+  // opzionale, per UX:
+  search.setAttribute('inputmode','search');
+  search.setAttribute('enterkeyhint','search');
+  search.autocomplete = 'off';
+  search.autocapitalize = 'off';
+  search.spellcheck = false;
   wrap.appendChild(search);
+
 
   const valuesEl = document.createElement('div');
   valuesEl.className = 'values';
@@ -1051,15 +1049,7 @@ function wireClear(inputId, afterClear){
       tSearch = setTimeout(applyGlobalSearch, 120);
     });
   }
-
-  if (clearSearchEl){
-    clearSearchEl.addEventListener('click', ()=>{
-      traitSearchEl.value = '';
-      applyGlobalSearch();
-      traitSearchEl.focus();
-    });
-  }
-
+  
 })();
 </script>
   
