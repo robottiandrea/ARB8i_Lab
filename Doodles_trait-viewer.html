@@ -324,20 +324,21 @@ details .filter-search.control { margin-bottom: 12px; }
       <!-- Sidebar -->
       <aside class="panel sidebar">
         <div class="sticky">
-          <!-- ID search -->
+          <!-- ID -->
           <div class="id-search input-clear">
             <input id="idSearch" class="control" type="text"
                    inputmode="numeric" placeholder="8929" autocomplete="off">
+            <button type="button" class="clear-btn" data-clear-for="idSearch" aria-label="Pulisci"></button>
           </div>
-
-
-
-          <!-- 🔍 Global trait search -->
+          
+          <!-- Global trait search -->
           <div class="traits-search input-clear">
             <input id="traitSearch" class="control" type="text"
-             inputmode="search" enterkeyhint="search"
-             placeholder="green mullet" autocomplete="off" autocapitalize="off" autocorrect="off">
+                   inputmode="search" enterkeyhint="search"
+                   placeholder="green mullet" autocomplete="off" autocapitalize="off" autocorrect="off">
+            <button type="button" class="clear-btn" data-clear-for="traitSearch" aria-label="Pulisci"></button>
           </div>
+
 
           
           <!-- Trait filters -->
