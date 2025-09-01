@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Doodles — Trait Viewer</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,6 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
+html { -webkit-text-size-adjust: 100%; }  
   :root{
   --bg:#0f1115; --card:#171a21; --text:#eef2ff; --muted:#9aa3b2; --acc:#8ab4ff; --border:#232938;
   --side-w: clamp(260px, 33vw, 330px);
@@ -346,7 +347,7 @@ let idFilterRaw = '';
 let idFilterSet = null;
 
 /*** Utils ***/
-const IMG_TIMEOUT_MS = 4000;   // dopo 4s passa al gateway successivo
+const IMG_TIMEOUT_MS = 2000;   // dopo 4s passa al gateway successivo
 const PLACEHOLDER_SVG =
   'data:image/svg+xml;utf8,' + encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
