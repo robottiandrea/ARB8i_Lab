@@ -65,8 +65,17 @@
   a.cardlink{position:absolute; inset:0; display:block; text-decoration:none; color:inherit}
   .empty{opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px}
 
- 
-
+  /* Firma */
+.credits {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  text-align: center;
+  font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  font-weight: 600;
+}
 
 /* rendi riutilizzabile lo shine anche fuori dal footer */
 .credits .shine, .navchip .shine{
@@ -120,21 +129,7 @@
 }
 
 .navchip{ position:relative; overflow:hidden; }
- /* evita che venga sovrascritto da altre regole */
-  .credits{
-    position: fixed !important;
-    bottom: calc(30px + env(safe-area-inset-bottom)); /* alza "un pochino" */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000;
-    font-size: 13px;
-    text-align: center;
-    font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    font-weight: 600;
-  }
-  
-  /* opzionale: spazio sotto per non sovrapporre il contenuto al footer fisso */
-  body{ padding-bottom: 84px; }
+
 </style>
 </head>
 <body>
@@ -200,16 +195,14 @@ async function loadManifest(){
 
 loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
-  
+
+</body>
+
 <footer class="credits">
   <a href="https://x.com/robottiandrea" target="_blank" rel="noopener" class="shine">
     made by @robottiandrea
   </a>
 </footer>
-  
-</body>
-
-
 
 
 
