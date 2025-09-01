@@ -112,6 +112,16 @@ button, [role="button"] { -webkit-appearance: none; appearance: none; }
 
 .filters{ display:grid; grid-template-columns: 1fr; gap:12px }
 
+  /* --- Global trait search --- */
+.traits-search{
+  display:flex; align-items:center; gap:10px;
+  margin: 8px 0 12px 0;
+}
+.traits-search .control{ font-size:16px; } /* evita zoom iOS */
+
+/* Utility per nascondere gruppi/label */
+.is-hidden{ display:none !important; }
+
 /* summary con contatore a destra */
 summary{
   cursor:pointer; outline:none; user-select:none; font-weight:600;
@@ -283,6 +293,14 @@ details .filter-search.control { margin-bottom: 12px; }
                    placeholder="8929" />
           </div>
 
+          <!-- 🔍 Global trait search -->
+          <div class="traits-search">
+            <input id="traitSearch" class="control" type="search"
+                   placeholder="Cerca tratti… (pink, beanie, none)"
+                   inputmode="search" autocomplete="off" autocapitalize="off" autocorrect="off" />
+            <button id="clearSearch" class="btn" type="button" aria-label="Pulisci" style="white-space:nowrap">×</button>
+          </div>
+          
           <!-- Trait filters -->
           <div class="filters-scroll">
             <div class="filters" id="filters"><!-- dynamic --></div>
@@ -366,7 +384,9 @@ let TRAITS = {};               // { trait: Set(values) }
 let VALUE_COUNTS = {};         // { trait: { value: count } }
 let INDEX = {};                // { trait: { value: Set(ids) } }
 let TRAIT_BLOCKS = new Map();  // trait -> <details> node
+let GLOBAL_QN = "";            // query normalizzata della ricerca globale tratti
 
+  
 let selected = {};             // { trait: Set(values) }
 let results = [];              // current filtered ids
 let page = 0, pageSize = 60;   // pagination
@@ -376,6 +396,8 @@ let io = null, ioBusy = false;
 // ID filter
 let idFilterRaw = '';
 let idFilterSet = null;
+
+function norm(s){ return String(s||"").toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,'').trim(); }
 
 /*** Utils ***/
 const IMG_TIMEOUT_MS = 2000;   // dopo 4s passa al gateway successivo
@@ -641,11 +663,15 @@ function updateAvailability(){
       // conteggio disponibili: se porta risultati o è già selezionata
       if (cnt > 0 || isChecked) availableCount++;
 
-      // filtro testo locale
-      const q = (block.querySelector('.filter-search')?.value || '').trim().toLowerCase();
-      const matchesSearch = !q || (lbl.dataset.value||'').includes(q);
-      lbl.style.display = (impossible || !matchesSearch) ? 'none' : '';
-    }
+      // filtro testo: globale + locale (entrambi inclusivi)
+      const qLocal = (block.querySelector('.filter-search')?.value || '');
+      const val = lbl.dataset.value || '';
+      
+      const matchesGlobal = !GLOBAL_QN || norm(val).includes(GLOBAL_QN);
+      const matchesLocal  = !qLocal   || norm(val).includes(norm(qLocal));
+      
+      const show = !impossible && matchesGlobal && matchesLocal;
+      lbl.style.display = show ? '' : 'none';
 
     // aggiorna "(N)" nel summary del tratto
     const sc = block.querySelector('.sum-count');
@@ -771,6 +797,12 @@ function resetFilters(){
   idFilterSet = null;
   idSearchEl.value = '';
   for(const cb of filtersEl.querySelectorAll('input[type="checkbox"]')) cb.checked = false;
+  // pulisci ricerca globale
+  const traitSearchEl = document.getElementById('traitSearch');
+  if (traitSearchEl) traitSearchEl.value = '';
+  GLOBAL_QN = '';
+  updateAvailability();
+
   applyFilters();
   setupInfiniteScroll();  // attiva l’infinite scroll
 
@@ -836,6 +868,15 @@ filtersEl.addEventListener('input', e=>{
       const show = (!q || val.includes(q)) && !impossible;
       lbl.style.display = show ? '' : 'none';
     }
+    // nascondi il gruppo se nessuna label è visibile
+    let visibleInGroup = 0;
+    for (const lbl of labels){
+      if (lbl.style.display !== 'none') visibleInGroup++;
+    }
+    block.classList.toggle('is-hidden', visibleInGroup === 0);
+    // ... tuo loop che fa show/hide nel gruppo ...
+    updateAvailability(); // riallinea anche rispetto alla ricerca globale
+
   }
 });
 
@@ -898,6 +939,31 @@ resetBtn.addEventListener('click', resetFilters);
   enableAccordion();      // una sola sezione aperta
   loadFromURL();
   applyFilters();         // popola griglia + contatori (opzioni e summary)
+  // --- Global trait search wiring ---
+  const traitSearchEl = document.getElementById('traitSearch');
+  const clearSearchEl = document.getElementById('clearSearch');
+  let tSearch = 0;
+  
+  function applyGlobalSearch(){
+    GLOBAL_QN = norm(traitSearchEl.value);
+    // Non tocco selezioni: aggiorno solo la visibilità delle label/gruppi
+    updateAvailability();
+  }
+  
+  if (traitSearchEl){
+    traitSearchEl.addEventListener('input', ()=>{
+      clearTimeout(tSearch);
+      tSearch = setTimeout(applyGlobalSearch, 120); // debounce leggero
+    });
+  }
+  if (clearSearchEl){
+    clearSearchEl.addEventListener('click', ()=>{
+      traitSearchEl.value = '';
+      applyGlobalSearch();
+      traitSearchEl.focus();
+    });
+  }
+
 })();
 </script>
   
