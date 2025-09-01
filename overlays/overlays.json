@@ -11,7 +11,9 @@
       "file": "Overlay_Mello.svg",
       "thumb": "thumbs/mello.png",
       "skinId": "Skin_fill",
-      "sleeveId": "Sleeve_fill"
+      "sleeveId": "Sleeve_fill",
+      "oopsTraits": ["balloon", "popsicle", "cat"],
+      "oopsMessage": "Pretty sure your dood doesn’t have any hands!"
      },
       {
         "id": "popcorn",
@@ -83,5 +85,6 @@
   
   
   
+
 
 
