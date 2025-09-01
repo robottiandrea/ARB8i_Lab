@@ -13,7 +13,7 @@
 html { -webkit-text-size-adjust: 100%; }  
   :root{
   --bg:#0f1115; --card:#171a21; --text:#eef2ff; --muted:#9aa3b2; --acc:#8ab4ff; --border:#232938;
-  --side-w: clamp(260px, 33vw, 330px);
+  --side-w: clamp(220px, 28vw, 330px);
   --gap: 18px;
 }
 
@@ -194,14 +194,21 @@ details .filter-search.control { margin-bottom: 12px; }
 
 /* iPhone/telefoni */
 @media (max-width: 768px){
-  /* impedisce lo zoom automatico su focus */
-  input, button, select, textarea, .control {
-    font-size: 16px;
-  }  
-  .layout{
-    grid-template-columns: var(--side-w) 1fr;
-    padding: 0 12px 16px 0;
+  /* Sidebar più stretta sotto 768px, ma sempre fluida */
+  :root{
+    --side-w: clamp(160px, 42vw, 260px); /* niente fisso, min più basso */
   }
+  .layout{
+    grid-template-columns: var(--side-w) 1fr; /* restano 2 colonne */
+    gap: var(--gap);
+    padding: 0 12px 16px 0;                   /* già allineato al tuo layout */
+  }
+  
+  /* Card più “flessibili” (prima min 160px) */
+  .grid{
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+  
   .sidebar{
     grid-column:1;
     position: sticky;
@@ -213,6 +220,12 @@ details .filter-search.control { margin-bottom: 12px; }
     max-height: none;
     overflow: visible;
     -webkit-overflow-scrolling: auto;
+
+    /* Evita zoom su focus degli input su iOS */
+    input, button, select, textarea, .control{ font-size:16px; }
+  
+    /* Cintura e bretelle contro qualsiasi spillover */
+    html, body{ overflow-x:hidden; }
   }
 }
 /* Header come l'editor */
