@@ -26,7 +26,9 @@
         "file": "Overlay_Popcorn.svg",
         "thumb": "thumbs/popcorn.png",
         "sleeveId": "Sleeve_fill",
-        "skinId": "Skin_fill"
+        "skinId": "Skin_fill".
+        "oopsTraits": ["balloon", "popsicle", "cat"],
+        "oopsMessage": "Pretty sure your dood doesn’t have any hands!"
       },
         {
           "id": "Italian_Pinch",
@@ -39,7 +41,9 @@
           "file": "Overlay_Italian_Pinch.svg",
           "thumb": "thumbs/italian_pinch.png",
           "sleeveId": "Sleeve_fill",
-          "skinId": "Skin_fill"
+          "skinId": "Skin_fill",
+          "oopsTraits": ["balloon", "popsicle", "cat"],
+          "oopsMessage": "Pretty sure your dood doesn’t have any hands!"
         },
           {
             "id": "Rainbow_Mug",
@@ -52,7 +56,9 @@
             "file": "Overlay_Rainbow_Mug.svg",
             "thumb": "thumbs/rainbow_mug.png",
             "sleeveId": "Sleeve_fill",
-            "skinId": "Skin_fill"
+            "skinId": "Skin_fill",
+            "oopsTraits": ["balloon", "popsicle", "cat"],
+            "oopsMessage": "Pretty sure your dood doesn’t have any hands!"
           },
             {
               "id": "Mc_Fries",
@@ -65,7 +71,9 @@
               "file": "Overlay_Mc_Fries.svg",
               "thumb": "thumbs/Mc_fries.png",
               "sleeveId": "Sleeve_fill",
-              "skinId": "Skin_fill"
+              "skinId": "Skin_fill",
+              "oopsTraits": ["balloon", "popsicle", "cat"],
+              "oopsMessage": "Pretty sure your dood doesn’t have any hands!"
             },
               {
                 "id": "Gamepad",
@@ -78,13 +86,16 @@
                 "file": "Overlay_Gamepad.svg",
                 "thumb": "thumbs/gamepad.png",
                 "sleeveId": "Sleeve_fill",
-                "skinId": "Skin_fill"
+                "skinId": "Skin_fill",
+                "oopsTraits": ["balloon", "popsicle", "cat"],
+                "oopsMessage": "Pretty sure your dood doesn’t have any hands!"
               }
             ]
           }
   
   
   
+
 
 
 
