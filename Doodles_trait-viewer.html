@@ -288,17 +288,17 @@ details .filter-search.control { margin-bottom: 12px; }
         <div class="sticky">
           <!-- ID search -->
           <div class="id-search">
-            <label for="idSearch">Filter by ID</label>
-            <input id="idSearch" class="control" type="text" inputmode="numeric"
-                   placeholder="8929" />
+            <input id="idSearch" class="control" type="search" inputmode="numeric"
+                   placeholder="Filter by ID: 8929"
+                   autocomplete="off" />
           </div>
+
 
           <!-- 🔍 Global trait search -->
           <div class="traits-search">
             <input id="traitSearch" class="control" type="search"
-                   placeholder="Cerca tratti… (pink, beanie, none)"
+                   placeholder="Search Traits: Puke"
                    inputmode="search" autocomplete="off" autocapitalize="off" autocorrect="off" />
-            <button id="clearSearch" class="btn" type="button" aria-label="Pulisci" style="white-space:nowrap">×</button>
           </div>
           
           <!-- Trait filters -->
@@ -969,21 +969,20 @@ resetBtn.addEventListener('click', resetFilters);
   applyFilters();         // popola griglia + contatori (opzioni e summary)
   // --- Global trait search wiring ---
   const traitSearchEl = document.getElementById('traitSearch');
-  const clearSearchEl = document.getElementById('clearSearch');
   let tSearch = 0;
   
   function applyGlobalSearch(){
     GLOBAL_QN = norm(traitSearchEl.value);
-    // Non tocco selezioni: aggiorno solo la visibilità delle label/gruppi
     updateAvailability();
   }
   
   if (traitSearchEl){
     traitSearchEl.addEventListener('input', ()=>{
       clearTimeout(tSearch);
-      tSearch = setTimeout(applyGlobalSearch, 120); // debounce leggero
+      tSearch = setTimeout(applyGlobalSearch, 120);
     });
   }
+
   if (clearSearchEl){
     clearSearchEl.addEventListener('click', ()=>{
       traitSearchEl.value = '';
