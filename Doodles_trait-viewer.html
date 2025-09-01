@@ -968,11 +968,23 @@ filtersEl.addEventListener('change', e=>{
   }
 });
 
-// ID search
+
+// ID search (solo numeri, virgole, spazi e trattini)
 idSearchEl.addEventListener('input', ()=>{
+  const v = idSearchEl.value;
+  let s = v.replace(/\D+/g, ''); // solo cifre
+  // normalizza trattini/virgole ripetuti e spazi multipli
+  s = s.replace(/-{2,}/g, '-').replace(/,{2,}/g, ',').replace(/\s{2,}/g, ' ');
+  if (s !== v) {
+    const pos = idSearchEl.selectionStart || s.length;
+    idSearchEl.value = s;
+    // prova a mantenere il caret più o meno in posizione
+    try { idSearchEl.setSelectionRange(pos - (v.length - s.length), pos - (v.length - s.length)); } catch {}
+  }
   parseIdQuery(idSearchEl.value);
   applyFilters();
 });
+
 
 // Active chip remove
 activeChipsEl.addEventListener('click', (e)=>{
