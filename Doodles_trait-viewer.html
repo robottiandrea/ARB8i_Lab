@@ -112,16 +112,49 @@ button, [role="button"] { -webkit-appearance: none; appearance: none; }
 /* wrapper con X interna */
 .input-clear{ position:relative; }
 .input-clear .control{ padding-right: 34px; } /* spazio per la X */
+/* Nascondi la "X" nativa di WebKit/Chromium + Edge legacy, solo nei nostri wrapper */
+.input-clear input[type="search"]::-webkit-search-cancel-button{
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+.input-clear input[type="search"]::-ms-clear{
+  display:none; width:0; height:0;
+}
 
+/* bottone "clear" senza cerchio, icona centrata */
 .clear-btn{
   position:absolute; right:8px; top:50%; transform:translateY(-50%);
-  width:22px; height:22px; border-radius:999px;
-  display:none; align-items:center; justify-content:center;
-  border:1px solid var(--border); background:#0d1016; color:var(--muted);
-  cursor:pointer; line-height:1; font-weight:600;
+  width:32px; height:32px; padding:0;
+  border:0; background:transparent; border-radius:0;
+  display:none; cursor:pointer;
 }
-.clear-btn.show{ display:flex; }
-.clear-btn:hover{ color:#e9ecf1; border-color:#2a3142; }
+.clear-btn.show{ display:block; }
+
+/* icona X (SVG), perfettamente centrata */
+.clear-btn::before{
+  content:"";
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:14px; height:14px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14"><path d="M1 1L13 13M13 1L1 13" stroke="%23b8bec9" stroke-width="2" stroke-linecap="round"/></svg>') no-repeat center center;
+  opacity:.8;
+}
+.clear-btn:hover::before{ opacity:1; }
+
+/* accessibilità focus (senza cerchio) */
+.clear-btn:focus-visible{
+  outline:2px solid #2b62ff; outline-offset:2px; border-radius:6px;
+}
+
+/* già presente, ma ribadisco: spazio a destra nell'input per la X */
+.input-clear .control{ padding-right:34px; }
+
+/* nascondi la X nativa solo nei nostri wrapper */
+.input-clear input[type="search"]::-webkit-search-cancel-button{
+  -webkit-appearance:none; appearance:none; display:none;
+}
+.input-clear input[type="search"]::-ms-clear{ display:none; width:0; height:0; }
+
 
 /* allinea le dimensioni testo in sidebar */
 .sidebar .control{ font-size:16px; }
