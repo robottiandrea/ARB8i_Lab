@@ -57,6 +57,12 @@
   label{display:block; margin:10px 0 6px; color:var(--muted); font-size:13px}
   .row{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:stretch}
 
+  /* Fix iOS: font >=16px per evitare blocchi tastiera/zoom */
+  #tokenId{ font-size:16px; }
+  /* Evita che qualche stile globale blocchi la selezione/focus */
+  #tokenId{ -webkit-user-select:text; }
+  html{ -webkit-text-size-adjust:100%; }
+
   /* Input number (stile + rimozione freccette) */
   .row input{
     width:100%;
@@ -191,7 +197,7 @@
     <section class="card">
       <label for="tokenId">Doodles ID</label>
       <div class="row">
-        <input id="tokenId" type="text" placeholder="8929" enterkeyhint="go" autocomplete="off" />
+        <input id="tokenId" type="text" placeholder="8929" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" />
         <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
       </div>
       <p class="sub" style="margin:6px 0 0">
@@ -466,6 +472,40 @@ function applyBadge(badgeEl, cfg){
   }
 }
 
+// ===== Fix tastiera iPad in PWA =====
+(function fixIOSPWAKeyboard(){
+  // Siamo in PWA (standalone) e su iPad (user agent Apple con touch)
+  const inPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const isiPad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
+  if(!(inPWA && isiPad)) return;
+
+  const el = document.getElementById('tokenId');
+  if(!el) return;
+
+  // Trucco: rendi l'input readonly finché l'utente non tocca → poi togli readonly e focus
+  el.setAttribute('readonly', 'readonly');
+
+  // Primo tap (dito) sblocca tastiera
+  el.addEventListener('touchend', function onTouch(){
+    el.removeAttribute('readonly');
+    // piccolo delay per permettere a iOS di “capire”
+    setTimeout(()=>{
+      el.focus();
+      // sposta il cursore in fondo (forza la comparsa tastiera su alcune versioni)
+      const v = el.value; el.value=''; el.value=v;
+    }, 0);
+    el.removeEventListener('touchend', onTouch);
+  }, {passive:true});
+
+  // Fallback per Apple Pencil / trackpad: pointerdown
+  el.addEventListener('pointerdown', function onPD(){
+    if (el.hasAttribute('readonly')) {
+      el.removeAttribute('readonly');
+      setTimeout(()=>el.focus(), 0);
+    }
+  }, {passive:true});
+})();
+  
 /* ===== Init ===== */
 (async function init(){
   try{
@@ -559,6 +599,7 @@ $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); 
 </script>
 </body>
 </html>
+
 
 
 
