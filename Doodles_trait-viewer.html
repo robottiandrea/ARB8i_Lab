@@ -612,72 +612,86 @@ function renderActiveChips(){
   }
 }
 
-/*** Dynamic availability (always on) ***/
 function updateAvailability(){
   const selectedTraits = Object.keys(selected);
+
+  // unione per tratto selezionato (OR tra i valori)
   const unions = {};
-  for(const t of selectedTraits){
+  for (const t of selectedTraits){
     let u = null;
-    for(const v of selected[t]){
-      const s = INDEX[t]?.[v]; if(!s) continue;
+    for (const v of selected[t]){
+      const s = INDEX[t]?.[v]; if (!s) continue;
       u = unionSets(u, s);
     }
     unions[t] = u || new Set();
   }
 
-  for(const trait of Object.keys(TRAITS)){
+  for (const trait of Object.keys(TRAITS)){
+    // intersezione tra gli altri tratti (AND tra i tratti)
     const otherSets = [];
-    for(const t of selectedTraits){
-      if(t===trait) continue;
+    for (const t of selectedTraits){
+      if (t === trait) continue;
       otherSets.push(unions[t]);
     }
     let pool = intersectMany(otherSets); // null = all
 
-    if(idFilterSet !== null){
-      if(idFilterSet.size===0){ pool = new Set(); }
-      else { pool = pool ? intersectSets(pool, idFilterSet) : new Set(idFilterSet); }
+    // filtro per ID (se attivo)
+    if (idFilterSet !== null){
+      if (idFilterSet.size === 0){
+        pool = new Set();
+      } else {
+        pool = pool ? intersectSets(pool, idFilterSet) : new Set(idFilterSet);
+      }
     }
 
     const block = TRAIT_BLOCKS.get(trait);
-    if(!block) continue;
+    if (!block) continue;
+
     const labels = block.querySelectorAll('.values label');
+    let availableCount = 0;   // quante opzioni di questo tratto sono selezionabili ORA
+    let visibleInGroup = 0;   // quante label restano visibili dopo i filtri testuali
 
-    let availableCount = 0; // quante opzioni di questo tratto sono selezionabili ora
-
-    for(const lbl of labels){
+    for (const lbl of labels){
       const cb = lbl.querySelector('input[type="checkbox"]');
-      const val = cb.getAttribute('data-value');
-      const setVal = INDEX[trait]?.[val] || new Set();
-      const cnt = (pool===null) ? setVal.size : countIntersection(pool, setVal);
+      const valueKey = cb.getAttribute('data-value');
+      const setVal = INDEX[trait]?.[valueKey] || new Set();
 
+      const cnt = (pool === null) ? setVal.size : countIntersection(pool, setVal);
+
+      // aggiorna contatore singola voce
       const cntEl = lbl.querySelector('.count');
-      if(cntEl) cntEl.textContent = `(${cnt})`;
+      if (cntEl) cntEl.textContent = `(${cnt})`;
 
       const isChecked = cb.checked;
-      const impossible = (!isChecked && cnt===0);
+      const impossible = (!isChecked && cnt === 0);
 
       lbl.dataset.impossible = impossible ? '1' : '0';
       cb.disabled = impossible;
       lbl.classList.toggle('no-available', impossible);
 
-      // conteggio disponibili: se porta risultati o è già selezionata
       if (cnt > 0 || isChecked) availableCount++;
 
-      // filtro testo: globale + locale (entrambi inclusivi)
+      // --- filtro testo: GLOBALE + LOCALE ---
       const qLocal = (block.querySelector('.filter-search')?.value || '');
-      const val = lbl.dataset.value || '';
-      
-      const matchesGlobal = !GLOBAL_QN || norm(val).includes(GLOBAL_QN);
-      const matchesLocal  = !qLocal   || norm(val).includes(norm(qLocal));
-      
+      const valText = lbl.dataset.value || ''; // NB: nome diverso da valueKey, niente shadowing
+
+      const matchesGlobal = !GLOBAL_QN || norm(valText).includes(GLOBAL_QN);
+      const matchesLocal  = !qLocal   || norm(valText).includes(norm(qLocal));
+
       const show = !impossible && matchesGlobal && matchesLocal;
       lbl.style.display = show ? '' : 'none';
+      if (show) visibleInGroup++;
+    }
 
-    // aggiorna "(N)" nel summary del tratto
+    // nascondi l'intero gruppo se non resta nulla visibile
+    block.classList.toggle('is-hidden', visibleInGroup === 0);
+
+    // aggiorna badge del summary (quante opzioni ancora “attivabili”)
     const sc = block.querySelector('.sum-count');
     if (sc) sc.textContent = `(${availableCount})`;
   }
 }
+
 
 /*** Filtering ***/
 function applyFilters(){
@@ -858,27 +872,30 @@ function setupInfiniteScroll(){
   
 // Per-trait search (always hides impossible)
 filtersEl.addEventListener('input', e=>{
-  if(e.target && e.target.matches('.filter-search')){
-    const q = e.target.value.trim().toLowerCase();
+  if (e.target && e.target.matches('.filter-search')){
+    const q = norm(e.target.value);
     const wrap = e.target.closest('details');
     const labels = wrap.querySelectorAll('.values label');
-    for(const lbl of labels){
-      const val = lbl.dataset.value || '';
+
+    for (const lbl of labels){
+      const val = norm(lbl.dataset.value || '');
       const impossible = lbl.dataset.impossible === '1';
       const show = (!q || val.includes(q)) && !impossible;
       lbl.style.display = show ? '' : 'none';
     }
+
     // nascondi il gruppo se nessuna label è visibile
     let visibleInGroup = 0;
     for (const lbl of labels){
       if (lbl.style.display !== 'none') visibleInGroup++;
     }
-    block.classList.toggle('is-hidden', visibleInGroup === 0);
-    // ... tuo loop che fa show/hide nel gruppo ...
-    updateAvailability(); // riallinea anche rispetto alla ricerca globale
+    wrap.classList.toggle('is-hidden', visibleInGroup === 0);
 
+    // riallinea rispetto alla ricerca GLOBALE
+    updateAvailability();
   }
 });
+
 
 // Checkbox change
 filtersEl.addEventListener('change', e=>{
