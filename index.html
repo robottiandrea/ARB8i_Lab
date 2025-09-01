@@ -68,7 +68,7 @@
   /* Firma */
 .credits {
   position: fixed;
-  bottom: 16px;
+  bottom:  calc(40px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   font-size: 13px;
@@ -195,14 +195,16 @@ async function loadManifest(){
 
 loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
-
-</body>
-
+  
 <footer class="credits">
   <a href="https://x.com/robottiandrea" target="_blank" rel="noopener" class="shine">
     made by @robottiandrea
   </a>
 </footer>
+  
+</body>
+
+
 
 
 
