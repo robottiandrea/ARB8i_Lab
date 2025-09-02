@@ -652,43 +652,33 @@ function dataUrlToBlob(dataURL){
 async function shareMobileX(){
   if (!MOBILE_SHARE) return;
 
-  const img = document.getElementById('composite');
   const tokenEl = document.getElementById('tokenId');
-
   const id = parseInt((tokenEl?.value || '').trim(), 10);
   if (!Number.isFinite(id)) return;
 
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
-  const baseText = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
-  const textWithLink = `${baseText}\n${SITE_URL}`;
+  // Metti il link DENTRO il testo. Usa https:// per farlo auto-linkare.
+  const caption = `https://arb8i.xyz
+Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
 
   try{
-    if (!navigator.share) return;
-
+    const img = document.getElementById('composite');
     const src = img?.src;
-    if (!src) return;
-    const blob = src.startsWith('data:')
-      ? dataUrlToBlob(src)
-      : await (await fetch(src)).blob();
+    if (!src || !navigator.share) return;
+
+    // Blob PNG dall’immagine renderizzata
+    const blob = src.startsWith('data:') ? dataUrlToBlob(src) : await (await fetch(src)).blob();
     const file = new File([blob], 'doodle.png', { type: 'image/png' });
 
-    // 1) Prova con URL + file + testo (per anteprima link)
-    try{
-      await navigator.share({ text: baseText, url: SITE_URL, files: [file] });
-      return;
-    }catch(_){}
+    // Copia la caption negli appunti: se per qualche motivo X la “perdesse”, l’utente può incollarla.
+    try { await navigator.clipboard.writeText(caption); } catch {}
 
-    // 2) Fallback: file + testo (metto l’URL nel testo)
-    try{
-      await navigator.share({ text: textWithLink, files: [file] });
-      return;
-    }catch(_){}
-
-    // 3) Ultimo fallback: solo testo (con l’URL)
-    await navigator.share({ text: textWithLink });
+    // Condividi: SOLO text + files (senza 'url', che a volte viene ignorato)
+    await navigator.share({ text: caption, files: [file] });
+    setStatus('Shared. If the caption vanishes on X, paste it (already copied).');
 
   }catch(e){
-    console.error('Share fallita:', e);
+    console.error('Share failed:', e);
   }
 }
 
@@ -746,5 +736,6 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
