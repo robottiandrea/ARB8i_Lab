@@ -400,22 +400,20 @@ const activeChipsEl = $('#activeChips');
 // overlay ricordato dall’editor
 const LAST_OVERLAY = localStorage.getItem('lastOverlay') || '';
 
-// rimuovi "overlay" dall'URL se qualcuno l'ha messo
-(function(){
-  const sp = new URLSearchParams(location.search);
-  if (sp.has('overlay')) {
-    sp.delete('overlay');
-    const q = sp.toString();
-    history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
-  }
-})();
-const FROM_EDITOR = (() => {
-  try {
-    if (!document.referrer) return false;
-    const u = new URL(document.referrer);
-    return u.origin === location.origin && /editor\.html(\?|#|$)/.test(u.pathname);
-  } catch { return false; }
-})();
+// Salva meta-param e pulisci l'URL PRIMA che il viewer legga i filtri
+const QS = new URLSearchParams(location.search);
+const SOURCE_PARAM  = QS.get('source')  || '';  // "index" se arrivi dalla gallery
+const OVERLAY_PARAM = QS.get('overlay') || '';  // overlay noto se arrivi dall'editor
+
+// Ripulisci la barra (i filtri non devono “vedere” questi parametri)
+if (QS.has('source') || QS.has('overlay')) {
+  QS.delete('source');
+  QS.delete('overlay');
+  const q = QS.toString();
+  history.replaceState(null, '', location.pathname + (q ? '?' + q : ''));
+}
+
+
 /*** State ***/
 let ALL = [];                  // [{id, image, attrs:{trait:value,...}}]
 let ALL_IDS = new Set();       // all ids
@@ -800,12 +798,24 @@ function renderPage(){
     const a = document.createElement('article');
     a.className = 'card';
   
-    // Mostra il link solo se arrivi dall'editor
-    const editorLinkHTML = FROM_EDITOR ? (() => {
-      const u = new URL('./editor.html', location.href);
-      u.searchParams.set('id', id); // SOLO id, nessun overlay
-      return `<a class="open" href="${u.toString()}">Cook it!</a>`;
-    })() : '';
+    // Azione per-card basata sul contesto:
+    // - da index (source=index): torna in index con ?id=XXXX
+    // - con overlay noto (overlay=...): apri l'editor con overlay+id
+    const actionHTML = (() => {
+      if (SOURCE_PARAM === 'index') {
+        const u = new URL('./index.html', location.href);
+        u.searchParams.set('id', id);
+        return `<a class="open" href="${u.toString()}">Usa questo ID</a>`;
+      }
+      if (OVERLAY_PARAM) {
+        const u = new URL('./editor.html', location.href);
+        u.searchParams.set('overlay', OVERLAY_PARAM);
+        u.searchParams.set('id', id);
+        return `<a class="open" href="${u.toString()}">Apri in Editor</a>`;
+      }
+      return ''; // nessun bottone in altri casi
+    })();
+
   
     a.innerHTML = `
       <div class="thumb">
@@ -814,10 +824,11 @@ function renderPage(){
       <div class="meta">
         <div class="id">#${id}</div>
         <div class="actions">
-          ${editorLinkHTML}
+          ${actionHTML}
         </div>
       </div>
     `;
+
 
   const img = a.querySelector('img');
   attachImgFallback(img, urls);
