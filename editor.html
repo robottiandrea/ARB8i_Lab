@@ -296,6 +296,13 @@ let OVERLAYS=null, currentCfg=null;
 let NAME_TO_HEX=null, META=null;
 
 /* ===== Utils ===== */
+function setShareVisible(visible){
+  var row = document.getElementById('shareRow');
+  if (!row) return;
+  row.style.visibility = visible ? 'visible' : 'hidden';
+  row.style.pointerEvents = visible ? 'auto' : 'none';
+}
+
 function setStatus(t){ statusEl.textContent = t || ''; }
 function pad32hex(n){ const h = BigInt(n).toString(16); return h.padStart(64,'0'); }
 function decodeAbiString(hexdata){
@@ -401,8 +408,8 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
-  const shareBtn = document.getElementById('shareX');
-  if (shareBtn) shareBtn.disabled = true;
+  var shareBtn = document.getElementById('shareX'); // se ti serve altrove
+  if (MOBILE_SHARE) setShareVisible(false);
 
 
  
@@ -436,7 +443,7 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     // Modalità esempio OFF (abbiamo il render vero)
-    if (MOBILE_SHARE && shareBtn) shareBtn.disabled = false;
+    if (MOBILE_SHARE) setShareVisible(true);
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
   
@@ -465,6 +472,7 @@ async function openImage(){
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
+    if (MOBILE_SHARE) setShareVisible(false);
   }
 }
 
@@ -607,12 +615,8 @@ function applyBadge(badgeEl, cfg){
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
     const shareBtn = document.getElementById('shareX');
-    if (MOBILE_SHARE) {
-      shareRow.style.display = 'flex';
-      shareBtn.disabled = true;
-    } else {
-      shareRow.style.display = 'none';
-    }
+    if (MOBILE_SHARE) setShareVisible(false);   // su mobile: nascosto finché è solo anteprima
+    else setShareVisible(false);                // su desktop: comunque nascosto
 
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
@@ -701,6 +705,7 @@ if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
