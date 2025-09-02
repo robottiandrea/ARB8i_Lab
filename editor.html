@@ -182,28 +182,6 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
- 
-  html, body { height: 100%; }
-
-body{
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;  /* sticky footer */
-}
-
-main.wrap{
-  flex: 1 0 auto;     /* prende lo spazio disponibile */
-}
-
-.site-footer{
-  flex-shrink: 0;
-  padding: 16px 28px;
-}
-
-.footer-madeby{
-  justify-content: center;   /* è già display:flex */
-  margin: 0;                 /* niente margine extra */
-}
 
   
 </style>
@@ -247,18 +225,22 @@ main.wrap{
       </div>
 
 
+
+      
+      <!-- Made by (legato all'overlay) -->
+      <div id="madeBy" class="footer-madeby" style="display:none">
+        <a id="madeByLink" class="shimmer madeby-link" href="#" target="_blank" rel="noopener">
+          made by&nbsp;<span id="mbName">author</span><span id="mbSep">–</span><span id="mbHandle">@handle</span>
+        </a>
+      </div>
+
+
+
+
+
     </section>
   </main>
 
-<footer class="site-footer">
-  <div id="madeBy" class="footer-madeby" style="display:none">
-    <a id="madeByLink" class="shimmer madeby-link" href="#" target="_blank" rel="noopener">
-      made by&nbsp;<span id="mbName">author</span><span id="mbSep">–</span><span id="mbHandle">@handle</span>
-    </a>
-  </div>
-</footer>
-  
-  
 <script>
 /* ===== Network (RPC/IPFS) ===== */
 const DEFAULT_CONTRACT = new URLSearchParams(location.search).get('contract')
@@ -767,6 +749,9 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
  
 </script>
 </body>
+<footer class="credits">
+  <a href="https://x.com/robottiandrea" target="_blank" rel="noopener" class="shine">
+    made by @robottiandrea
+  </a>
+</footer>  
 </html>
-
-
