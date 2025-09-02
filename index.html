@@ -142,6 +142,22 @@
 }
 
 .navchip{ position:relative; overflow:hidden; }
+/* ID nella hero */
+.hero-id{ margin-top:12px; }
+.hero-id-row{ display:flex; justify-content:center; gap:8px; }
+.id-input{
+  width:min(320px, 90vw);
+  height:40px;
+  padding:0 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#0d1016;
+  color:var(--text);
+  font-size:16px; /* evita zoom iOS */
+}
+.id-input.error{ border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.2); }
+.id-hint{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+.id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
 
 </style>
 </head>
@@ -156,6 +172,19 @@
     <header class="hero">
       <h1>ARB8i 💛 Lab</h1>
       <p>Pick a vibe! Overlay the fun!</p>
+      <div class="hero-id">
+      <label for="idField" class="sr-only">Doodles ID (0–9999)</label>
+      <div class="hero-id-row">
+        <input id="idField" class="id-input" type="text"
+               inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+               placeholder="Doodles ID (0–9999)" />
+      </div>
+      <p class="id-hint">
+        Inserisci ID e scegli un overlay.
+        <a id="tvLink" href="./Doodles_trait-viewer.html?source=index">Non sai l’ID? Apri il Trait Viewer</a>
+      </p>
+      <p id="idError" class="id-error" role="status" aria-live="polite" style="display:none"></p>
+    </div>
     </header>
 
     <div id="grid" class="grid"></div>
@@ -171,6 +200,26 @@
 <script>
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
+const idField = document.getElementById('idField');
+const idError = document.getElementById('idError');
+
+function normalizeId(v){
+  const s = String(v||'').trim().replace(/\D+/g,'');
+  if(s==='') return { value:'', valid:false, empty:true };
+  const n = parseInt(s,10);
+  if(Number.isFinite(n) && n>=0 && n<=9999) return { value:String(n), valid:true, empty:false };
+  return { value:s, valid:false, empty:false };
+}
+
+function updateCardLinksWithId(id){
+  document.querySelectorAll('a.cardlink').forEach(a=>{
+    const u = new URL(a.getAttribute('href'), location.href);
+    if(id==null){ u.searchParams.delete('id'); }
+    else{ u.searchParams.set('id', id); }
+    a.setAttribute('href', u.toString());
+  });
+}
+  
 let overlays = null;
 
 function cardHTML(item){
@@ -203,7 +252,60 @@ function render(){
   }
   if (EMPTY) EMPTY.style.display = 'none';
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
+  const n = idField ? normalizeId(idField.value) : {valid:false};
+  updateCardLinksWithId(n.valid ? n.value : null);
+
 }
+(function initIdField(){
+  if(!idField) return;
+
+  // Enter disabilitato
+  idField.addEventListener('keydown', (e)=>{ if(e.key==='Enter') e.preventDefault(); });
+
+  // Prefill da query ?id= o da localStorage
+  const sp = new URLSearchParams(location.search);
+  let fromQuery = sp.get('id');
+  if(fromQuery != null){
+    const nq = normalizeId(fromQuery);
+    if(nq.valid){
+      idField.value = nq.value;
+      localStorage.setItem('lastId', nq.value);
+      // i link saranno aggiornati dopo render(); intanto puliamo l'URL
+    }
+    sp.delete('id');
+    const q = sp.toString();
+    history.replaceState(null, '', location.pathname + (q?('?'+q):''));
+  }else{
+    const last = localStorage.getItem('lastId');
+    const nl = normalizeId(last);
+    if(nl.valid) idField.value = nl.value;
+  }
+
+  // On input: normalizza, valida, persisti, aggiorna link
+  idField.addEventListener('input', ()=>{
+    const n = normalizeId(idField.value);
+    idField.value = n.value;
+
+    if(n.empty){
+      idField.classList.remove('error');
+      idError.style.display = 'none';
+      localStorage.removeItem('lastId');
+      updateCardLinksWithId(null);
+      return;
+    }
+    if(n.valid){
+      idField.classList.remove('error');
+      idError.style.display = 'none';
+      localStorage.setItem('lastId', n.value);
+      updateCardLinksWithId(n.value);
+    }else{
+      idField.classList.add('error');
+      idError.textContent = 'Inserisci un numero da 0 a 9999';
+      idError.style.display = '';
+      updateCardLinksWithId(null);
+    }
+  });
+})();
 
 async function loadManifest(){
   for (const url of ['./overlays/overlays.json','./overlays.json']){
