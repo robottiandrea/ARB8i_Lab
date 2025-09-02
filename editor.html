@@ -661,7 +661,7 @@ async function shareMobileX(){
 
   const id = parseInt((tokenEl?.value || '').trim(), 10);
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
-  const text = `Dropped "${layoutName}" on Doodle #${id} — who’s this?!`;
+  const text = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
   if (!Number.isFinite(id)) return; // non dovrebbe mai capitare  
 
   try{
@@ -710,6 +710,7 @@ if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
