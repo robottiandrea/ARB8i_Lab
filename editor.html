@@ -595,7 +595,9 @@ function applyBadge(badgeEl, cfg){
     const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
   }catch(e){ setStatus(e?.message || 'Init error'); }
 
-  <!-- ===== Share to X (Web Share API + fallback Web Intent) ===== -->
+ 
+})();
+<!-- ===== Share to X (Web Share API + fallback Web Intent) ===== -->
 <script>
 async function shareOrFallbackX(){
   const img = document.getElementById('composite');
@@ -609,56 +611,48 @@ async function shareOrFallbackX(){
     ? `Ho applicato "${layoutName}" a Doodle #${id} — prova anche tu!`
     : `Guarda il mio "${layoutName}"`;
 
-  // URL della stessa pagina con query id+overlay per la card su X
   const url = new URL(location.href);
   if (Number.isFinite(id)) url.searchParams.set('id', id);
   if (currentCfg?.id)     url.searchParams.set('overlay', currentCfg.id);
 
-  // 1) Prova condivisione nativa con file (mobile)
   try{
     const src = img?.src;
     if (src) {
-      // funziona sia con data:URL che con URL normale
       const resp = await fetch(src).catch(()=>null);
       const blob = resp && resp.ok ? await resp.blob() : null;
-
       if (blob) {
         const file = new File([blob], "doodle.png", { type: "image/png" });
         if (navigator.share && navigator.canShare?.({ files:[file] })) {
           await navigator.share({ text, files:[file] });
-          return; // fatto, niente fallback
+          return;
         }
       }
     }
-  }catch(_) {
-    // ignora e vai al fallback
-  }
+  }catch(_){}
 
-  // 2) Fallback: Web Intent (non allega immagine, ma apre il composer di X)
   const intent = new URL("https://x.com/intent/tweet");
   if (text) intent.searchParams.set("text", text);
   intent.searchParams.set("url", url.toString());
 
   const w = window.open(intent.toString(), "_blank", "noopener");
   if (!w) {
-    // se i popup sono bloccati, mostro il link visibile
     const a = document.getElementById('intentLink');
     a.href = intent.toString();
     a.style.display = 'inline';
   }
 }
-</script>  
-})();
-
-
 
 /* ===== Events ===== */
-$('#go').addEventListener('click', openImage);
-$('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
+$('#go')?.addEventListener('click', openImage);
+$('#tokenId')?.addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('shareX')?.addEventListener('click', shareOrFallbackX);
-  
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
