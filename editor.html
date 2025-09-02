@@ -216,11 +216,8 @@
         <img id="composite" alt="Preview">
       </div>
 
-      <!-- Share controls -->
-      <div class="share-row" style="display:flex; gap:10px; justify-content:center; margin:12px 0 0;">
-        <button id="shareX" class="btn-outline" type="button" aria-label="Condividi su X">Condividi su X</button>
-        <a id="intentLink" class="btn-outline" href="#" target="_blank" rel="noopener" style="display:none">Apri composer X</a>
-      </div>
+     
+
       
       <!-- Made by (legato all'overlay) -->
       <div id="madeBy" class="footer-madeby" style="display:none">
@@ -594,65 +591,11 @@ function applyBadge(badgeEl, cfg){
 
     const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
   }catch(e){ setStatus(e?.message || 'Init error'); }
-
- 
 })();
-<!-- ===== Share to X (Web Share API + fallback Web Intent) ===== -->
-<script>
-async function shareOrFallbackX(){
-  const img = document.getElementById('composite');
-  const tokenEl = document.getElementById('tokenId');
-
-  const idRaw = (tokenEl?.value || '').trim();
-  const id = Number.parseInt(idRaw, 10);
-  const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay').toString();
-
-  const text = Number.isFinite(id)
-    ? `Ho applicato "${layoutName}" a Doodle #${id} — prova anche tu!`
-    : `Guarda il mio "${layoutName}"`;
-
-  const url = new URL(location.href);
-  if (Number.isFinite(id)) url.searchParams.set('id', id);
-  if (currentCfg?.id)     url.searchParams.set('overlay', currentCfg.id);
-
-  try{
-    const src = img?.src;
-    if (src) {
-      const resp = await fetch(src).catch(()=>null);
-      const blob = resp && resp.ok ? await resp.blob() : null;
-      if (blob) {
-        const file = new File([blob], "doodle.png", { type: "image/png" });
-        if (navigator.share && navigator.canShare?.({ files:[file] })) {
-          await navigator.share({ text, files:[file] });
-          return;
-        }
-      }
-    }
-  }catch(_){}
-
-  const intent = new URL("https://x.com/intent/tweet");
-  if (text) intent.searchParams.set("text", text);
-  intent.searchParams.set("url", url.toString());
-
-  const w = window.open(intent.toString(), "_blank", "noopener");
-  if (!w) {
-    const a = document.getElementById('intentLink');
-    a.href = intent.toString();
-    a.style.display = 'inline';
-  }
-}
 
 /* ===== Events ===== */
-$('#go')?.addEventListener('click', openImage);
-$('#tokenId')?.addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
-document.getElementById('shareX')?.addEventListener('click', shareOrFallbackX);
+$('#go').addEventListener('click', openImage);
+$('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
