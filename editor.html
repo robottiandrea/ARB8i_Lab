@@ -656,42 +656,42 @@ async function shareMobileX(){
   const tokenEl = document.getElementById('tokenId');
 
   const id = parseInt((tokenEl?.value || '').trim(), 10);
+  if (!Number.isFinite(id)) return;
+
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
-  const text = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
-  const text = `${baseText}\n${SITE_URL}`;
-  if (!Number.isFinite(id)) return; // non dovrebbe mai capitare  
+  const baseText = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
+  const textWithLink = `${baseText}\n${SITE_URL}`;
 
   try{
     if (!navigator.share) return;
 
-    // Prepara il file PNG
     const src = img?.src;
     if (!src) return;
-    const blob = src.startsWith('data:') ? dataUrlToBlob(src) : await (await fetch(src)).blob();
+    const blob = src.startsWith('data:')
+      ? dataUrlToBlob(src)
+      : await (await fetch(src)).blob();
     const file = new File([blob], 'doodle.png', { type: 'image/png' });
 
-    // Alcuni iPad PWA restituiscono false qui anche se poi funziona.
-    const canFiles = (typeof navigator.canShare === 'function')
-      ? navigator.canShare({ files:[file] })
-      : true; // se canShare non esiste, proviamo lo stesso
-
-    if (canFiles) {
-      await navigator.share({ text, files:[file], url: SITE_URL });
+    // 1) Prova con URL + file + testo (per anteprima link)
+    try{
+      await navigator.share({ text: baseText, url: SITE_URL, files: [file] });
       return;
-    }
+    }catch(_){}
 
-    // Workaround: prova comunque con i file (su iPad PWA spesso va)
-    try {
-      await navigator.share({ text, files:[file] });
+    // 2) Fallback: file + testo (metto l’URL nel testo)
+    try{
+      await navigator.share({ text: textWithLink, files: [file] });
       return;
-    } catch (_) {
-      // Ultimo fallback: apri share sheet senza allegato, almeno consente di postare il testo
-      await navigator.share({ text });
-    }
+    }catch(_){}
+
+    // 3) Ultimo fallback: solo testo (con l’URL)
+    await navigator.share({ text: textWithLink });
+
   }catch(e){
     console.error('Share fallita:', e);
   }
 }
+
 async function copyImage(){
   try{
     // serve l’immagine vera, non l’anteprima
@@ -746,4 +746,5 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
