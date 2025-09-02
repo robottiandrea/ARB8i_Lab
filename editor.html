@@ -17,6 +17,7 @@
 <meta name="apple-mobile-web-app-title" content="Doodles">
 
 <script>
+  const SITE_URL = 'https://arb8i.xyz';
   try { new Function('return 0?.x'); } catch { window.OC_UNSUPPORTED = true; }
 
   if ('serviceWorker' in navigator) {
@@ -657,6 +658,7 @@ async function shareMobileX(){
   const id = parseInt((tokenEl?.value || '').trim(), 10);
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
   const text = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
+  const text = `${baseText}\n${SITE_URL}`;
   if (!Number.isFinite(id)) return; // non dovrebbe mai capitare  
 
   try{
@@ -674,7 +676,7 @@ async function shareMobileX(){
       : true; // se canShare non esiste, proviamo lo stesso
 
     if (canFiles) {
-      await navigator.share({ text, files:[file] });
+      await navigator.share({ text, files:[file], url: SITE_URL });
       return;
     }
 
@@ -744,3 +746,4 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
