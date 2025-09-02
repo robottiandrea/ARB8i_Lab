@@ -399,7 +399,9 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
-  document.getElementById('shareX')?.disabled = true; 
+  const shareBtn = document.getElementById('shareX');
+  if (shareBtn) shareBtn.disabled = true;
+
 
  
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
@@ -432,7 +434,7 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     // Modalità esempio OFF (abbiamo il render vero)
-    if (MOBILE_SHARE) document.getElementById('shareX').disabled = false;
+    if (MOBILE_SHARE && shareBtn) shareBtn.disabled = false;
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
   
@@ -685,11 +687,14 @@ async function shareMobileX(){
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
-document.getElementById('shareX')?.addEventListener('click', shareMobileX);
+const shareBtn2 = document.getElementById('shareX');
+if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
+
   
 </script>
 </body>
 </html>
+
 
 
 
