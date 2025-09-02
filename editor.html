@@ -399,8 +399,7 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
-  document.getElementById('shareX').disabled = true; // finché non abbiamo l’immagine "vera"
-  if (MOBILE_SHARE) document.getElementById('shareX')?.disabled = false; 
+  document.getElementById('shareX')?.disabled = true; 
 
  
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
@@ -635,15 +634,6 @@ function dataUrlToBlob(dataURL){
   return new Blob([buf], {type:mime});
 }
 
-function dataUrlToBlob(dataURL){
-  const [head, body] = dataURL.split(',');
-  const mime = (/data:(.*?);/.exec(head) || [,'application/octet-stream'])[1];
-  const bstr = head.includes(';base64') ? atob(body) : decodeURIComponent(body);
-  const buf = new Uint8Array(bstr.length);
-  for (let i=0;i<bstr.length;i++) buf[i] = bstr.charCodeAt(i);
-  return new Blob([buf], {type:mime});
-}
-
 async function shareMobileX(){
   if (!MOBILE_SHARE) return;
 
@@ -700,6 +690,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
