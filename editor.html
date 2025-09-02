@@ -218,7 +218,7 @@
 
       <!-- Share controls (solo mobile, mostrato da JS) -->
       <div id="shareRow" class="share-row" style="display:none; gap:10px; justify-content:center; margin:12px 0 0;">
-        <button id="shareX" class="btn-outline" type="button" disabled>Condividi su X</button>
+        <button id="shareX" class="btn-outline" type="button" disabled>Share!</button>
       </div>
 
 
@@ -277,16 +277,17 @@ const exBadge = document.querySelector('#exampleBadge');
 /* ===== Share (mobile only) ===== */
 let MOBILE_SHARE = false;
 
-function isMobile() {
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && matchMedia('(pointer:coarse)').matches;
+function isMobileLike(){
+  const ua = navigator.userAgent;
+  const isIPhone  = /iPhone|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua);
+  // iPadOS spesso finge "Macintosh" ma ha touch
+  const isIPad    = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && 'ontouchend' in document);
+  return isIPhone || isAndroid || isIPad;
 }
 
-function canNativeShareFiles() {
-  if (!navigator.share || !navigator.canShare) return false;
-  try {
-    const probe = new File([new Uint8Array([137,80,78,71])], 'x.png', { type: 'image/png' }); // header PNG
-    return navigator.canShare({ files: [probe] }) === true;
-  } catch { return false; }
+function isAppleStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
   
 let OVERLAYS=null, currentCfg=null;
@@ -399,7 +400,7 @@ function rowHasAnyNeedle(row, needles){
 async function openImage(){
   setStatus('Cooking…');
   document.getElementById('shareX').disabled = true; // finché non abbiamo l’immagine "vera"
- 
+  if (MOBILE_SHARE) document.getElementById('shareX')?.disabled = false; 
 
  
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
@@ -594,16 +595,17 @@ function applyBadge(badgeEl, cfg){
       }
     })();
 
-    // === Solo-mobile: mostra il tasto se supportato
-    MOBILE_SHARE = isMobile() && canNativeShareFiles();
+    
+    MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
     const shareBtn = document.getElementById('shareX');
     if (MOBILE_SHARE) {
       shareRow.style.display = 'flex';
-      shareBtn.disabled = true;            // si abilita dopo il render vero
+      shareBtn.disabled = true;
     } else {
       shareRow.style.display = 'none';
     }
+
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
@@ -633,8 +635,18 @@ function dataUrlToBlob(dataURL){
   return new Blob([buf], {type:mime});
 }
 
+function dataUrlToBlob(dataURL){
+  const [head, body] = dataURL.split(',');
+  const mime = (/data:(.*?);/.exec(head) || [,'application/octet-stream'])[1];
+  const bstr = head.includes(';base64') ? atob(body) : decodeURIComponent(body);
+  const buf = new Uint8Array(bstr.length);
+  for (let i=0;i<bstr.length;i++) buf[i] = bstr.charCodeAt(i);
+  return new Blob([buf], {type:mime});
+}
+
 async function shareMobileX(){
-  if (!MOBILE_SHARE) return; // su desktop non fa nulla
+  if (!MOBILE_SHARE) return;
+
   const img = document.getElementById('composite');
   const tokenEl = document.getElementById('tokenId');
 
@@ -645,20 +657,37 @@ async function shareMobileX(){
     : `Guarda il mio "${layoutName}"`;
 
   try{
+    if (!navigator.share) return;
+
+    // Prepara il file PNG
     const src = img?.src;
     if (!src) return;
-    const blob = src.startsWith('data:')
-      ? dataUrlToBlob(src)
-      : await (await fetch(src)).blob();
+    const blob = src.startsWith('data:') ? dataUrlToBlob(src) : await (await fetch(src)).blob();
     const file = new File([blob], 'doodle.png', { type: 'image/png' });
 
-    if (navigator.share && navigator.canShare?.({ files:[file] })) {
+    // Alcuni iPad PWA restituiscono false qui anche se poi funziona.
+    const canFiles = (typeof navigator.canShare === 'function')
+      ? navigator.canShare({ files:[file] })
+      : true; // se canShare non esiste, proviamo lo stesso
+
+    if (canFiles) {
       await navigator.share({ text, files:[file] });
+      return;
+    }
+
+    // Workaround: prova comunque con i file (su iPad PWA spesso va)
+    try {
+      await navigator.share({ text, files:[file] });
+      return;
+    } catch (_) {
+      // Ultimo fallback: apri share sheet senza allegato, almeno consente di postare il testo
+      await navigator.share({ text });
     }
   }catch(e){
     console.error('Share fallita:', e);
   }
 }
+
 
    
     
@@ -671,5 +700,6 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
