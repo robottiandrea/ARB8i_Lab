@@ -218,7 +218,7 @@
       
       <!-- Share controls -->
       <div class="share-row" style="display:flex; gap:10px; justify-content:center; margin:12px 0 0;">
-        <button id="shareX" class="btn-outline" type="button" aria-label="Condividi su X">Condividi su X</button>
+        <button id="shareX" class="btn-outline" type="button" disabled>Condividi su X</button>
         <a id="intentLink" class="btn-outline" href="#" target="_blank" rel="noopener" style="display:none">Apri composer X</a>
       </div>
       
@@ -380,6 +380,8 @@ function rowHasAnyNeedle(row, needles){
   
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
+  document.getElementById('shareX').disabled = true;
+  document.getElementById('intentLink').style.display = 'none'; // nascondi eventuale link vecchio
   setStatus('Cooking…');
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
   if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
@@ -410,6 +412,8 @@ async function openImage(){
 
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
+    document.getElementById('shareX').disabled = false;
+
     // Modalità esempio OFF (abbiamo il render vero)
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
@@ -648,7 +652,6 @@ async function shareOrFallbackX(){
     a.style.display = 'inline';
   }
 }
-</script>
   
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
@@ -658,6 +661,7 @@ document.getElementById('shareX')?.addEventListener('click', shareOrFallbackX);
 </script>
 </body>
 </html>
+
 
 
 
