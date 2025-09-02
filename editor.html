@@ -221,7 +221,7 @@
       <!-- Share controls (solo mobile, mostrato da JS) -->
       <div id="shareRow" class="share-row" style="display:none; gap:10px; justify-content:center; margin:12px 0 0;">
         <button id="shareX" class="btn-outline" type="button" disabled>Share!</button>
-        <button id="copyImg" class="btn-outline" type="button">Copy image</button>
+        <button id="copyImg" class="btn-outline" type="button">Copy PNG</button>
       </div>
 
 
@@ -618,11 +618,17 @@ function applyBadge(badgeEl, cfg){
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
     const shareBtn = document.getElementById('shareX');
+    const copyBtn  = document.getElementById('copyImg');
     
     // Mostra SEMPRE il contenitore; lo rendiamo invisibile finché è solo anteprima
     shareRow.style.display = 'flex';
     setShareVisible(false);
-    
+    const shareBtn = document.getElementById('shareX');
+    const copyBtn  = document.getElementById('copyImg');
+
+    shareBtn.style.display = MOBILE_SHARE ? '' : 'none'; // nascondi "Share!" su desktop
+    copyBtn.style.display  = '';                          // mostra sempre "Copy image"
+
     // “Share!” solo dove supportato; “Copy image” resta sempre visibile
     if (shareBtn) shareBtn.style.display = MOBILE_SHARE ? '' : 'none';
 
@@ -756,6 +762,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
