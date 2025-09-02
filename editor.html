@@ -216,11 +216,11 @@
         <img id="composite" alt="Preview">
       </div>
 
-      <!-- Share controls -->
-      <div class="share-row" style="display:flex; gap:10px; justify-content:center; margin:12px 0 0;">
+      <!-- Share controls (solo mobile, mostrato da JS) -->
+      <div id="shareRow" class="share-row" style="display:none; gap:10px; justify-content:center; margin:12px 0 0;">
         <button id="shareX" class="btn-outline" type="button" disabled>Condividi su X</button>
-        <a id="intentLink" class="btn-outline" href="#" target="_blank" rel="noopener" style="display:none">Apri composer X</a>
       </div>
+
 
 
       
@@ -274,6 +274,21 @@ const exBadge = document.querySelector('#exampleBadge');
 
 
 /* ===== State ===== */
+/* ===== Share (mobile only) ===== */
+let MOBILE_SHARE = false;
+
+function isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && matchMedia('(pointer:coarse)').matches;
+}
+
+function canNativeShareFiles() {
+  if (!navigator.share || !navigator.canShare) return false;
+  try {
+    const probe = new File([new Uint8Array([137,80,78,71])], 'x.png', { type: 'image/png' }); // header PNG
+    return navigator.canShare({ files: [probe] }) === true;
+  } catch { return false; }
+}
+  
 let OVERLAYS=null, currentCfg=null;
 let NAME_TO_HEX=null, META=null;
 
@@ -383,8 +398,10 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
-  document.getElementById('shareX').disabled = true;
-  document.getElementById('intentLink').style.display = 'none';
+  document.getElementById('shareX').disabled = true; // finché non abbiamo l’immagine "vera"
+ 
+
+ 
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
   if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
 
@@ -415,10 +432,11 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     // Modalità esempio OFF (abbiamo il render vero)
-    document.getElementById('shareX').disabled = false;
+    if (MOBILE_SHARE) document.getElementById('shareX').disabled = false;
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
-   
+  
+ 
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
@@ -525,137 +543,133 @@ function applyBadge(badgeEl, cfg){
       || (OVERLAYS.items[0] && OVERLAYS.items[0].id);
 
     currentCfg = getCfg(ovId) || OVERLAYS.items[0];
-        // memorizza sempre l’overlay corrente
     if (currentCfg?.id) localStorage.setItem('lastOverlay', currentCfg.id);
-
 
     ovName.textContent = currentCfg.name || currentCfg.id;
     ovAuthor.textContent = currentCfg.author ? `by ${currentCfg.author}` : '';
-    // ricorda overlay corrente
     localStorage.setItem('lastOverlay', currentCfg.id);
-    
-    // aggiorna il link al Viewer per portarsi dietro l’overlay
+
     const viewerLink = document.getElementById('viewerLink');
     if (viewerLink) {
       const u = new URL('./Doodles_trait-viewer.html', location.href);
       u.searchParams.set('overlay', currentCfg.id);
       viewerLink.href = u.toString();
     }
- 
+
     applyBadge(ovBadge, currentCfg);
-    
-    // Footer: "made by ARB8i–@robottiandrea" (tutto cliccabile)
+
+    // Footer "made by"
     (function(){
       const name = (currentCfg.author || '').toString().trim();
       const handleRaw = (currentCfg.authorHandle || currentCfg.x || currentCfg.twitter || '').toString().trim();
       const handle = handleRaw.replace(/^@/, '');
       const url = (currentCfg.authorUrl && currentCfg.authorUrl.trim())
                || (handle ? `https://x.com/${handle}` : '');
-    
+
       const hasName = !!name;
       const hasHandle = !!handle;
-    
+
       if(!hasName && !hasHandle){
         madeBy.style.display = 'none';
         return;
       }
-    
+
       madeBy.style.display = 'flex';
-    
-      // Testi
       mbName.textContent = hasName ? name : (hasHandle ? '@'+handle : '');
       mbSep.style.display = (hasName && hasHandle) ? '' : 'none';
-    
+
       if(hasHandle){
         mbHandle.textContent = '@' + handle;
         mbHandle.style.display = '';
       }else{
         mbHandle.style.display = 'none';
       }
-    
-      // Link su tutta la frase (se c'è un URL)
+
       if(url){
         madeByLink.href = url;
         madeByLink.style.pointerEvents = '';
       }else{
-        madeByLink.removeAttribute('href');      // niente URL → resta testo
-        madeByLink.style.pointerEvents = 'none'; // evita cursor "link" se non cliccabile
+        madeByLink.removeAttribute('href');
+        madeByLink.style.pointerEvents = 'none';
       }
     })();
 
-
-
-
+    // === Solo-mobile: mostra il tasto se supportato
+    MOBILE_SHARE = isMobile() && canNativeShareFiles();
+    const shareRow = document.getElementById('shareRow');
+    const shareBtn = document.getElementById('shareX');
+    if (MOBILE_SHARE) {
+      shareRow.style.display = 'flex';
+      shareBtn.disabled = true;            // si abilita dopo il render vero
+    } else {
+      shareRow.style.display = 'none';
+    }
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
-    // Modalità esempio ON finché non c'è un ID renderizzato
     imgEl.classList.add('is-example');
-    if(exBadge) exBadge.style.display = 'inline-block';    
+    if(exBadge) exBadge.style.display = 'inline-block';
     imgEl.alt = currentCfg.name || currentCfg.id;
 
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
 
-    const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
-  }catch(e){ setStatus(e?.message || 'Init error'); }
+    const qid = p.get('id');
+    if(qid){ $('#tokenId').value = qid; await openImage(); }
+
+  }catch(e){
+    setStatus(e?.message || 'Init error');
+  }
 })();
-// ===== Share to X (Web Share API + fallback Web Intent) =====
-async function shareOrFallbackX(){
+
+
+
+function dataUrlToBlob(dataURL){
+  const [head, body] = dataURL.split(',');
+  const mime = (/data:(.*?);/.exec(head) || [,'application/octet-stream'])[1];
+  const bstr = head.includes(';base64') ? atob(body) : decodeURIComponent(body);
+  const buf = new Uint8Array(bstr.length);
+  for (let i=0;i<bstr.length;i++) buf[i] = bstr.charCodeAt(i);
+  return new Blob([buf], {type:mime});
+}
+
+async function shareMobileX(){
+  if (!MOBILE_SHARE) return; // su desktop non fa nulla
   const img = document.getElementById('composite');
   const tokenEl = document.getElementById('tokenId');
 
-  const idRaw = (tokenEl?.value || '').trim();
-  const id = Number.parseInt(idRaw, 10);
+  const id = parseInt((tokenEl?.value || '').trim(), 10);
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
-
   const text = Number.isFinite(id)
     ? `Ho applicato "${layoutName}" a Doodle #${id} — prova anche tu!`
     : `Guarda il mio "${layoutName}"`;
 
-  // URL della stessa pagina con query id+overlay (per anteprima su X quando vai di fallback)
-  const url = new URL(location.href);
-  if (Number.isFinite(id)) url.searchParams.set('id', id);
-  if (currentCfg?.id)     url.searchParams.set('overlay', currentCfg.id);
-
-  // 1) Prova condivisione nativa con file (mobile)
   try{
     const src = img?.src;
-    if (src) {
-      const resp = await fetch(src).catch(()=>null);           // funziona anche con data:URL
-      const blob = resp && resp.ok ? await resp.blob() : null;
-      if (blob) {
-        const file = new File([blob], "doodle.png", { type: "image/png" });
-        if (navigator.share && navigator.canShare?.({ files:[file] })) {
-          await navigator.share({ text, files:[file] });
-          return; // fatto: niente fallback
-        }
-      }
+    if (!src) return;
+    const blob = src.startsWith('data:')
+      ? dataUrlToBlob(src)
+      : await (await fetch(src)).blob();
+    const file = new File([blob], 'doodle.png', { type: 'image/png' });
+
+    if (navigator.share && navigator.canShare?.({ files:[file] })) {
+      await navigator.share({ text, files:[file] });
     }
-  }catch(_) {
-    // ignora errori e prosegui con fallback
-  }
-
-  // 2) Fallback: Web Intent (non allega immagine, ma apre il composer di X)
-  const intent = new URL("https://x.com/intent/tweet");
-  if (text) intent.searchParams.set("text", text);
-  intent.searchParams.set("url", url.toString());
-
-  const w = window.open(intent.toString(), "_blank", "noopener");
-  if (!w) {
-    // se i popup sono bloccati, mostra il link
-    const a = document.getElementById('intentLink');
-    a.href = intent.toString();
-    a.style.display = 'inline';
+  }catch(e){
+    console.error('Share fallita:', e);
   }
 }
+
+   
+    
 
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
-document.getElementById('shareX')?.addEventListener('click', shareOrFallbackX);
+document.getElementById('shareX')?.addEventListener('click', shareMobileX);
   
 </script>
 </body>
 </html>
+
 
