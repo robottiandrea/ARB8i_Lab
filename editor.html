@@ -449,7 +449,17 @@ async function openImage(){
     if (MOBILE_SHARE) setShareVisible(true);
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
-  
+
+    // abilita i bottoni ora che abbiamo il render vero
+    document.getElementById('copyImg')?.removeAttribute('disabled');
+    
+    const sb = document.getElementById('shareX');
+    if (sb) {
+      sb.disabled = false;
+      sb.style.visibility = 'visible';
+      sb.style.pointerEvents = 'auto';
+}
+
  
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
@@ -475,7 +485,16 @@ async function openImage(){
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
-    if (MOBILE_SHARE) setShareVisible(false);
+    // torna in stato "anteprima" sui controlli
+  document.getElementById('copyImg')?.setAttribute('disabled','disabled');
+  
+  const sb = document.getElementById('shareX');
+  if (sb) {
+    sb.disabled = true;
+    sb.style.visibility = 'hidden';
+    sb.style.pointerEvents = 'none';
+  }
+
   }
 }
 
@@ -620,11 +639,22 @@ function applyBadge(badgeEl, cfg){
     const shareBtn = document.getElementById('shareX');
     const copyBtn  = document.getElementById('copyImg');
     
-    // Mostra SEMPRE il contenitore; lo rendiamo invisibile finché è solo anteprima
+    // Mostra SEMPRE il contenitore (anche su desktop)
     shareRow.style.display = 'flex';
-    setShareVisible(false);
-    const shareBtn = document.getElementById('shareX');
-    const copyBtn  = document.getElementById('copyImg');
+    
+    // Stato iniziale (siamo in modalità ANTEPRIMA)
+    if (shareBtn) {
+      shareBtn.style.display = MOBILE_SHARE ? '' : 'none'; // "Share!" solo dove supportato
+      shareBtn.style.visibility = 'hidden';
+      shareBtn.style.pointerEvents = 'none';
+      shareBtn.disabled = true;
+    }
+    if (copyBtn) {
+      copyBtn.style.display = ''; // sempre visibile
+      copyBtn.disabled = true;    // finché è solo l’anteprima
+    }
+
+
 
     shareBtn.style.display = MOBILE_SHARE ? '' : 'none'; // nascondi "Share!" su desktop
     copyBtn.style.display  = '';                          // mostra sempre "Copy image"
@@ -762,6 +792,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
