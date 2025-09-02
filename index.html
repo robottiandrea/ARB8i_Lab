@@ -65,31 +65,41 @@
   a.cardlink{position:absolute; inset:0; display:block; text-decoration:none; color:inherit}
   .empty{opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px}
 
-  /* Firma */
-.credits {
-  position: fixed;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 13px;
-  text-align: center;
-  font-family: 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  font-weight: 600;
+/* Footer "made by" con shimmer — identico all'editor */
+.footer-madeby{
+  display:flex; justify-content:center; align-items:center;
+  gap:0; margin:10px 0 0;
+  font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
 }
+.madeby-link{
+  display:inline-flex; align-items:center; gap:0;
+  text-decoration:none; color:inherit;
+}
+.madeby-link:hover{ text-decoration:underline; }
 
-/* rendi riutilizzabile lo shine anche fuori dal footer */
-.credits .shine, .navchip .shine{
-  display:inline-block;
-  background: linear-gradient(120deg, rgba(192,192,192,.85) 40%, #fff 50%, rgba(192,192,192,.85) 60%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: shimmer 8s infinite linear;
+/* Testo lucido */
+.shimmer{
+  --shine-start:rgba(192,192,192,.8);
+  --shine-middle:rgba(255,255,255,1);
+  --shine-end:rgba(192,192,192,.8);
+  background-image:linear-gradient(120deg,
+    var(--shine-start) 40%,
+    var(--shine-middle) 50%,
+    var(--shine-end) 60%
+  );
+  background-size:200% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:shine 8s linear infinite;
+  letter-spacing:.2px;
 }
-@keyframes shimmer {
-  0% { background-position:-200% 0; }
-  100% { background-position:200% 0; }
+@keyframes shine{
+  0%{ background-position:200% 0 }
+  100%{ background-position:-200% 0 }
+}
+@media (prefers-reduced-motion: reduce){
+  .shimmer{ animation: none !important; }
 }
 
 
@@ -149,6 +159,12 @@
     <div id="empty" class="empty" style="display:none">Nessun overlay nel manifest.</div>
   </main>
 
+  <div class="footer-madeby">
+    <a class="shimmer madeby-link" href="https://x.com/robottiandrea" target="_blank" rel="noopener">
+      made by&nbsp;<span>Andrea Robotti</span>–<span>@robottiandrea</span>
+    </a>
+  </div>
+
 <script>
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
@@ -197,13 +213,6 @@ loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
 
 </body>
-
-<footer class="credits">
-  <a href="https://x.com/robottiandrea" target="_blank" rel="noopener" class="shine">
-    made by @robottiandrea
-  </a>
-</footer>
-
 
 
 </html>
