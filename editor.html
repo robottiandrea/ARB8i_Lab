@@ -412,7 +412,7 @@ function rowHasAnyNeedle(row, needles){
 async function openImage(){
   setStatus('Cooking…');
   
-  if (MOBILE_SHARE) setShareVisible(false);
+  setShareVisible(false);
 
 
  
@@ -446,20 +446,10 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     // Modalità esempio OFF (abbiamo il render vero)
-    if (MOBILE_SHARE) setShareVisible(true);
+    setShareVisible(true);
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
-
-    // abilita i bottoni ora che abbiamo il render vero
-    document.getElementById('copyImg')?.removeAttribute('disabled');
-    
-    const sb = document.getElementById('shareX');
-    if (sb) {
-      sb.disabled = false;
-      sb.style.visibility = 'visible';
-      sb.style.pointerEvents = 'auto';
-}
-
+  
  
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
@@ -485,16 +475,7 @@ async function openImage(){
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
-    // torna in stato "anteprima" sui controlli
-  document.getElementById('copyImg')?.setAttribute('disabled','disabled');
-  
-  const sb = document.getElementById('shareX');
-  if (sb) {
-    sb.disabled = true;
-    sb.style.visibility = 'hidden';
-    sb.style.pointerEvents = 'none';
-  }
-
+    setShareVisible(false);
   }
 }
 
@@ -637,28 +618,11 @@ function applyBadge(badgeEl, cfg){
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
     const shareBtn = document.getElementById('shareX');
-    const copyBtn  = document.getElementById('copyImg');
     
-    // Mostra SEMPRE il contenitore (anche su desktop)
+    // Mostra SEMPRE il contenitore; lo rendiamo invisibile finché è solo anteprima
     shareRow.style.display = 'flex';
+    setShareVisible(false);
     
-    // Stato iniziale (siamo in modalità ANTEPRIMA)
-    if (shareBtn) {
-      shareBtn.style.display = MOBILE_SHARE ? '' : 'none'; // "Share!" solo dove supportato
-      shareBtn.style.visibility = 'hidden';
-      shareBtn.style.pointerEvents = 'none';
-      shareBtn.disabled = true;
-    }
-    if (copyBtn) {
-      copyBtn.style.display = ''; // sempre visibile
-      copyBtn.disabled = true;    // finché è solo l’anteprima
-    }
-
-
-
-    shareBtn.style.display = MOBILE_SHARE ? '' : 'none'; // nascondi "Share!" su desktop
-    copyBtn.style.display  = '';                          // mostra sempre "Copy image"
-
     // “Share!” solo dove supportato; “Copy image” resta sempre visibile
     if (shareBtn) shareBtn.style.display = MOBILE_SHARE ? '' : 'none';
 
@@ -777,32 +741,13 @@ async function copyImage(){
   }
 }
 
-
-   
-    
-
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
-
-
-  
+ 
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
