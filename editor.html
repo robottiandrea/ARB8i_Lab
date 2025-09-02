@@ -17,6 +17,8 @@
 <meta name="apple-mobile-web-app-title" content="Doodles">
 
 <script>
+  try { new Function('return 0?.x'); } catch { window.OC_UNSUPPORTED = true; }
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
   }
@@ -536,6 +538,11 @@ function applyBadge(badgeEl, cfg){
   
 /* ===== Init ===== */
 (async function init(){
+  if (window.OC_UNSUPPORTED) {
+  setStatus('Browser non supporta alcune feature: aggiorna Safari/OS.');
+  // non bloccare il resto della pagina, ma non mostrare il tasto Share
+}
+
   try{
     await loadManifest();
     const p = new URLSearchParams(location.search);
@@ -694,6 +701,7 @@ if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
