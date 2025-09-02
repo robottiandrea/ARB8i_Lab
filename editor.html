@@ -408,7 +408,7 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
-  var shareBtn = document.getElementById('shareX'); // se ti serve altrove
+  
   if (MOBILE_SHARE) setShareVisible(false);
 
 
@@ -614,9 +614,13 @@ function applyBadge(badgeEl, cfg){
     
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
-    const shareBtn = document.getElementById('shareX');
-    if (MOBILE_SHARE) setShareVisible(false);   // su mobile: nascosto finché è solo anteprima
-    else setShareVisible(false);                // su desktop: comunque nascosto
+    
+    if (MOBILE_SHARE) {
+      shareRow.style.display = 'flex';   // <— MOSTRA il contenitore su mobile
+      setShareVisible(false);            //     ma tienilo "nascosto" finché è solo anteprima
+    } else {
+      shareRow.style.display = 'none';   // <— su desktop non si vede proprio
+    }
 
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
@@ -705,6 +709,7 @@ if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
