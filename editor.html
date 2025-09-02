@@ -594,8 +594,8 @@ function applyBadge(badgeEl, cfg){
 
     const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
   }catch(e){ setStatus(e?.message || 'Init error'); }
-})();
-<!-- ===== Share to X (Web Share API + fallback Web Intent) ===== -->
+
+  <!-- ===== Share to X (Web Share API + fallback Web Intent) ===== -->
 <script>
 async function shareOrFallbackX(){
   const img = document.getElementById('composite');
@@ -647,6 +647,9 @@ async function shareOrFallbackX(){
     a.style.display = 'inline';
   }
 }
+</script>  
+})();
+
 
 
 /* ===== Events ===== */
@@ -657,4 +660,5 @@ document.getElementById('shareX')?.addEventListener('click', shareOrFallbackX);
 </script>
 </body>
 </html>
+
 
