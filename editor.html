@@ -297,10 +297,12 @@ let NAME_TO_HEX=null, META=null;
 
 /* ===== Utils ===== */
 function setShareVisible(visible){
-  var row = document.getElementById('shareRow');
-  if (!row) return;
-  row.style.visibility = visible ? 'visible' : 'hidden';
+  const row = document.getElementById('shareRow');
+  const btn = document.getElementById('shareX');
+  if (!row || !btn) return;
+  row.style.visibility   = visible ? 'visible' : 'hidden';
   row.style.pointerEvents = visible ? 'auto' : 'none';
+  btn.disabled = !visible;           // <— abilita/disabilita il bottone
 }
 
 function setStatus(t){ statusEl.textContent = t || ''; }
@@ -709,6 +711,7 @@ if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
