@@ -216,7 +216,12 @@
         <img id="composite" alt="Preview">
       </div>
 
-     
+      <!-- Share controls -->
+      <div class="share-row" style="display:flex; gap:10px; justify-content:center; margin:12px 0 0;">
+        <button id="shareX" class="btn-outline" type="button" disabled>Condividi su X</button>
+        <a id="intentLink" class="btn-outline" href="#" target="_blank" rel="noopener" style="display:none">Apri composer X</a>
+      </div>
+
 
       
       <!-- Made by (legato all'overlay) -->
@@ -378,6 +383,8 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
+  document.getElementById('shareX').disabled = true;
+  document.getElementById('intentLink').style.display = 'none';
   const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
   if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
 
@@ -408,6 +415,7 @@ async function openImage(){
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
     // Modalità esempio OFF (abbiamo il render vero)
+    document.getElementById('shareX').disabled = false;
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
    
@@ -592,10 +600,62 @@ function applyBadge(badgeEl, cfg){
     const qid = p.get('id'); if(qid){ $('#tokenId').value = qid; await openImage(); }
   }catch(e){ setStatus(e?.message || 'Init error'); }
 })();
+// ===== Share to X (Web Share API + fallback Web Intent) =====
+async function shareOrFallbackX(){
+  const img = document.getElementById('composite');
+  const tokenEl = document.getElementById('tokenId');
+
+  const idRaw = (tokenEl?.value || '').trim();
+  const id = Number.parseInt(idRaw, 10);
+  const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
+
+  const text = Number.isFinite(id)
+    ? `Ho applicato "${layoutName}" a Doodle #${id} — prova anche tu!`
+    : `Guarda il mio "${layoutName}"`;
+
+  // URL della stessa pagina con query id+overlay (per anteprima su X quando vai di fallback)
+  const url = new URL(location.href);
+  if (Number.isFinite(id)) url.searchParams.set('id', id);
+  if (currentCfg?.id)     url.searchParams.set('overlay', currentCfg.id);
+
+  // 1) Prova condivisione nativa con file (mobile)
+  try{
+    const src = img?.src;
+    if (src) {
+      const resp = await fetch(src).catch(()=>null);           // funziona anche con data:URL
+      const blob = resp && resp.ok ? await resp.blob() : null;
+      if (blob) {
+        const file = new File([blob], "doodle.png", { type: "image/png" });
+        if (navigator.share && navigator.canShare?.({ files:[file] })) {
+          await navigator.share({ text, files:[file] });
+          return; // fatto: niente fallback
+        }
+      }
+    }
+  }catch(_) {
+    // ignora errori e prosegui con fallback
+  }
+
+  // 2) Fallback: Web Intent (non allega immagine, ma apre il composer di X)
+  const intent = new URL("https://x.com/intent/tweet");
+  if (text) intent.searchParams.set("text", text);
+  intent.searchParams.set("url", url.toString());
+
+  const w = window.open(intent.toString(), "_blank", "noopener");
+  if (!w) {
+    // se i popup sono bloccati, mostra il link
+    const a = document.getElementById('intentLink');
+    a.href = intent.toString();
+    a.style.display = 'inline';
+  }
+}
 
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
+document.getElementById('shareX')?.addEventListener('click', shareOrFallbackX);
+  
 </script>
 </body>
 </html>
+
