@@ -221,6 +221,7 @@
       <!-- Share controls (solo mobile, mostrato da JS) -->
       <div id="shareRow" class="share-row" style="display:none; gap:10px; justify-content:center; margin:12px 0 0;">
         <button id="shareX" class="btn-outline" type="button" disabled>Share!</button>
+        <button id="copyImg" class="btn-outline" type="button">Copy image</button>
       </div>
 
 
@@ -616,14 +617,14 @@ function applyBadge(badgeEl, cfg){
     
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
+    const shareBtn = document.getElementById('shareX');
     
-    if (MOBILE_SHARE) {
-      shareRow.style.display = 'flex';   // <— MOSTRA il contenitore su mobile
-      setShareVisible(false);            //     ma tienilo "nascosto" finché è solo anteprima
-    } else {
-      shareRow.style.display = 'none';   // <— su desktop non si vede proprio
-    }
-
+    // Mostra SEMPRE il contenitore; lo rendiamo invisibile finché è solo anteprima
+    shareRow.style.display = 'flex';
+    setShareVisible(false);
+    
+    // “Share!” solo dove supportato; “Copy image” resta sempre visibile
+    if (shareBtn) shareBtn.style.display = MOBILE_SHARE ? '' : 'none';
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
@@ -695,6 +696,50 @@ async function shareMobileX(){
     console.error('Share fallita:', e);
   }
 }
+async function copyImage(){
+  try{
+    // serve l’immagine vera, non l’anteprima
+    if (imgEl.classList.contains('is-example')) {
+      setStatus('Generate an image first.');
+      return;
+    }
+
+    const src = imgEl?.src;
+    if (!src) return;
+
+    // Blob PNG dalla dataURL (o da fetch, se è URL)
+    let blob = src.startsWith('data:')
+      ? dataUrlToBlob(src)
+      : await (await fetch(src)).blob();
+
+    // Se non è PNG, riconverti (di solito non serve)
+    if (blob.type !== 'image/png') {
+      const tmp = new Image();
+      await new Promise((res, rej)=>{ tmp.onload=()=>res(); tmp.onerror=rej; tmp.src=src; });
+      const c = document.createElement('canvas');
+      c.width = tmp.naturalWidth; c.height = tmp.naturalHeight;
+      c.getContext('2d').drawImage(tmp, 0, 0);
+      blob = await new Promise(res => c.toBlob(res, 'image/png'));
+    }
+
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
+      setStatus('Image copied to clipboard ✅');
+    } else {
+      // Fallback: download
+      const a = document.createElement('a');
+      a.href = src;
+      a.download = 'doodle.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setStatus('Clipboard not supported here. Download started.');
+    }
+  } catch (e){
+    console.error(e);
+    setStatus('Copy failed. Long-press / save might work.');
+  }
+}
 
 
    
@@ -703,13 +748,15 @@ async function shareMobileX(){
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
-const shareBtn2 = document.getElementById('shareX');
-if (shareBtn2) shareBtn2.addEventListener('click', shareMobileX);
+document.getElementById('copyImg')?.addEventListener('click', copyImage);
+document.getElementById('shareX')?.addEventListener('click', shareMobileX);
+
 
   
 </script>
 </body>
 </html>
+
 
 
 
