@@ -196,7 +196,7 @@
   border-radius:50%; overflow:hidden;
   border:1px solid var(--border);
   background:#0d1016; box-shadow:0 6px 16px rgba(0,0,0,.25);
-  display:none; position:relative;
+  display:block; position:relative;
 }
 .id-preview img{
   width:100%; height:100%; display:block;
@@ -392,6 +392,7 @@ const idError = document.getElementById('idError');
 const idPreview = document.getElementById('idPreview');
 const idApplyBtn = document.getElementById('idApplyBtn');
 const idPopover  = document.getElementById('idPopover');
+const DEFAULT_PREVIEW_ID = '8929';  
 let popTimer = null;
 
 function nudgeGrid(){
@@ -583,11 +584,11 @@ async function applyIdPreview(id){
 
 function hideIdPreview(){
   if(!idPreview) return;
-  idPreview.style.display = 'none';
-  idPreview.removeAttribute('data-id');
   idPreview.classList.remove('loading');
-  idPreview.innerHTML = `<span class="id-badge">#—</span>`;
+  // Mantieni il posto e mostra la preview di default
+  applyIdPreview(DEFAULT_PREVIEW_ID);
 }
+
 
 async function buildCandidateUrls(id){
   const urls = [];
@@ -662,13 +663,72 @@ if(idApplyBtn){
 (function initIdField(){
   if(!idField) return;
 
-  // Enter = click sul bottone (azione di "apply")
+  // Enter = click sul bottone (azione "apply")
   idField.addEventListener('keydown', (e)=>{
     if(e.key === 'Enter'){
       e.preventDefault();
       idApplyBtn?.click();
     }
   });
+
+  // Prefill da query ?id= o da localStorage; altrimenti usa default 8929
+  const sp = new URLSearchParams(location.search);
+  const fromQuery = sp.get('id');
+
+  if(fromQuery != null){
+    const nq = normalizeId(fromQuery);
+    if(nq.valid){
+      idField.value = nq.value;
+      // Applica SUBITO se arriva da query (utile deep-link)
+      localStorage.setItem('lastId', nq.value);
+      applyIdPreview(nq.value);
+      setApplyButtonState(true);
+    }else{
+      setApplyButtonState(false);
+      applyIdPreview(DEFAULT_PREVIEW_ID);
+    }
+    // pulisci URL
+    sp.delete('id');
+    const q = sp.toString();
+    history.replaceState(null, '', location.pathname + (q?('?'+q):''));
+  }else{
+    const last = localStorage.getItem('lastId');
+    const nl = normalizeId(last);
+    if(nl.valid){
+      idField.value = nl.value;
+      applyIdPreview(nl.value);     // mostra l'ID attivo salvato
+      setApplyButtonState(true);
+    }else{
+      applyIdPreview(DEFAULT_PREVIEW_ID); // ← default sempre visibile
+      setApplyButtonState(false);
+    }
+  }
+
+  // Digitazione: SOLO validazione UI. NIENTE salvataggi/preview/link.
+  idField.addEventListener('input', ()=>{
+    const n = normalizeId(idField.value);
+    idField.value = n.value;
+
+    if(n.empty){
+      idField.classList.remove('error');
+      idError.style.display = 'none';
+      setApplyButtonState(false);
+      // La preview resta quella corrente (default o ultimo ID applicato)
+      return;
+    }
+    if(n.valid){
+      idField.classList.remove('error');
+      idError.style.display = 'none';
+      setApplyButtonState(true);
+    }else{
+      idField.classList.add('error');
+      idError.textContent = 'Inserisci un numero da 0 a 9999';
+      idError.style.display = '';
+      setApplyButtonState(false);
+    }
+  });
+})();
+
 
   // Prefill da query ?id= ... oppure da localStorage
   const sp = new URLSearchParams(location.search);
