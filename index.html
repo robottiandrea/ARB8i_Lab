@@ -397,12 +397,24 @@ function nudgeGrid(){
 function showPopover(msg){
   if(!idPopover) return;
   idPopover.textContent = msg;
-  idPopover.classList.remove('show');  // reset animazione
-  void idPopover.offsetWidth;          // forza reflow
+  idPopover.classList.remove('show');
+  void idPopover.offsetWidth;
   idPopover.classList.add('show');
+
+  const onEnd = (e)=>{
+    if(e.animationName === 'popOutLeft'){
+      idPopover.removeEventListener('animationend', onEnd);
+      nudgeGrid();
+    }
+  };
+  idPopover.addEventListener('animationend', onEnd, { once:true });
+
+  // opzionale: failsafe per reset classe dopo ~2.1s
   clearTimeout(popTimer);
   popTimer = setTimeout(()=> idPopover.classList.remove('show'), 2100);
 }
+
+
 
 function setApplyButtonState(valid){
   if(!idApplyBtn) return;
@@ -621,7 +633,7 @@ if(idApplyBtn){
 
     // feedback vicino al bottone
     showPopover('Locked in! Pick a card!');
-    nudgeGrid(); 
+    
   });
 }
 
