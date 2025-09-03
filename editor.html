@@ -345,7 +345,7 @@ function setShareVisible(visible){
 }
 
 function setStatus(t){ statusEl.textContent = t || ''; }
-function pad32hex(n){ const h = BigInt(n).toString(16); return h.padStart(64,'0'); }
+
 function decodeAbiString(hexdata){
   if(!hexdata || !hexdata.startsWith('0x')) return null;
   const h = hexdata.slice(2); if(h.length<128) return null;
@@ -775,47 +775,6 @@ async function copyImage(){
 // Calcolo robusto: spazio disponibile per la frame = viewport - (wrap - frame)
 let lastTarget = null, rafId = 0;
 
-function fitFrameNow(){
-  const wrap  = document.querySelector('.wrap');
-  const frame = document.querySelector('.frame');
-  if (!wrap || !frame) return;
-
-  const vh        = window.innerHeight;
-  const wrapH     = wrap.scrollHeight;
-  const frameH    = Math.round(frame.getBoundingClientRect().height);
-  const nonFrame  = wrapH - frameH;
-  const available = Math.floor(vh - nonFrame);
-  const target    = Math.max(140, available);   // minimo di sicurezza
-
-  if (target !== lastTarget){
-    frame.style.setProperty('--frame-max-h', target + 'px');
-    lastTarget = target;
-  }
-}
-
-// Throttle: massimo 1 calcolo per frame
-function fitFrame(){
-  if (rafId) return;
-  rafId = requestAnimationFrame(()=>{ rafId = 0; fitFrameNow(); });
-}
-
-// Hook principali
-window.addEventListener('load', fitFrame);
-window.addEventListener('resize', fitFrame);
-window.addEventListener('orientationchange', fitFrame);
-document.getElementById('composite')?.addEventListener('load', fitFrame);
-document.fonts?.ready?.then(fitFrame);
-
-// Osserva solo contenuti/testi (no attributes per evitare loop)
-const wrapEl = document.querySelector('.wrap');
-if (wrapEl){
-  new MutationObserver(fitFrame).observe(wrapEl, {
-    childList: true, subtree: true, characterData: true
-  });
-  new ResizeObserver(fitFrame).observe(wrapEl);
-}
-
-
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
@@ -825,6 +784,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
