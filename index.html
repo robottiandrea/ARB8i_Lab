@@ -231,6 +231,7 @@
   border:1px solid var(--border);
   background: color-mix(in oklab, var(--card) 92%, transparent);
   box-shadow:0 8px 24px rgba(0,0,0,.35);
+  white-space: nowrap
   color:var(--text);
   font:600 13px/1.2 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
   opacity:0; pointer-events:none;
@@ -547,7 +548,7 @@ if(idApplyBtn){
     applyIdPreview(n.value);
 
     // feedback vicino al bottone
-    showPopover('Sei dentro, scegli un layout!');
+    showPopover('Locked in! Pick a card!');
   });
 }
 
