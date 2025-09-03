@@ -166,16 +166,24 @@
 /* ID nella hero */
 .hero-id{ margin-top:12px; }
 .hero-id-row{ display:flex; justify-content:center; gap:8px; }
-.id-input{
-  width:min(320px, 90vw);
-  height:40px;
-  padding:0 12px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:#0d1016;
-  color:var(--text);
-  font-size:16px; /* evita zoom iOS */
+:root{ /* aggiungi (o integra) */
+  --id-width: 112px; /* ~4 cifre + aria. Cambia qui se vuoi più/meno largo */
 }
+
+.id-input{
+  width: var(--id-width);
+  flex: 0 0 var(--id-width);   /* fissa in un container flex */
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #0d1016;
+  color: var(--text);
+  font-size: 16px;             /* evita zoom iOS */
+  font-variant-numeric: tabular-nums; /* cifre a larghezza uniforme */
+  text-align: center;          /* con 4 cifre sta meglio centrato */
+}
+
 .id-input.error{ border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.2); }
 .id-hint{ margin:6px 0 0; color:var(--muted); font-size:13px; }
 .id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
@@ -347,7 +355,7 @@
       <div class="hero-id-row">
         <input id="idField" class="id-input" type="text"
                inputmode="numeric" pattern="[0-9]*" autocomplete="off"
-               placeholder="8929" />
+               maxlength="4" placeholder="8929" />
         <div class="id-cta">
           <button id="idApplyBtn" class="id-btn" type="button" disabled>It’s me!</button>
           <div id="idPopover" class="popover" role="status" aria-live="polite" aria-atomic="true"></div>
