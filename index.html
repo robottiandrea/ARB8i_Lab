@@ -27,14 +27,16 @@
          --footer-space: calc(44px + env(safe-area-inset-bottom));
   }
   *{box-sizing:border-box}
-  body{margin:0; background:var(--bg); color:var(--text); font:15px/1.45 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
-  /* un’unica regola .wrap */
-  .wrap{
-    max-width:1100px;
-    margin:0 auto;
-    /* T R B (28 + spazio footer) L */
-    padding: 28px 28px calc(28px + var(--footer-space)) 28px;
+  
+  html, body { height: 100%; }
+  body{
+    min-height: 100svh;      /* meglio di 100vh su mobile */
+    display: flex;
+    flex-direction: column;
   }
+  .wrap{ flex: 1 0 auto; }    /* il contenuto riempie lo spazio e spinge il footer in basso */
+  
+    }
   /* centratura SOLO del blocco titolo+descrizione */
   .hero{ text-align:center; margin:8px 0 18px }
   .hero h1 {
@@ -85,8 +87,14 @@
 .madeby-link:hover{ text-decoration:underline; }
 .footer-madeby{ white-space:nowrap; }
 .madeby-link{ white-space:nowrap; }  
-.footer-madeby{ position:fixed; left:50%; transform:translateX(-50%); bottom:calc(16px + env(safe-area-inset-bottom)); }
-
+.footer-madeby{
+  position: static;              /* default */
+  display:flex; justify-content:center; align-items:center;
+  gap:0; margin:12px 0 16px;
+  padding-bottom: env(safe-area-inset-bottom); /* per iPhone con notch */
+  white-space:nowrap;
+  font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
 
 /* Testo lucido */
 .shimmer{
