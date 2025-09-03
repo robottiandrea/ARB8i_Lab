@@ -180,6 +180,33 @@
 .id-hint{ margin:6px 0 0; color:var(--muted); font-size:13px; }
 .id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
 
+  /* Avatar tondo di anteprima ID */
+.hero-id-row{ align-items:center; } /* allinea verticalmente input + tondo */
+
+.id-preview{
+  width:40px; height:40px; flex:0 0 auto;
+  border-radius:50%; overflow:hidden;
+  border:1px solid var(--border);
+  background:#0d1016; box-shadow:0 6px 16px rgba(0,0,0,.25);
+  display:none; position:relative;
+}
+.id-preview img{
+  width:100%; height:100%; display:block;
+  object-fit:cover; object-position:50% 35%; /* testa leggermente più alta */
+}
+.id-preview .id-badge{
+  position:absolute; inset:0; display:flex;
+  align-items:center; justify-content:center;
+  font:600 12px/1 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  color:var(--muted);
+}
+.id-preview.loading::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+  background-size:200% 100%;
+  animation:shine 1.8s linear infinite; /* riusa @keyframes shine già presente */
+}
+
 </style>
 </head>
 <body>
@@ -194,11 +221,15 @@
       <h1>ARB8i 💛 Lab</h1>
       <p>Pick a vibe! Overlay the fun!</p>
       <div class="hero-id">
-      <label for="idField" class="sr-only">Doodles ID (0–9999)</label>
+      <label for="idField" class="sr-only">Doodles ID</label>
       <div class="hero-id-row">
         <input id="idField" class="id-input" type="text"
                inputmode="numeric" pattern="[0-9]*" autocomplete="off"
-               placeholder="Doodles ID (0–9999)" />
+               placeholder="8929" />
+      <div id="idPreview" class="id-preview" aria-hidden="true">
+        <span class="id-badge">#—</span>
+      </div>
+
       </div>
       <p class="id-hint">
         Inserisci ID e scegli un overlay.
@@ -277,6 +308,84 @@ function render(){
   updateCardLinksWithId(n.valid ? n.value : null);
 
 }
+<script>
+/* === Mini-preview Doodle #ID === */
+const idPreview = document.getElementById('idPreview');
+
+async function applyIdPreview(id){
+  if(!idPreview) return;
+  if(!id && id!==0){
+    hideIdPreview();
+    return;
+  }
+  const val = String(id);
+  idPreview.style.display = 'block';
+  idPreview.dataset.id = val;
+  idPreview.classList.add('loading');
+  idPreview.innerHTML = `<span class="id-badge">#${val}</span>`;
+
+  const urls = await buildCandidateUrls(val);
+
+  for (const url of urls){
+    // se l'utente ha cambiato ID nel frattempo, interrompi
+    if(idPreview.dataset.id !== val) return;
+    const ok = await tryLoadIntoPreview(val, url);
+    if(ok) break;
+  }
+  idPreview.classList.remove('loading');
+}
+
+function hideIdPreview(){
+  if(!idPreview) return;
+  idPreview.style.display = 'none';
+  idPreview.removeAttribute('data-id');
+  idPreview.classList.remove('loading');
+  idPreview.innerHTML = `<span class="id-badge">#—</span>`;
+}
+
+async function buildCandidateUrls(id){
+  const urls = [];
+  // 1) Se esiste un indice opzionale ./doodles/index.json { "1234":"url" }
+  try{
+    if(!window.__doodleIndexTried){
+      window.__doodleIndexTried = true;
+      const r = await fetch('./doodles/index.json', {cache:'no-store'});
+      if(r.ok) window.__doodleIndex = await r.json();
+    }
+    if(window.__doodleIndex && window.__doodleIndex[id]){
+      urls.push(String(window.__doodleIndex[id]));
+    }
+  }catch{}
+  // 2) Pattern locali comuni (metti le tue cartelle reali se diverse)
+  urls.push(
+    `./doodles/thumbs/${id}.png`,
+    `./doodles/thumbs/${id}.jpg`,
+    `./doodles/${id}.png`,
+    `./doodles/${id}.jpg`
+  );
+  return urls;
+}
+
+function tryLoadIntoPreview(id, url){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.decoding = 'async';
+    img.alt = `Anteprima Doodle #${id}`;
+    img.onload = ()=>{
+      if(idPreview.dataset.id === String(id)){
+        idPreview.innerHTML = '';
+        idPreview.appendChild(img);
+        resolve(true);
+      }else{
+        resolve(false);
+      }
+    };
+    img.onerror = ()=> resolve(false);
+    img.src = url;
+  });
+}
+</script>
+  
 (function initIdField(){
   if(!idField) return;
 
@@ -291,6 +400,9 @@ function render(){
     if(nq.valid){
       idField.value = nq.value;
       localStorage.setItem('lastId', nq.value);
+      const n0 = normalizeId(idField.value);
+      if(n0.valid){ applyIdPreview(n0.value); } else { hideIdPreview(); }
+
       // i link saranno aggiornati dopo render(); intanto puliamo l'URL
     }
     sp.delete('id');
@@ -312,6 +424,7 @@ function render(){
       idError.style.display = 'none';
       localStorage.removeItem('lastId');
       updateCardLinksWithId(null);
+      hideIdPreview();
       return;
     }
     if(n.valid){
@@ -319,12 +432,15 @@ function render(){
       idError.style.display = 'none';
       localStorage.setItem('lastId', n.value);
       updateCardLinksWithId(n.value);
+      applyIdPreview(n.value);
     }else{
       idField.classList.add('error');
       idError.textContent = 'Inserisci un numero da 0 a 9999';
       idError.style.display = '';
       updateCardLinksWithId(null);
+      hideIdPreview();
     }
+
   });
 })();
 
