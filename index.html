@@ -206,6 +206,56 @@
   background-size:200% 100%;
   animation:shine 1.8s linear infinite; /* riusa @keyframes shine già presente */
 }
+/* Bottone "It’s me!" */
+.id-cta{ position:relative; display:flex; align-items:center; }
+.id-btn{
+  height:40px; padding:0 14px; margin:0;
+  border-radius:10px; border:1px solid var(--border);
+  background:var(--acc); color:#0f1115; font-weight:700;
+  font-family:'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  cursor:pointer; transition:transform .05s ease, filter .15s ease, opacity .15s;
+}
+.id-btn:hover{ filter:brightness(1.1); }
+.id-btn:active{ transform:translateY(1px); }
+.id-btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+/* Popover ancorato al bottone */
+.popover{
+  position:absolute;
+  left:50%;
+  bottom:calc(100% + 10px);    /* sopra il bottone */
+  transform:translateX(-50%) translateY(6px);
+  z-index:1000;
+  padding:8px 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background: color-mix(in oklab, var(--card) 92%, transparent);
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  color:var(--text);
+  font:600 13px/1.2 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  opacity:0; pointer-events:none;
+}
+/* freccetta verso il bottone */
+.popover::after{
+  content:"";
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  width:0; height:0;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:6px solid var(--card);                 /* riempimento freccia */
+  filter: drop-shadow(0 -1px 0 var(--border));      /* bordo freccia */
+}
+
+/* Animazioni comparsa/scomparsa */
+.popover.show{
+  animation: popIn .18s ease-out, popHold 1.6s linear .18s, popOut .22s ease-in 1.78s forwards;
+}
+@keyframes popIn { from{ opacity:0; transform:translateX(-50%) translateY(10px);} to{ opacity:1; transform:translateX(-50%) translateY(0);} }
+@keyframes popHold { from{ opacity:1 } to{ opacity:1 } }
+@keyframes popOut { to{ opacity:0; transform:translateX(-50%) translateY(10px);} }
 
 </style>
 </head>
@@ -226,6 +276,11 @@
         <input id="idField" class="id-input" type="text"
                inputmode="numeric" pattern="[0-9]*" autocomplete="off"
                placeholder="8929" />
+        <div class="id-cta">
+          <button id="idApplyBtn" class="id-btn" type="button" disabled>It’s me!</button>
+          <div id="idPopover" class="popover" role="status" aria-live="polite" aria-atomic="true"></div>
+        </div>
+
       <div id="idPreview" class="id-preview" aria-hidden="true">
         <span class="id-badge">#—</span>
       </div>
@@ -255,6 +310,24 @@ const EMPTY = document.getElementById('empty');
 const idField = document.getElementById('idField');
 const idError = document.getElementById('idError');
 const idPreview = document.getElementById('idPreview');
+const idApplyBtn = document.getElementById('idApplyBtn');
+const idPopover  = document.getElementById('idPopover');
+let popTimer = null;
+
+function showPopover(msg){
+  if(!idPopover) return;
+  idPopover.textContent = msg;
+  idPopover.classList.remove('show');  // reset animazione
+  void idPopover.offsetWidth;          // forza reflow
+  idPopover.classList.add('show');
+  clearTimeout(popTimer);
+  popTimer = setTimeout(()=> idPopover.classList.remove('show'), 2100);
+}
+
+function setApplyButtonState(valid){
+  if(!idApplyBtn) return;
+  idApplyBtn.disabled = !valid;
+}
 
 function normalizeId(v){
   const s = String(v||'').trim().replace(/\D+/g,'');
@@ -305,8 +378,9 @@ function render(){
   }
   if (EMPTY) EMPTY.style.display = 'none';
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
-  const n = idField ? normalizeId(idField.value) : {valid:false};
-  updateCardLinksWithId(n.valid ? n.value : null);
+  const active = normalizeId(localStorage.getItem('lastId'));
+  updateCardLinksWithId(active.valid ? active.value : null);
+
 }
 
 /* === Mini-preview Doodle #ID === */
@@ -447,24 +521,58 @@ function tryLoadIntoPreview(id, url){
     img.src = url;
   });
 }
+// === CLICK SUL BOTTONE "IT'S ME!" ===
+if(idApplyBtn){
+  idApplyBtn.addEventListener('click', ()=>{
+    const n = normalizeId(idField?.value);
+    if(!n || !n.valid){
+      if(idField){
+        idField.classList.add('error');
+        idError.textContent = 'Inserisci un numero da 0 a 9999';
+        idError.style.display = '';
+      }
+      setApplyButtonState(false);
+      return;
+    }
+    // salva e applica
+    localStorage.setItem('lastId', n.value);
+    updateCardLinksWithId(n.value);
+    applyIdPreview(n.value);
+
+    // feedback vicino al bottone
+    showPopover('Sei dentro, scegli un layout!');
+  });
+}
 
 /* === Input ID: init & wiring === */
 (function initIdField(){
   if(!idField) return;
 
-  // Disabilita Enter
-  idField.addEventListener('keydown', (e)=>{ if(e.key==='Enter') e.preventDefault(); });
+  // Enter = click sul bottone (azione di "apply")
+  idField.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      idApplyBtn?.click();
+    }
+  });
 
-  // Prefill da query ?id= o da localStorage
+  // Prefill da query ?id= ... oppure da localStorage
   const sp = new URLSearchParams(location.search);
-  let fromQuery = sp.get('id');
+  const fromQuery = sp.get('id');
+
   if(fromQuery != null){
     const nq = normalizeId(fromQuery);
     if(nq.valid){
       idField.value = nq.value;
+      // Applico SUBITO se è arrivato da query (comportamento comodo)
       localStorage.setItem('lastId', nq.value);
       applyIdPreview(nq.value);
+      setApplyButtonState(true);
+    }else{
+      setApplyButtonState(false);
+      hideIdPreview();
     }
+    // pulisci l'URL
     sp.delete('id');
     const q = sp.toString();
     history.replaceState(null, '', location.pathname + (q?('?'+q):'')); // pulisci URL
@@ -473,12 +581,14 @@ function tryLoadIntoPreview(id, url){
     const nl = normalizeId(last);
     if(nl.valid){
       idField.value = nl.value;
-      applyIdPreview(nl.value); // <<< mancava
+      applyIdPreview(nl.value);
+      setApplyButtonState(true);
     }else{
       hideIdPreview();
+      setApplyButtonState(false);
     }
   }
-
+// Digitazione: SOLO validazione UI. Non salvi, non applichi.
   idField.addEventListener('input', ()=>{
     const n = normalizeId(idField.value);
     idField.value = n.value;
@@ -489,6 +599,7 @@ function tryLoadIntoPreview(id, url){
       localStorage.removeItem('lastId');
       updateCardLinksWithId(null);
       hideIdPreview();
+      setApplyButtonState(false);
       return;
     }
     if(n.valid){
@@ -497,10 +608,12 @@ function tryLoadIntoPreview(id, url){
       localStorage.setItem('lastId', n.value);
       updateCardLinksWithId(n.value);
       applyIdPreview(n.value);
+      setApplyButtonState(true);
     }else{
       idField.classList.add('error');
       idError.textContent = 'Inserisci un numero da 0 a 9999';
       idError.style.display = '';
+      setApplyButtonState(false);
       updateCardLinksWithId(null);
       hideIdPreview();
     }
@@ -520,77 +633,5 @@ async function loadManifest(){
 
 loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
-
-  
-(function initIdField(){
-  if(!idField) return;
-
-  // Enter disabilitato
-  idField.addEventListener('keydown', (e)=>{ if(e.key==='Enter') e.preventDefault(); });
-
-  // Prefill da query ?id= o da localStorage
-  const sp = new URLSearchParams(location.search);
-  let fromQuery = sp.get('id');
-  if(fromQuery != null){
-    const nq = normalizeId(fromQuery);
-    if(nq.valid){
-      idField.value = nq.value;
-      localStorage.setItem('lastId', nq.value);
-      const n0 = normalizeId(idField.value);
-      if(n0.valid){ applyIdPreview(n0.value); } else { hideIdPreview(); }
-
-      // i link saranno aggiornati dopo render(); intanto puliamo l'URL
-    }
-    sp.delete('id');
-    const q = sp.toString();
-    history.replaceState(null, '', location.pathname + (q?('?'+q):''));
-  }else{
-    const last = localStorage.getItem('lastId');
-    const nl = normalizeId(last);
-    if(nl.valid) idField.value = nl.value;
-  }
-
-  // On input: normalizza, valida, persisti, aggiorna link
-  idField.addEventListener('input', ()=>{
-    const n = normalizeId(idField.value);
-    idField.value = n.value;
-
-    if(n.empty){
-      idField.classList.remove('error');
-      idError.style.display = 'none';
-      localStorage.removeItem('lastId');
-      updateCardLinksWithId(null);
-      hideIdPreview();
-      return;
-    }
-    if(n.valid){
-      idField.classList.remove('error');
-      idError.style.display = 'none';
-      localStorage.setItem('lastId', n.value);
-      updateCardLinksWithId(n.value);
-      applyIdPreview(n.value);
-    }else{
-      idField.classList.add('error');
-      idError.textContent = 'Inserisci un numero da 0 a 9999';
-      idError.style.display = '';
-      updateCardLinksWithId(null);
-      hideIdPreview();
-    }
-
-  });
-})();
-
-async function loadManifest(){
-  for (const url of ['./overlays/overlays.json','./overlays.json']){
-    try{ const r = await fetch(url); if(r.ok){ overlays = await r.json(); return; } }catch{}
-  }
-  overlays = { items: [] };
-}
-
-loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
-</script>
-
 </body>
-
-
 </html>
