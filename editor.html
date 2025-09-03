@@ -200,34 +200,7 @@
     border-radius:12px;
   }
 }
-/* Riduce l'altezza della .frame esattamente dell'overflow della pagina */
-function fitToViewport() {
-  const wrap  = document.querySelector('.wrap');
-  const frame = document.querySelector('.frame');
-  const img   = document.getElementById('composite');
-  if (!wrap || !frame) return;
 
-  // reset per misurare l'altezza “naturale”
-  frame.style.height = '';
-  if (img) { img.style.height = ''; img.style.width = ''; }
-
-  const vh = window.innerHeight;
-  const natural = wrap.scrollHeight;             // quanto “vorrebbe” essere
-  const overflow = natural - vh;
-
-  if (overflow > 0) {
-    const curH = frame.getBoundingClientRect().height;
-    const target = Math.max(120, curH - overflow);  // non scendere sotto 120px
-    frame.style.height = target + 'px';
-
-    if (img) {
-      img.style.height = '100%';
-      img.style.width  = 'auto';                  // mantiene proporzioni
-      img.style.maxWidth = '100%';
-      img.style.objectFit = 'contain';
-    }
-  }
-}
 
 /* Hook: al load, al resize, quando cambia l'immagine o i contenuti */
 window.addEventListener('load', fitToViewport);
@@ -794,10 +767,38 @@ $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
- 
+/* Riduce l'altezza della .frame esattamente dell'overflow della pagina */
+function fitToViewport() {
+  const wrap  = document.querySelector('.wrap');
+  const frame = document.querySelector('.frame');
+  const img   = document.getElementById('composite');
+  if (!wrap || !frame) return;
+
+  // reset per misurare l'altezza “naturale”
+  frame.style.height = '';
+  if (img) { img.style.height = ''; img.style.width = ''; }
+
+  const vh = window.innerHeight;
+  const natural = wrap.scrollHeight;             // quanto “vorrebbe” essere
+  const overflow = natural - vh;
+
+  if (overflow > 0) {
+    const curH = frame.getBoundingClientRect().height;
+    const target = Math.max(120, curH - overflow);  // non scendere sotto 120px
+    frame.style.height = target + 'px';
+
+    if (img) {
+      img.style.height = '100%';
+      img.style.width  = 'auto';                  // mantiene proporzioni
+      img.style.maxWidth = '100%';
+      img.style.objectFit = 'contain';
+    }
+  }
+} 
 </script>
 </body>
 </html>
+
 
 
 
