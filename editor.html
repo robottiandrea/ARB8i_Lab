@@ -183,30 +183,23 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
-@media (min-width: 768px){
-  html, body { height:100%; }
-  body { overflow:hidden; }          /* niente scroll */
-  .wrap{ min-height:100vh; }
-
-  .card{ overflow:hidden; }          /* evita scroll interni inattesi */
+@media (min-width:768px){
+  html,body{height:100%}
+  body{overflow:hidden}
+  .wrap{min-height:100vh}
+  .card{overflow:hidden}
 
   .frame{
-    margin:0;                        /* ← i tuoi 18px/8px rubavano altezza */
-    width:100%;                      /* non fissare 640px su desktop */
-    height:auto;
+    margin:0; width:100%; height:auto;
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
   }
-
   #composite{
-    max-width:100%;
-    max-height:100%;
-    width:auto;                      /* mantieni proporzioni */
-    height:auto;
-    object-fit:contain;
-    border-radius:12px;
+    max-width:100%; max-height:100%;
+    width:auto; height:auto; object-fit:contain;
   }
 }
+
 
 
 </style>
@@ -765,27 +758,33 @@ function fitToViewport() {
   const img   = document.getElementById('composite');
   if (!wrap || !frame) return;
 
-  // reset per misurare l'altezza “naturale”
+  // reset per misurare correttamente
   frame.style.height = '';
-  if (img) { img.style.height = ''; img.style.width = ''; }
-
-  const vh = window.innerHeight;
-  const natural = wrap.scrollHeight;             // quanto “vorrebbe” essere
-  const overflow = natural - vh;
-
-  if (overflow > 0) {
-    const curH = frame.getBoundingClientRect().height;
-    const target = Math.max(120, curH - overflow);  // non scendere sotto 120px
-    frame.style.height = target + 'px';
-
-    if (img) {
-      img.style.height = '100%';
-      img.style.width  = 'auto';                  // mantiene proporzioni
-      img.style.maxWidth = '100%';
-      img.style.objectFit = 'contain';
-    }
+  if (img) {
+    img.style.height = '';
+    img.style.width  = '';
+    img.style.maxWidth = '';
+    img.style.maxHeight = '';
   }
-} 
+
+  const vh      = window.innerHeight;              // viewport height
+  const wrapH   = wrap.scrollHeight;               // altezza complessiva attuale
+  const frameH  = frame.getBoundingClientRect().height;
+  const nonFrame = wrapH - frameH;                 // tutto ciò che NON è la frame
+
+  const target = Math.max(120, vh - nonFrame);     // height esatta per far entrare tutto
+  frame.style.height = target + 'px';
+
+  if (img) {
+    // immagine dentro la frame, proporzioni integre
+    img.style.maxHeight = '100%';
+    img.style.maxWidth  = '100%';
+    img.style.height    = '100%';
+    img.style.width     = 'auto';
+    img.style.objectFit = 'contain';
+  }
+}
+
 // Esegui al load/resize e quando cambia il contenuto
 window.addEventListener('load', fitToViewport);
 window.addEventListener('resize', fitToViewport);
@@ -804,6 +803,7 @@ document.getElementById('composite')?.addEventListener('load', fitToViewport);
 </script>
 </body>
 </html>
+
 
 
 
