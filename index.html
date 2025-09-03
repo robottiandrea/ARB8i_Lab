@@ -334,6 +334,26 @@
 @media (prefers-reduced-motion: reduce){
   .grid.highlight .card::after{ animation:none; opacity:0; }
 }
+/* Come in editor */
+.form-label{
+  display:inline-block;
+  margin: 0 0 6px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.sub{
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.back{
+  color: var(--acc);
+  text-decoration: none;
+}
+.back:hover{ text-decoration: underline; }
 
 
 
@@ -351,7 +371,7 @@
       <h1>ARB8i 💛 Lab</h1>
       <p>Pick a vibe! Overlay the fun!</p>
       <div class="hero-id">
-      <label for="idField" class="sr-only">Doodles ID</label>
+      <label for="idField" class="form-label">Doodles ID</label>
       <div class="hero-id-row">
         <input id="idField" class="id-input" type="text"
                inputmode="numeric" pattern="[0-9]*" autocomplete="off"
@@ -366,10 +386,11 @@
       </div>
 
       </div>
-      <p class="id-hint">
-        Inserisci ID e scegli un overlay.
-        <a id="tvLink" href="./Doodles_trait-viewer.html?source=index">Non sai l’ID? Apri il Trait Viewer</a>
+      <p class="sub" style="margin:6px 0 0">
+        Missing your Doodle ID?
+        <a id="tvLink" class="back shimmer idhelp" href="./Doodles_trait-viewer.html?source=index">Find it here!</a>
       </p>
+
       <p id="idError" class="id-error" role="status" aria-live="polite" style="display:none"></p>
     </div>
     </header>
