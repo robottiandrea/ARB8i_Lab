@@ -264,6 +264,27 @@
   to { opacity:0; transform: translateY(-50%) translateX(12px); }
 }
 
+/* Highlight temporaneo delle card dopo l'apply dell'ID */
+.grid.highlight .card::after{
+  content:"";
+  position:absolute;
+  inset:-2px;                    /* leggermente fuori dal bordo */
+  border-radius:16px;
+  pointer-events:none;
+  box-shadow: 0 0 0 0 rgba(138,180,255,0), 0 0 0 rgba(138,180,255,0);
+  animation: glowPulse 1.6s ease-in-out 1;
+}
+
+@keyframes glowPulse{
+  0%   { box-shadow: 0 0 0 0 rgba(138,180,255,0),   0 0 0 rgba(138,180,255,0); }
+  15%  { box-shadow: 0 0 0 3px color-mix(in oklab, var(--acc) 70%, transparent),
+                     0 0 28px color-mix(in oklab, var(--acc) 35%, transparent); }
+  100% { box-shadow: 0 0 0 0 rgba(138,180,255,0),   0 0 0 rgba(138,180,255,0); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .grid.highlight .card::after{ animation:none; }
+}
 
 </style>
 </head>
@@ -322,6 +343,14 @@ const idApplyBtn = document.getElementById('idApplyBtn');
 const idPopover  = document.getElementById('idPopover');
 let popTimer = null;
 
+function nudgeGrid(){
+  if(!GRID) return;
+  GRID.classList.remove('highlight');      // reset se già presente
+  void GRID.offsetWidth;                    // forza reflow per riavviare l’animazione
+  GRID.classList.add('highlight');
+  setTimeout(()=> GRID.classList.remove('highlight'), 1700);
+}
+  
 function showPopover(msg){
   if(!idPopover) return;
   idPopover.textContent = msg;
@@ -549,6 +578,7 @@ if(idApplyBtn){
 
     // feedback vicino al bottone
     showPopover('Locked in! Pick a card!');
+    nudgeGrid(); 
   });
 }
 
