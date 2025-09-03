@@ -183,42 +183,34 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
-/* === Desktop: layout senza JS, niente tagli, niente spazio sprecato === */
 @media (min-width: 768px){
-  /* Pagina: header | card (cresce) | footer */
   .wrap{
-    min-height: 100svh;
+    min-height: 100svh;                    /* altezza viewport reale */
     display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 14px;
+    grid-template-rows: auto 1fr auto;     /* header / contenuto che cresce / footer */
   }
 
-  /* La card occupa tutto lo spazio della riga centrale */
   .card{
     display: grid;
-    grid-template-rows:
-      auto   /* label */
-      auto   /* input row */
-      auto   /* hint "Find it here!" */
-      auto   /* status */
-      1fr    /* <-- frame che SI ESPANDE */
-      auto;  /* share row */
-    overflow: hidden;   /* evita scroll interni */
-    min-height: 0;      /* sblocca lo shrink in grid */
+    grid-template-rows: auto auto auto 1fr auto; /* label, input, status, frame (cresce), share */
+    min-height: 0;                         /* fondamentale per far comprimere */
   }
 
   .frame{
-    margin: 0;          /* nessun margine che “rubi” altezza */
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    min-height: 160px;  /* sicurezza su viewport bassi */
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    background: #0d1016;
+    min-height: 0;                         /* fa sì che la riga 1fr prenda il resto */
+    display:flex; align-items:center; justify-content:center;
+    overflow:hidden;
+    background:#0d1016;
   }
+
+  #composite{
+    max-width:100%;
+    max-height:100%;
+    width:auto; height:auto;
+    object-fit:contain;                     /* tutto visibile, proporzioni ok */
+  }
+}
+
 
   #composite{
     width: auto;
@@ -828,6 +820,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
