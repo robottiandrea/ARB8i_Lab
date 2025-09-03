@@ -183,49 +183,6 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
-/* Desktop: layout a flex che tiene conto di header e footer */
-@media (min-width: 768px){
-  /* 1) Il wrapper riempie il viewport e distribuisce: header / card / footer */
-  .wrap{
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 2) La card è una colonna: i blocchi sopra/sotto sono auto,
-        la .frame prende tutto lo spazio residuo */
-  .card{
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;   /* riempie lo spazio tra header e footer */
-    min-height: 0;    /* sblocca la compressione del figlio flessibile */
-    overflow: hidden; /* niente scroll interni strani */
-  }
-
-  /* 3) La frame cresce, il resto no */
-  .frame{
-    flex: 1 1 auto;   /* ← QUESTA è la chiave: prende tutto lo spazio rimasto */
-    min-height: 0;
-    margin: 0;        /* niente 18px/8px che “rubano” altezza */
-    width: 100%;      /* no 640px fissi */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #0d1016;
-  }
-
-  /* 4) L’immagine si adatta alla frame senza deformarsi */
-  #composite{
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain; /* vedi tutto: “Mello” in alto + firma in basso */
-    border-radius: 12px;
-  }
-}
-
 
   
 </style>
@@ -345,7 +302,7 @@ function setShareVisible(visible){
 }
 
 function setStatus(t){ statusEl.textContent = t || ''; }
-
+function pad32hex(n){ const h = BigInt(n).toString(16); return h.padStart(64,'0'); }
 function decodeAbiString(hexdata){
   if(!hexdata || !hexdata.startsWith('0x')) return null;
   const h = hexdata.slice(2); if(h.length<128) return null;
@@ -492,7 +449,6 @@ async function openImage(){
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
-    fitFrame();
     // --- OOPS badge, solo se overlay definisce sia tratti che messaggio ---
     const traits = Array.isArray(currentCfg.oopsTraits) ? currentCfg.oopsTraits : [];
     const message = (currentCfg.oopsMessage || '').trim();
@@ -508,16 +464,14 @@ async function openImage(){
         oopsEl.style.display = 'none';
       }
     }
-   
+
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
     setShareVisible(false);
-    
   }
-    fitFrame();
 }
 
 function applyBadge(badgeEl, cfg){
@@ -704,8 +658,8 @@ async function shareMobileX(){
 
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
   // Metti il link DENTRO il testo. Usa https:// per farlo auto-linkare.
-  const caption = `https://arb8i.xyz
-Dropped "${layoutName}" on my Dood #${id} — who’s this?!`;
+  const caption = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!
+                  Get yours on https://arb8i.xyz`;
 
   try{
     const img = document.getElementById('composite');
@@ -772,24 +726,15 @@ async function copyImage(){
     setStatus('Copy failed. Long-press / save might work.');
   }
 }
-// Calcolo robusto: spazio disponibile per la frame = viewport - (wrap - frame)
-let lastTarget = null, rafId = 0;
 
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
-
+ 
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
 
 
