@@ -355,20 +355,23 @@
 }
 .back:hover{ text-decoration: underline; }
 
-/* Allinea la label a sinistra e il blocco label+row in stile editor */
+/* Contenitore centrato, ma con label allineata a sinistra */
+.hero-id{
+  display:inline-flex;
+  flex-direction:column;
+  align-items:center;   /* input+button+preview restano centrati */
+}
 
+/* Solo la label va a sinistra rispetto al blocco */
 .form-label{
-  display:block;
+  align-self:flex-start;
   margin:0 0 6px;
   font-weight:600;
   font-size:14px;
   color:var(--muted);
-  text-align:left;          /* forza la label a sx */
+  text-align:left;
 }
-/* e la riga input+button non più centrata internamente */
-.hero-id-row{
-  justify-content:flex-start;  /* prima era center */
-}
+
 
 
 </style>
