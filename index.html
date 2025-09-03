@@ -310,6 +310,68 @@ function render(){
 }
 
 /* === Mini-preview Doodle #ID === */
+/* --- METADATA → indice id→image (lazy, con cache) --- */
+const META_SOURCES = ['./Doodles_all_metadata.json']; // aggiungi alternative se serve
+
+function ipfsToHttps(u){
+  if(!u) return u;
+  if(u.startsWith('ipfs://')){
+    const hash = u.replace('ipfs://','').replace(/^ipfs\//,'');
+    return `https://cloudflare-ipfs.com/ipfs/${hash}`;
+  }
+  return u;
+}
+
+function pickId(obj, fallbackKey){
+  return obj?.id ?? obj?.tokenId ?? obj?.token_id ?? obj?.index ?? fallbackKey ?? null;
+}
+function pickImage(obj){
+  return obj?.image ?? obj?.image_url ?? obj?.imageUrl ?? null;
+}
+
+async function ensureMetaIndex(){
+  if(window.__metaIndexReady) return;
+  for(const src of META_SOURCES){
+    try{
+      const r = await fetch(src, {cache:'no-store'});
+      if(!r.ok) continue;
+      const data = await r.json();
+      const map = new Map();
+      if(Array.isArray(data)){
+        for(const it of data){
+          const id = pickId(it);
+          const img = pickImage(it);
+          if(id!=null && img) map.set(String(id), ipfsToHttps(String(img)));
+        }
+      }else if(data && typeof data==='object'){
+        for(const [k, v] of Object.entries(data)){
+          // se è shape { "1234": {"image": "..."} } oppure { "1234": "url" }
+          const id = pickId(v, k);
+          const img = (typeof v === 'string') ? v : pickImage(v);
+          if(id!=null && img) map.set(String(id), ipfsToHttps(String(img)));
+        }
+      }
+      if(map.size){
+        window.__metaIndex = map;
+        window.__metaIndexReady = true;
+        return;
+      }
+    }catch(e){ /* silenzio */ }
+  }
+  window.__metaIndex = null;
+  window.__metaIndexReady = true;
+}
+
+/* --- (opzionale) indice secondario leggero ./doodles/index.json --- */
+async function ensureDoodleIndex(){
+  if(window.__doodleIndexTried) return;
+  window.__doodleIndexTried = true;
+  try{
+    const r = await fetch('./doodles/index.json', {cache:'no-store'});
+    if(r.ok) window.__doodleIndex = await r.json();
+  }catch{}
+}
+
 async function applyIdPreview(id){
   if(!idPreview) return;
   if(!id && id!==0){
@@ -342,26 +404,30 @@ function hideIdPreview(){
 
 async function buildCandidateUrls(id){
   const urls = [];
-  // 1) indice opzionale ./doodles/index.json { "1234": "url" }
-  try{
-    if(!window.__doodleIndexTried){
-      window.__doodleIndexTried = true;
-      const r = await fetch('./doodles/index.json', {cache:'no-store'});
-      if(r.ok) window.__doodleIndex = await r.json();
-    }
-    if(window.__doodleIndex && window.__doodleIndex[id]){
-      urls.push(String(window.__doodleIndex[id]));
-    }
-  }catch{}
-  // 2) pattern locali
+  const key = String(id);
+
+  // 1) metadata principale
+  await ensureMetaIndex();
+  if(window.__metaIndex && window.__metaIndex.has(key)){
+    urls.push(window.__metaIndex.get(key));
+  }
+
+  // 2) indice leggero opzionale
+  await ensureDoodleIndex();
+  if(window.__doodleIndex && window.__doodleIndex[key]){
+    urls.push(String(window.__doodleIndex[key]));
+  }
+
+  // 3) pattern locali di fallback
   urls.push(
-    `./doodles/thumbs/${id}.png`,
-    `./doodles/thumbs/${id}.jpg`,
-    `./doodles/${id}.png`,
-    `./doodles/${id}.jpg`
+    `./doodles/thumbs/${key}.png`,
+    `./doodles/thumbs/${key}.jpg`,
+    `./doodles/${key}.png`,
+    `./doodles/${key}.jpg`
   );
   return urls;
 }
+
 
 function tryLoadIntoPreview(id, url){
   return new Promise(resolve=>{
