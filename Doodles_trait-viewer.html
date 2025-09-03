@@ -397,8 +397,6 @@ const resetBtn = $('#resetBtn');
 const idSearchEl = $('#idSearch');
 const activeWrapEl = $('#activeWrap');
 const activeChipsEl = $('#activeChips');
-// overlay ricordato dall’editor
-const LAST_OVERLAY = localStorage.getItem('lastOverlay') || '';
 
 // Salva meta-param e pulisci l'URL PRIMA che il viewer legga i filtri
 const QS = new URLSearchParams(location.search);
@@ -813,7 +811,7 @@ function renderPage(){
         const u = new URL('./editor.html', location.href);
         u.searchParams.set('overlay', ov);
         u.searchParams.set('id', id);
-        return `<a class="open" href="${u.toString()}">Apri in Editor</a>`;
+        return `<a class="open" href="${u.toString()}">Cook it!</a>`;
       }
 
       return ''; // nessun bottone in altri casi
