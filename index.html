@@ -396,22 +396,35 @@ function nudgeGrid(){
   
 function showPopover(msg){
   if(!idPopover) return;
+
+  // testo + reset animazione
   idPopover.textContent = msg;
   idPopover.classList.remove('show');
-  void idPopover.offsetWidth;
+  void idPopover.offsetWidth; // reflow
   idPopover.classList.add('show');
 
+  let fired = false;
+
   const onEnd = (e)=>{
-    if(e.animationName === 'popOutLeft'){
-      idPopover.removeEventListener('animationend', onEnd);
+    // Ignora popInLeft / popHold; aspetta SOLO popOutLeft
+    if(e.animationName !== 'popOutLeft') return;
+    fired = true;
+    idPopover.removeEventListener('animationend', onEnd);
+    idPopover.classList.remove('show');
+    nudgeGrid(); // avvia il bagliore ora
+  };
+
+  // 👇 NIENTE { once:true } — ci sono più animationend
+  idPopover.addEventListener('animationend', onEnd);
+
+  // Failsafe nel caso l'evento non arrivi
+  clearTimeout(popTimer);
+  popTimer = setTimeout(()=>{
+    if(!fired){
+      idPopover.classList.remove('show');
       nudgeGrid();
     }
-  };
-  idPopover.addEventListener('animationend', onEnd, { once:true });
-
-  // opzionale: failsafe per reset classe dopo ~2.1s
-  clearTimeout(popTimer);
-  popTimer = setTimeout(()=> idPopover.classList.remove('show'), 2100);
+  }, 2100); // ~0.18 + 1.6 + 0.22
 }
 
 
