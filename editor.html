@@ -185,37 +185,28 @@
   }
 @media (min-width: 768px){
   html, body { height:100%; }
-  body { overflow:hidden; }                 /* mai scroll pagina */
+  body { overflow:hidden; }          /* niente scroll */
   .wrap{ min-height:100vh; }
 
+  .card{ overflow:hidden; }          /* evita scroll interni inattesi */
+
   .frame{
+    margin:0;                        /* ← i tuoi 18px/8px rubavano altezza */
+    width:100%;                      /* non fissare 640px su desktop */
+    height:auto;
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
   }
-  /* quando JS riduce la frame, l’immagine si adatta mantenendo proporzioni */
+
   #composite{
     max-width:100%;
+    max-height:100%;
+    width:auto;                      /* mantieni proporzioni */
     height:auto;
     object-fit:contain;
     border-radius:12px;
   }
 }
-
-
-/* Hook: al load, al resize, quando cambia l'immagine o i contenuti */
-window.addEventListener('load', fitToViewport);
-window.addEventListener('resize', fitToViewport);
-
-const wrapEl = document.querySelector('.wrap');
-if (wrapEl) {
-  new ResizeObserver(fitToViewport).observe(wrapEl);
-  new MutationObserver(fitToViewport).observe(wrapEl, {
-    childList:true, subtree:true, attributes:true, characterData:true
-  });
-}
-
-// quando carichi la preview o cambi stato, richiama fitToViewport()
-document.getElementById('composite')?.addEventListener('load', fitToViewport);
 
 
 </style>
@@ -795,9 +786,25 @@ function fitToViewport() {
     }
   }
 } 
+// Esegui al load/resize e quando cambia il contenuto
+window.addEventListener('load', fitToViewport);
+window.addEventListener('resize', fitToViewport);
+
+const wrapEl = document.querySelector('.wrap');
+if (wrapEl) {
+  new ResizeObserver(fitToViewport).observe(wrapEl);
+  new MutationObserver(fitToViewport).observe(wrapEl, {
+    childList: true, subtree: true, attributes: true, characterData: true
+  });
+}
+
+// Ridimensiona anche quando l'immagine si carica
+document.getElementById('composite')?.addEventListener('load', fitToViewport);
+  
 </script>
 </body>
 </html>
+
 
 
 
