@@ -404,6 +404,7 @@ const LAST_OVERLAY = localStorage.getItem('lastOverlay') || '';
 const QS = new URLSearchParams(location.search);
 const SOURCE_PARAM  = QS.get('source')  || '';  // "index" se arrivi dalla gallery
 const OVERLAY_PARAM = QS.get('overlay') || '';  // overlay noto se arrivi dall'editor
+const LAST_OVERLAY  = localStorage.getItem('lastOverlay') || '';
 
 // Ripulisci la barra (i filtri non devono “vedere” questi parametri)
 if (QS.has('source') || QS.has('overlay')) {
@@ -807,12 +808,14 @@ function renderPage(){
         u.searchParams.set('id', id);
         return `<a class="open" href="${u.toString()}">Usa questo ID</a>`;
       }
-      if (OVERLAY_PARAM) {
+      if (OVERLAY_PARAM || LAST_OVERLAY) {
+        const ov = OVERLAY_PARAM || LAST_OVERLAY;
         const u = new URL('./editor.html', location.href);
-        u.searchParams.set('overlay', OVERLAY_PARAM);
+        u.searchParams.set('overlay', ov);
         u.searchParams.set('id', id);
         return `<a class="open" href="${u.toString()}">Apri in Editor</a>`;
       }
+
       return ''; // nessun bottone in altri casi
     })();
 
