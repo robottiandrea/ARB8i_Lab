@@ -183,55 +183,41 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
-/* === Desktop: fit-to-viewport, scala per ALTEZZA mantenendo proporzioni === */
+/* Desktop: adatta tutto al viewport come su mobile */
 @media (min-width: 768px){
   html, body { height: 100%; }
-  body { overflow: hidden; } /* niente scroll pagina */
-
-  /* Struttura verticale: header | card (elastica) | footer */
+  body{
+    overflow: hidden;                /* niente scroll */
+    display: grid;                   /* centra orizzontalmente il contenuto */
+    place-items: start center;
+  }
   .wrap{
-    min-height: 100dvh;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding: clamp(12px, 2vh, 28px);
-  }
-
-  /* La card assegna lo spazio elastico alla riga della preview */
-  .card{
-    display: grid;
-    /* label | input | link help | status | PREVIEW (1fr) | share */
-    grid-template-rows: auto auto auto auto 1fr auto;
-    gap: 10px;
-    padding: clamp(12px, 2vh, 22px);
-    overflow: hidden;
-  }
-
-  /* Preview: riempi tutta l’ALTEZZA disponibile della riga */
-  .frame{
-    position: relative;
-    margin: 0;               /* elimina margini che rubano altezza */
-    width: 100%;             /* non fissare una larghezza rigida */
-    height: 100%;            /* prende tutta l’altezza residua */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    background: #0d1016;
-    overflow: hidden;
-  }
-
-  /* L’immagine si scala in ALTEZZA, la larghezza segue (proporzioni OK) */
-  #composite{
-    max-height: 100%;
-    max-width: 100%;
-    height: 100%;
-    width: auto;             /* ← mantiene le proporzioni naturali */
-    object-fit: contain;     /* sicurezza: nessuna deformazione */
-    border-radius: 12px;
+    transform-origin: top center;    /* scala dall'alto */
+    will-change: transform;
   }
 }
+/* Scala la pagina su desktop per farla entrare nel viewport (stile mobile) */
+function fitDesktopLikeMobile(){
+  const wrap = document.querySelector('.wrap');
+  if(!wrap) return;
+
+  // Solo desktop: su mobile lascia tutto com'è
+  if (!window.matchMedia('(min-width: 768px)').matches){
+    wrap.style.transform = '';
+    return;
+  }
+
+  const vh = Math.min(window.visualViewport?.height || window.innerHeight, window.innerHeight);
+  const needed = wrap.scrollHeight;                 // altezza reale del contenuto
+  const scale = Math.min(1, vh / needed);           // mai >1 (niente upscaling)
+  wrap.style.transform = `scale(${scale})`;
+}
+
+// Prima esecuzione + ridimensionamenti + cambi dinamici di contenuto
+window.addEventListener('load', fitDesktopLikeMobile);
+window.addEventListener('resize', fitDesktopLikeMobile);
+new ResizeObserver(fitDesktopLikeMobile).observe(document.querySelector('.wrap'));
+
 
   
 </style>
@@ -785,6 +771,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
