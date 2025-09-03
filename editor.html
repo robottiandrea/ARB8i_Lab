@@ -183,48 +183,52 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
-  /* === Desktop: fit-to-viewport, no scroll === */
+/* === Desktop: fit-to-viewport, scala per ALTEZZA mantenendo proporzioni === */
 @media (min-width: 768px){
   html, body { height: 100%; }
-  body { overflow: hidden; }                /* blocca lo scroll della pagina */
-  
-  /* wrapper a tutta altezza: header | card elastica | footer */
+  body { overflow: hidden; } /* niente scroll pagina */
+
+  /* Struttura verticale: header | card (elastica) | footer */
   .wrap{
-    min-height: 100dvh;                     /* usa dvh per barre dinamiche, ok anche su desktop */
-    min-height: 100vh;                      /* fallback */
+    min-height: 100dvh;
+    min-height: 100vh;
     display: grid;
     grid-template-rows: auto 1fr auto;
     padding: clamp(12px, 2vh, 28px);
   }
 
-  /* la card diventa colonna: la frame prende lo spazio elastico */
+  /* La card assegna lo spazio elastico alla riga della preview */
   .card{
     display: grid;
-    /* label | input row | link help | status | FRAME (elastica) | share row */
+    /* label | input | link help | status | PREVIEW (1fr) | share */
     grid-template-rows: auto auto auto auto 1fr auto;
     gap: 10px;
     padding: clamp(12px, 2vh, 22px);
-    overflow: hidden;                        /* evita scrollbar interne */
+    overflow: hidden;
   }
 
-  /* la frame è un quadrato che si scala per riempire l'altezza disponibile */
+  /* Preview: riempi tutta l’ALTEZZA disponibile della riga */
   .frame{
-    margin: 0 auto;                          /* elimina i 18px/8px che rubavano altezza */
-    width: min(640px, 100%);
-    height: 100%;
-    aspect-ratio: 1 / 1;                     /* mantiene la preview 1:1 */
-    display: grid;
-    place-items: center;
+    position: relative;
+    margin: 0;               /* elimina margini che rubano altezza */
+    width: 100%;             /* non fissare una larghezza rigida */
+    height: 100%;            /* prende tutta l’altezza residua */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px dashed var(--border);
     border-radius: 12px;
-    background:#0d1016;
+    background: #0d1016;
+    overflow: hidden;
   }
 
-  /* l'immagine riempie la frame senza deformarsi */
+  /* L’immagine si scala in ALTEZZA, la larghezza segue (proporzioni OK) */
   #composite{
-    width: 100%;
+    max-height: 100%;
+    max-width: 100%;
     height: 100%;
-    object-fit: contain;
+    width: auto;             /* ← mantiene le proporzioni naturali */
+    object-fit: contain;     /* sicurezza: nessuna deformazione */
     border-radius: 12px;
   }
 }
@@ -781,6 +785,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
