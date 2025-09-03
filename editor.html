@@ -185,26 +185,21 @@
   }
 /* === Desktop: la frame non supera lo spazio disponibile === */
 @media (min-width: 768px){
-  html, body { height: 100%; }           /* sblocca i calcoli a viewport */
-  .wrap{ min-height: 100svh; }           /* viewport “reale” su desktop */
-
-  /* Lascia pure margini/padding, noi li contiamo nel calcolo JS */
+  .wrap{ min-height: 100svh; }                  /* viewport reale */
   .frame{
-    /* l'altezza massima la decidiamo via JS in --frame-max-h */
-    max-height: var(--frame-max-h, 100%); 
+    margin: 0;                                   /* evita di rubare altezza */
+    max-height: var(--frame-max-h, 100%);        /* la regola il JS */
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
   }
-
-  /* l'immagine si adatta alla frame mantenendo proporzioni */
   #composite{
-    max-height: 100%;
-    max-width: 100%;
-    height: auto;
-    width: auto;
-    object-fit: contain;
+    max-height:100%;
+    max-width:100%;
+    height:auto; width:auto;
+    object-fit:contain;
   }
 }
+
 
   
 </style>
@@ -486,14 +481,16 @@ async function openImage(){
         oopsEl.style.display = 'none';
       }
     }
-
+   
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
     setShareVisible(false);
+    fitFrame();
   }
+    fitFrame();
 }
 
 function applyBadge(badgeEl, cfg){
@@ -748,59 +745,63 @@ async function copyImage(){
     setStatus('Copy failed. Long-press / save might work.');
   }
 }
+// Calcolo robusto: spazio disponibile per la frame = viewport - (wrap - frame)
+let lastTarget = null, rafId = 0;
+
+function fitFrameNow(){
+  const wrap  = document.querySelector('.wrap');
+  const frame = document.querySelector('.frame');
+  if (!wrap || !frame) return;
+
+  // consenti espansione per misurare
+  frame.style.setProperty('--frame-max-h', '99999px');
+
+  const vh        = window.innerHeight;
+  const wrapH     = wrap.scrollHeight;
+  const frameH    = Math.round(frame.getBoundingClientRect().height);
+  const nonFrame  = wrapH - frameH;
+  const available = Math.floor(vh - nonFrame);
+  const target    = Math.max(140, available);           // minimo di sicurezza
+
+  if (target !== lastTarget){
+    frame.style.setProperty('--frame-max-h', target + 'px');
+    lastTarget = target;
+  }
+}
+
+// Throttle: massimo 1 calcolo per frame
+function fitFrame(){
+  if (rafId) return;
+  rafId = requestAnimationFrame(()=>{ rafId = 0; fitFrameNow(); });
+}
+
+// Hook principali
+window.addEventListener('load', fitFrame);
+window.addEventListener('resize', fitFrame);
+window.addEventListener('orientationchange', fitFrame);
+document.getElementById('composite')?.addEventListener('load', fitFrame);
+document.fonts?.ready?.then(fitFrame);
+
+// Osserva solo contenuti/testi (no attributes per evitare loop)
+const wrapEl = document.querySelector('.wrap');
+if (wrapEl){
+  new MutationObserver(fitFrame).observe(wrapEl, {
+    childList: true, subtree: true, characterData: true
+  });
+  new ResizeObserver(fitFrame).observe(wrapEl);
+}
+
 
 /* ===== Events ===== */
 $('#go').addEventListener('click', openImage);
 $('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
-// Calcola lo spazio disponibile e imposta la max-height della frame.
-// Formula: available = viewport - (wrap - frame)
-function fitFrame() {
-  const wrap  = document.querySelector('.wrap');
-  const frame = document.querySelector('.frame');
-  if (!wrap || !frame) return;
 
-  // reset: permetti alla frame di espandersi per misurare correttamente
-  frame.style.setProperty('--frame-max-h', '99999px');
-
-  // misure “attuali”
-  const vh     = window.innerHeight;
-  const wrapH  = wrap.scrollHeight;                 // tutto il contenuto
-  const frameH = frame.getBoundingClientRect().height;
-  const nonFrame = wrapH - frameH;                  // tutto tranne la frame
-
-  // quanto resta per la frame affinché l'intera pagina "entri"
-  const available = Math.floor(vh - nonFrame);
-
-  // un minimo sensato per non farla diventare un francobollo
-  const target = Math.max(140, available);
-
-  // Applica come variabile CSS (usata dalla .frame in max-height)
-  frame.style.setProperty('--frame-max-h', target + 'px');
-}
-
-/* Hook: eventi che possono cambiare l'altezza complessiva */
-window.addEventListener('load', fitFrame);
-window.addEventListener('resize', fitFrame);
-window.addEventListener('orientationchange', fitFrame);
-document.getElementById('composite')?.addEventListener('load', fitFrame);
-
-// Riadatta quando cambiano testi/badge/status/share ecc.
-const wrapEl = document.querySelector('.wrap');
-if (wrapEl){
-  new MutationObserver(fitFrame).observe(wrapEl, {
-    childList: true, subtree: true, attributes: true, characterData: true
-  });
-  new ResizeObserver(fitFrame).observe(wrapEl);
-}
-
-// Font loading può cambiare le misure
-try { document.fonts?.ready.then(fitFrame); } catch {}
- 
 </script>
 </body>
 </html>
+
 
 
 
