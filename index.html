@@ -317,7 +317,7 @@ function ipfsToHttps(u){
   if(!u) return u;
   if(u.startsWith('ipfs://')){
     const hash = u.replace('ipfs://','').replace(/^ipfs\//,'');
-    return `https://cloudflare-ipfs.com/ipfs/${hash}`;
+    return `https://dweb.link/ipfs/${hash}`;
   }
   return u;
 }
