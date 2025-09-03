@@ -185,10 +185,11 @@
   }
 /* === Desktop: la frame non supera lo spazio disponibile === */
 @media (min-width: 768px){
-  .wrap{ min-height: 100svh; }                  /* viewport reale */
+  .wrap{ min-height: 100svh; }
   .frame{
-    margin: 0;                                   /* evita di rubare altezza */
-    max-height: var(--frame-max-h, 100%);        /* la regola il JS */
+    margin: 0;
+    width: 100%;                                   /* ← aggiungi questo */
+    max-height: var(--frame-max-h, 100%);
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
   }
@@ -199,6 +200,7 @@
     object-fit:contain;
   }
 }
+
 
 
   
@@ -466,6 +468,7 @@ async function openImage(){
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
+    fitFrame();
     // --- OOPS badge, solo se overlay definisce sia tratti che messaggio ---
     const traits = Array.isArray(currentCfg.oopsTraits) ? currentCfg.oopsTraits : [];
     const message = (currentCfg.oopsMessage || '').trim();
@@ -488,7 +491,7 @@ async function openImage(){
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
     setShareVisible(false);
-    fitFrame();
+    
   }
     fitFrame();
 }
@@ -753,15 +756,12 @@ function fitFrameNow(){
   const frame = document.querySelector('.frame');
   if (!wrap || !frame) return;
 
-  // consenti espansione per misurare
-  frame.style.setProperty('--frame-max-h', '99999px');
-
   const vh        = window.innerHeight;
   const wrapH     = wrap.scrollHeight;
   const frameH    = Math.round(frame.getBoundingClientRect().height);
   const nonFrame  = wrapH - frameH;
   const available = Math.floor(vh - nonFrame);
-  const target    = Math.max(140, available);           // minimo di sicurezza
+  const target    = Math.max(140, available);   // minimo di sicurezza
 
   if (target !== lastTarget){
     frame.style.setProperty('--frame-max-h', target + 'px');
@@ -801,6 +801,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
