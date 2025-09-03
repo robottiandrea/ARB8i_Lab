@@ -254,6 +254,7 @@ const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
 const idField = document.getElementById('idField');
 const idError = document.getElementById('idError');
+const idPreview = document.getElementById('idPreview');
 
 function normalizeId(v){
   const s = String(v||'').trim().replace(/\D+/g,'');
@@ -271,7 +272,7 @@ function updateCardLinksWithId(id){
     a.setAttribute('href', u.toString());
   });
 }
-  
+
 let overlays = null;
 
 function cardHTML(item){
@@ -306,12 +307,9 @@ function render(){
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
   const n = idField ? normalizeId(idField.value) : {valid:false};
   updateCardLinksWithId(n.valid ? n.value : null);
-
 }
-<script>
-/* === Mini-preview Doodle #ID === */
-const idPreview = document.getElementById('idPreview');
 
+/* === Mini-preview Doodle #ID === */
 async function applyIdPreview(id){
   if(!idPreview) return;
   if(!id && id!==0){
@@ -327,8 +325,7 @@ async function applyIdPreview(id){
   const urls = await buildCandidateUrls(val);
 
   for (const url of urls){
-    // se l'utente ha cambiato ID nel frattempo, interrompi
-    if(idPreview.dataset.id !== val) return;
+    if(idPreview.dataset.id !== val) return; // ID cambiato nel frattempo
     const ok = await tryLoadIntoPreview(val, url);
     if(ok) break;
   }
@@ -345,7 +342,7 @@ function hideIdPreview(){
 
 async function buildCandidateUrls(id){
   const urls = [];
-  // 1) Se esiste un indice opzionale ./doodles/index.json { "1234":"url" }
+  // 1) indice opzionale ./doodles/index.json { "1234": "url" }
   try{
     if(!window.__doodleIndexTried){
       window.__doodleIndexTried = true;
@@ -356,7 +353,7 @@ async function buildCandidateUrls(id){
       urls.push(String(window.__doodleIndex[id]));
     }
   }catch{}
-  // 2) Pattern locali comuni (metti le tue cartelle reali se diverse)
+  // 2) pattern locali
   urls.push(
     `./doodles/thumbs/${id}.png`,
     `./doodles/thumbs/${id}.jpg`,
@@ -384,7 +381,80 @@ function tryLoadIntoPreview(id, url){
     img.src = url;
   });
 }
+
+/* === Input ID: init & wiring === */
+(function initIdField(){
+  if(!idField) return;
+
+  // Disabilita Enter
+  idField.addEventListener('keydown', (e)=>{ if(e.key==='Enter') e.preventDefault(); });
+
+  // Prefill da query ?id= o da localStorage
+  const sp = new URLSearchParams(location.search);
+  let fromQuery = sp.get('id');
+  if(fromQuery != null){
+    const nq = normalizeId(fromQuery);
+    if(nq.valid){
+      idField.value = nq.value;
+      localStorage.setItem('lastId', nq.value);
+      applyIdPreview(nq.value);
+    }
+    sp.delete('id');
+    const q = sp.toString();
+    history.replaceState(null, '', location.pathname + (q?('?'+q):'')); // pulisci URL
+  }else{
+    const last = localStorage.getItem('lastId');
+    const nl = normalizeId(last);
+    if(nl.valid){
+      idField.value = nl.value;
+      applyIdPreview(nl.value); // <<< mancava
+    }else{
+      hideIdPreview();
+    }
+  }
+
+  idField.addEventListener('input', ()=>{
+    const n = normalizeId(idField.value);
+    idField.value = n.value;
+
+    if(n.empty){
+      idField.classList.remove('error');
+      idError.style.display = 'none';
+      localStorage.removeItem('lastId');
+      updateCardLinksWithId(null);
+      hideIdPreview();
+      return;
+    }
+    if(n.valid){
+      idField.classList.remove('error');
+      idError.style.display = 'none';
+      localStorage.setItem('lastId', n.value);
+      updateCardLinksWithId(n.value);
+      applyIdPreview(n.value);
+    }else{
+      idField.classList.add('error');
+      idError.textContent = 'Inserisci un numero da 0 a 9999';
+      idError.style.display = '';
+      updateCardLinksWithId(null);
+      hideIdPreview();
+    }
+  });
+})();
+
+/* === Manifest overlays === */
+async function loadManifest(){
+  for (const url of ['./overlays/overlays.json','./overlays.json']){
+    try{
+      const r = await fetch(url);
+      if(r.ok){ overlays = await r.json(); return; }
+    }catch{}
+  }
+  overlays = { items: [] };
+}
+
+loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
+
   
 (function initIdField(){
   if(!idField) return;
