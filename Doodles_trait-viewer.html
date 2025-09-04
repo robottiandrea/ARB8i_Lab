@@ -740,7 +740,7 @@ function renderPage(){
       if (SOURCE_PARAM === 'index') {
         const u = new URL('./index.html', location.href);
         u.searchParams.set('id', id);
-        return `<a class="open" href="${u.toString()}">Usa questo ID</a>`;
+        return `<a class="open" href="${u.toString()}">Use this ID</a>`;
       }
       if (OVERLAY_PARAM || LAST_OVERLAY) {
         const ov = OVERLAY_PARAM || LAST_OVERLAY;
