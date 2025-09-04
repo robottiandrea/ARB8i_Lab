@@ -136,6 +136,14 @@
 
   </main>
 
+  <!-- Popup centrale (riutilizzabile: Cooking…, Copied!, ecc.) -->
+<div id="centerPop" class="center-pop" role="dialog" aria-modal="true" aria-live="assertive">
+  <div class="box">
+    <div id="cpTitle" class="title"></div>
+    <p id="cpDesc" class="desc"></p>
+  </div>
+</div>
+
 <script>
 /* ===== Network (RPC/IPFS) ===== */
 const DEFAULT_CONTRACT = new URLSearchParams(location.search).get('contract')
@@ -348,6 +356,7 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
+  showCenterPop('Cooking…');
   setShareVisible(false);
 
   const raw = ((idCtrl && idCtrl.value != null) ? idCtrl.value : (tokenEl?.value || '')).trim();
@@ -381,6 +390,7 @@ async function openImage(){
 
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
+    hideCenterPop();
 
     setShareVisible(true);
     imgEl.classList.remove('is-example');
@@ -405,6 +415,7 @@ async function openImage(){
   }catch(e){
     if(location.protocol==='file:') setStatus('Please run a local server (e.g. python -m http.server 5500).');
     else setStatus('❌ ' + (e?.message || 'Something went wrong'));
+    showCenterPop('Error', (e?.message || 'Something went wrong'), 2000);
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
     setShareVisible(false);
@@ -627,7 +638,7 @@ async function copyImage(){
 
     if (navigator.clipboard && window.ClipboardItem) {
       await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
-      setStatus('Image copied to clipboard ✅');
+      showCenterPop('Copied!', 'Image copied to clipboard ✅', 1600);
     } else {
       const a = document.createElement('a');
       a.href = src;
@@ -636,19 +647,47 @@ async function copyImage(){
       a.click();
       document.body.removeChild(a);
       setStatus('Clipboard not supported here. Download started.');
+      showCenterPop('Downloaded', 'PNG saved to your device', 1600);
+
     }
   } catch (e){
     console.error(e);
     setStatus('Copy failed. Long-press / save might work.');
+    
   }
 }
 
+/* ===== Popup centrale helpers ===== */
+function showCenterPop(title, desc = '', autoHideMs = 0){
+  const el = document.getElementById('centerPop');
+  const t  = document.getElementById('cpTitle');
+  const d  = document.getElementById('cpDesc');
+  if(!el || !t || !d) return;
+
+  t.textContent = title || '';
+  d.textContent = desc  || '';
+  d.style.display = desc ? '' : 'none';
+
+  el.style.display = 'flex';
+
+  if (autoHideMs > 0){
+    clearTimeout(showCenterPop._t);
+    showCenterPop._t = setTimeout(hideCenterPop, autoHideMs);
+  }
+}
+function hideCenterPop(){
+  const el = document.getElementById('centerPop');
+  if (el) el.style.display = 'none';
+}
+
+  
 /* ===== Events ===== */
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
