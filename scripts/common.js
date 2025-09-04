@@ -59,7 +59,7 @@
     });
   }
 
-  function normalizeId(v, max=99999){
+  function normalizeId(v, max=9999){
     const s = String(v||'').trim().replace(/\D+/g,'');
     if(s==='') return {value:'', valid:false, empty:true};
     const n = parseInt(s,10);
@@ -293,7 +293,7 @@ function initIdControl(opts){
     buttonContainer = null,         // se vuoi appendere il bottone altrove (es. dentro .id-cta)
     showPreview = true,
     placeholder = '8929',
-    maxLen = 5
+    maxLen = 4
   } = {}){
     const container = (typeof containerSel==='string')
       ? document.querySelector(containerSel)
