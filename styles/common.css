@@ -194,50 +194,5 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
-/* === Editor-only: larghezza "riga ID" più ampia e controllabile === */
-body[data-page="editor"] .id-row,
-body[data-page="editor"] #id-row,
-body[data-page="editor"] [data-component="id-row"],
-body[data-page="editor"] [data-role="id-row"]{
-  box-sizing: border-box;
-  /* 🔧 PARAMETRI:
-     - --id-row-max: massima larghezza della riga
-     - --id-row-gap: spazio tra anteprima / input ID / bottone
-  */
-  inline-size: clamp(560px, 90vw, var(--id-row-max, 1000px));
-  margin-inline: auto;              /* resta centrata */
-  justify-content: center;          /* resta centrata */
-  gap: var(--id-row-gap, 12px);
-}
-
-/* Evita che i figli si schiaccino */
-body[data-page="editor"] .id-row > *,
-body[data-page="editor"] #id-row > *,
-body[data-page="editor"] [data-component="id-row"] > *,
-body[data-page="editor"] [data-role="id-row"] > *{
-  flex: 0 0 auto;
-}
-
-/* Fai crescere l’input ID per occupare lo spazio extra, se presente */
-body[data-page="editor"] .id-row input[type="text"],
-body[data-page="editor"] .id-row input[type="number"],
-body[data-page="editor"] #id-row input[type="text"],
-body[data-page="editor"] #id-row input[type="number"],
-body[data-page="editor"] [data-component="id-row"] input[type="text"],
-body[data-page="editor"] [data-component="id-row"] input[type="number"],
-body[data-page="editor"] [data-role="id-row"] input[type="text"],
-body[data-page="editor"] [data-role="id-row"] input[type="number"]{
-  min-inline-size: 220px;
-  flex: 1 1 320px;  /* cresce per “allungare” visivamente la riga */
-}
-
-/* Evita che il bottone spezzi la riga su due linee */
-body[data-page="editor"] .id-row button,
-body[data-page="editor"] #id-row button,
-body[data-page="editor"] [data-component="id-row"] button,
-body[data-page="editor"] [data-role="id-row"] button{
-  white-space: nowrap;
-}
-
 
 
