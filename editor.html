@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./styles/common.css">  
+<link rel="stylesheet" href="./styles/common.css">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0f1115">
 
@@ -16,6 +16,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Doodles">
+
+<!-- libreria condivisa (normalizeId, wireClear, createIdPreview) -->
+<script src="./scripts/common.js"></script>
 
 <script>
   const SITE_URL = 'https://arb8i.xyz';
@@ -28,8 +31,8 @@
 
 <style>
   :root{
-    /* solo variabili dei controlli usate qui */
-    --ctrl-h:40px; --ctrl-br:10px; --ctrl-bw:1px; --ctrl-bc:#fff;
+    /* per uniformare alla gallery (index): stessa larghezza input */
+    --id-width:112px;
   }
 
   /* layout pagina editor */
@@ -43,49 +46,13 @@
   }
   .nav-back:hover{ opacity:1; }
   h1{ margin:0; font-size:20px; font-weight:600; }
-  
+
   .badge{ display:inline-block; margin-left:8px; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600; }
 
   /* card (base in common.css): qui solo padding specifico */
   .card{ padding:22px; }
 
-  /* form */
-  label{ display:block; margin:10px 0 6px; }
-  .row{ display:grid; grid-template-columns:1fr auto; gap:10px; align-items:stretch; }
-
-  /* fix iOS */
-  #tokenId{ font-size:16px; -webkit-user-select:text; }
-  html{ -webkit-text-size-adjust:100%; }
-
-  /* input stile editor */
-  .row input{
-    width:100%;
-    height:var(--ctrl-h);
-    padding:0 12px; line-height:var(--ctrl-h);
-    border:var(--ctrl-bw) solid var(--ctrl-bc);
-    border-radius:var(--ctrl-br);
-    background:#0d1016; color:var(--text);
-    appearance:none; -webkit-appearance:none; outline:none;
-    font-family: inherit;
-  }
-  input[type="number"]::-webkit-outer-spin-button,
-  input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
-  input[type="number"]{ -moz-appearance:textfield; }
-  .row input:focus{ box-shadow:0 0 0 2px rgba(138,180,255,.25); }
-
-  /* button outline (solo editor) */
-  .btn-outline{
-    height:var(--ctrl-h); padding:0 16px;
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    border:var(--ctrl-bw) solid var(--ctrl-bc);
-    border-radius:var(--ctrl-br);
-    background:transparent; color:#fff;
-    font-weight:500; letter-spacing:.3px; font-size:14px;
-    cursor:pointer; white-space:nowrap; transition:all .2s ease-in-out;
-  }
-  .btn-outline:hover:enabled{ background:#fff; color:#000; }
-  .btn-outline:disabled{ opacity:.5; cursor:not-allowed; }
-
+  /* stato sotto i controlli */
   .status{ min-height:22px; color:var(--muted); font-size:13px; margin-top:10px; }
 
   /* viewer */
@@ -113,8 +80,6 @@
     z-index:3; pointer-events:none;
     letter-spacing:.2px;
   }
-
- 
 </style>
 
 </head>
@@ -130,17 +95,27 @@
 
     <section class="card">
       <label for="tokenId" class="form-label">Doodles ID</label>
-      <div class="row">
-        <input id="tokenId" type="text" placeholder="8929" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" />
-        <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
+
+      <!-- riga uniforme: preview SX → input con X (maxlength 5) → bottone -->
+      <div class="id-row">
+        <div id="idPreview" class="id-preview" aria-hidden="true">
+          <span class="id-badge">#—</span>
+        </div>
+
+        <div class="input-clear">
+          <input id="tokenId" class="id-input" type="text"
+                 inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off"
+                 maxlength="5" placeholder="8929" />
+          <button type="button" class="clear-btn" data-clear-for="tokenId" aria-label="Pulisci"></button>
+        </div>
+
+        <button id="go" class="btn-outline" type="button" aria-label="Show the image">Show Me!</button>
       </div>
+
       <p class="sub" style="margin:6px 0 0">
         Missing your Doodle ID?
         <a id="viewerLink" class="back shimmer idhelp" href="./Doodles_trait-viewer.html">Find it here!</a>
       </p>
-
-
-
 
       <div id="status" class="status"></div>
 
@@ -200,7 +175,21 @@ const mbHandle = $('#mbHandle');
 const mbSep = $('#mbSep');
 const exBadge = document.querySelector('#exampleBadge');
 
+const tokenEl   = document.getElementById('tokenId');
+const idPreview = document.getElementById('idPreview');
 
+/* ===== Anteprima ID + pulsante clear (condivisi) ===== */
+const { apply: applyPrev, reset: resetPrev } = OC.createIdPreview({
+  input: tokenEl,
+  preview: idPreview,
+  defaultId: '8929',
+  max: 99999
+});
+OC.wireClear('tokenId', () => {
+  setStatus('');
+  setShareVisible(false);
+  resetPrev();
+});
 
 /* ===== State ===== */
 /* ===== Share (mobile only) ===== */
@@ -229,7 +218,7 @@ function setShareVisible(visible){
   if (!row || !btn) return;
   row.style.visibility   = visible ? 'visible' : 'hidden';
   row.style.pointerEvents = visible ? 'auto' : 'none';
-  btn.disabled = !visible;           // <— abilita/disabilita il bottone
+  btn.disabled = !visible;
 }
 
 function setStatus(t){ statusEl.textContent = t || ''; }
@@ -313,7 +302,6 @@ function rowHasAnyNeedle(row, needles){
     .map(n => (n??'').toString().trim().toLowerCase())
     .filter(Boolean);
 
-  // 1) PRIMA cerchiamo nei value dell'array attributes
   const vals = Array.isArray(row.attributes)
     ? row.attributes
         .map(a => a && a.value)
@@ -321,7 +309,6 @@ function rowHasAnyNeedle(row, needles){
         .map(v => v.toLowerCase())
     : [];
 
-  // 2) Se per qualche ID non ci sono attributes, fallback soft: altre stringhe piatte della riga
   if(vals.length === 0){
     vals.push(
       ...Object.values(row)
@@ -337,12 +324,9 @@ function rowHasAnyNeedle(row, needles){
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
   setStatus('Cooking…');
-  
   setShareVisible(false);
 
-
- 
-  const raw = $('#tokenId').value.trim(); const id = parseInt(raw,10);
+  const raw = tokenEl.value.trim(); const id = parseInt(raw,10);
   if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
 
   try{
@@ -371,22 +355,18 @@ async function openImage(){
 
     const dataUrl = await composeDataUrl(baseBlob, currentCfg, hexSleeve, hexSkin);
     imgEl.src = dataUrl;
-    // Modalità esempio OFF (abbiamo il render vero)
+
     setShareVisible(true);
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
-  
- 
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
-    // --- OOPS badge, solo se overlay definisce sia tratti che messaggio ---
+
     const traits = Array.isArray(currentCfg.oopsTraits) ? currentCfg.oopsTraits : [];
     const message = (currentCfg.oopsMessage || '').trim();
-    
     const showOops = (traits.length > 0) && message && rowHasAnyNeedle(row, traits);
     const oopsEl = document.getElementById('oopsBadge');
-    
     if (oopsEl){
       if (showOops){
         oopsEl.textContent = message;
@@ -414,25 +394,22 @@ function applyBadge(badgeEl, cfg){
   badgeEl.textContent = cfg.badge;
   badgeEl.style.display = 'inline-block';
 
-  // Sfondo dal JSON, se presente
   if(cfg.badgeColor) badgeEl.style.background = cfg.badgeColor;
 
-  // Se il JSON fornisce un colore testo esplicito, usalo e basta
   if(cfg.badgeText){
     badgeEl.style.color = cfg.badgeText;
     return;
   }
 
-  // Altrimenti calcola automaticamente bianco/nero in base allo sfondo
   try{
-    const bg = getComputedStyle(badgeEl).backgroundColor;   // es. "rgb(255, 255, 255)"
+    const bg = getComputedStyle(badgeEl).backgroundColor;
     const m = bg && bg.match(/\d+(\.\d+)?/g);
     if(m){
       const [r,g,b] = m.map(Number);
-      const yiq = (r*299 + g*587 + b*114) / 1000;           // luminanza YIQ
+      const yiq = (r*299 + g*587 + b*114) / 1000;
       badgeEl.style.color = yiq >= 150 ? '#000' : '#fff';
     }else{
-      badgeEl.style.color = '#000';                         // fallback
+      badgeEl.style.color = '#000';
     }
   }catch{
     badgeEl.style.color = '#000';
@@ -441,44 +418,35 @@ function applyBadge(badgeEl, cfg){
 
 // ===== Fix tastiera iPad in PWA =====
 (function fixIOSPWAKeyboard(){
-  // Siamo in PWA (standalone) e su iPad (user agent Apple con touch)
   const inPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const isiPad = /iPad|Macintosh/.test(navigator.userAgent) && 'ontouchend' in document;
   if(!(inPWA && isiPad)) return;
 
-  const el = document.getElementById('tokenId');
-  if(!el) return;
+  if(!tokenEl) return;
+  tokenEl.setAttribute('readonly', 'readonly');
 
-  // Trucco: rendi l'input readonly finché l'utente non tocca → poi togli readonly e focus
-  el.setAttribute('readonly', 'readonly');
-
-  // Primo tap (dito) sblocca tastiera
-  el.addEventListener('touchend', function onTouch(){
-    el.removeAttribute('readonly');
-    // piccolo delay per permettere a iOS di “capire”
+  tokenEl.addEventListener('touchend', function onTouch(){
+    tokenEl.removeAttribute('readonly');
     setTimeout(()=>{
-      el.focus();
-      // sposta il cursore in fondo (forza la comparsa tastiera su alcune versioni)
-      const v = el.value; el.value=''; el.value=v;
+      tokenEl.focus();
+      const v = tokenEl.value; tokenEl.value=''; tokenEl.value=v;
     }, 0);
-    el.removeEventListener('touchend', onTouch);
+    tokenEl.removeEventListener('touchend', onTouch);
   }, {passive:true});
 
-  // Fallback per Apple Pencil / trackpad: pointerdown
-  el.addEventListener('pointerdown', function onPD(){
-    if (el.hasAttribute('readonly')) {
-      el.removeAttribute('readonly');
-      setTimeout(()=>el.focus(), 0);
+  tokenEl.addEventListener('pointerdown', function onPD(){
+    if (tokenEl.hasAttribute('readonly')) {
+      tokenEl.removeAttribute('readonly');
+      setTimeout(()=>tokenEl.focus(), 0);
     }
   }, {passive:true});
 })();
-  
+
 /* ===== Init ===== */
 (async function init(){
   if (window.OC_UNSUPPORTED) {
-  setStatus('Browser non supporta alcune feature: aggiorna Safari/OS.');
-  // non bloccare il resto della pagina, ma non mostrare il tasto Share
-}
+    setStatus('Browser non supporta alcune feature: aggiorna Safari/OS.');
+  }
 
   try{
     await loadManifest();
@@ -540,16 +508,12 @@ function applyBadge(badgeEl, cfg){
       }
     })();
 
-    
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
     const shareBtn = document.getElementById('shareX');
-    
-    // Mostra SEMPRE il contenitore; lo rendiamo invisibile finché è solo anteprima
+
     shareRow.style.display = 'flex';
     setShareVisible(false);
-    
-    // “Share!” solo dove supportato; “Copy image” resta sempre visibile
     if (shareBtn) shareBtn.style.display = MOBILE_SHARE ? '' : 'none';
 
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
@@ -562,14 +526,16 @@ function applyBadge(badgeEl, cfg){
     if (oopsEl) oopsEl.style.display = 'none';
 
     const qid = p.get('id');
-    if(qid){ $('#tokenId').value = qid; await openImage(); }
+    if(qid){
+      tokenEl.value = String(qid).replace(/\D+/g,'').slice(0,5); // prudente
+      applyPrev(tokenEl.value);
+      await openImage();
+    }
 
   }catch(e){
     setStatus(e?.message || 'Init error');
   }
 })();
-
-
 
 function dataUrlToBlob(dataURL){
   const [head, body] = dataURL.split(',');
@@ -583,30 +549,23 @@ function dataUrlToBlob(dataURL){
 async function shareMobileX(){
   if (!MOBILE_SHARE) return;
 
-  const tokenEl = document.getElementById('tokenId');
   const id = parseInt((tokenEl?.value || '').trim(), 10);
   if (!Number.isFinite(id)) return;
 
   const layoutName = (currentCfg?.name || currentCfg?.id || 'Overlay') + '';
-  // Metti il link DENTRO il testo. Usa https:// per farlo auto-linkare.
   const caption = `Dropped "${layoutName}" on my Dood #${id} — who’s this?!
 
 Get yours at https://arb8i.xyz !`;
-
 
   try{
     const img = document.getElementById('composite');
     const src = img?.src;
     if (!src || !navigator.share) return;
 
-    // Blob PNG dall’immagine renderizzata
     const blob = src.startsWith('data:') ? dataUrlToBlob(src) : await (await fetch(src)).blob();
     const file = new File([blob], 'doodle.png', { type: 'image/png' });
 
-    // Copia la caption negli appunti: se per qualche motivo X la “perdesse”, l’utente può incollarla.
     try { await navigator.clipboard.writeText(caption); } catch {}
-
-    // Condividi: SOLO text + files (senza 'url', che a volte viene ignorato)
     await navigator.share({ text: caption, files: [file] });
     setStatus('Shared. If the caption vanishes on X, paste it (already copied).');
 
@@ -617,7 +576,6 @@ Get yours at https://arb8i.xyz !`;
 
 async function copyImage(){
   try{
-    // serve l’immagine vera, non l’anteprima
     if (imgEl.classList.contains('is-example')) {
       setStatus('Generate an image first.');
       return;
@@ -626,12 +584,10 @@ async function copyImage(){
     const src = imgEl?.src;
     if (!src) return;
 
-    // Blob PNG dalla dataURL (o da fetch, se è URL)
     let blob = src.startsWith('data:')
       ? dataUrlToBlob(src)
       : await (await fetch(src)).blob();
 
-    // Se non è PNG, riconverti (di solito non serve)
     if (blob.type !== 'image/png') {
       const tmp = new Image();
       await new Promise((res, rej)=>{ tmp.onload=()=>res(); tmp.onerror=rej; tmp.src=src; });
@@ -645,7 +601,6 @@ async function copyImage(){
       await navigator.clipboard.write([ new ClipboardItem({ 'image/png': blob }) ]);
       setStatus('Image copied to clipboard ✅');
     } else {
-      // Fallback: download
       const a = document.createElement('a');
       a.href = src;
       a.download = 'doodle.png';
@@ -661,21 +616,10 @@ async function copyImage(){
 }
 
 /* ===== Events ===== */
-$('#go').addEventListener('click', openImage);
-$('#tokenId').addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
+document.getElementById('go')?.addEventListener('click', openImage);
+tokenEl?.addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
- 
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
