@@ -194,28 +194,4 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
-/* === Editor-only: allineamento riga ID al bordo sx della PNG === */
-body[data-page="editor"] .id-row,
-body[data-page="editor"] #id-row,
-body[data-page="editor"] [data-component="id-row"],
-body[data-page="editor"] [data-role="id-row"]{
-  /* la riga avrà la stessa larghezza della PNG e sarà centrata come la PNG:
-     in questo modo il loro bordo sinistro coincide */
-  width: var(--id-row-width, auto) !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
 
-  /* se vuoi spostare tutta la riga per compensare padding/container, usa anche l’offset */
-  transform: translateX(var(--id-row-offset, 0px));
-  justify-content: flex-start !important;
-  text-align: left !important;
-}
-
-/* diagnostica: bordo visibile quando viene ricalcolata (sparisce dopo 1s via JS) */
-body[data-page="editor"] .id-row.__diag,
-body[data-page="editor"] #id-row.__diag,
-body[data-page="editor"] [data-component="id-row"].__diag,
-body[data-page="editor"] [data-role="id-row"].__diag{
-  outline: 1px dashed rgba(255,255,255,.35);
-  outline-offset: 2px;
-}
