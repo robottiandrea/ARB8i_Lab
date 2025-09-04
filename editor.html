@@ -175,6 +175,27 @@ const exBadge = document.querySelector('#exampleBadge');
 
 const tokenEl   = document.getElementById('tokenId');
 const idPreview = document.getElementById('idPreview');
+/* ===== ID control (unico) ===== */
+const idCtrl = OC.initIdControl({
+  input:  '#tokenId',
+  preview:'#idPreview',
+  button: '#go',
+  defaultId: '8929',
+  max: 99999,
+  persistKey: 'lastId',   // usa/localStorage
+  urlParam:  'id',        // legge ?id= e ripulisce l’URL
+  onApply(){
+    // qui scatta SEMPRE il render quando premi Show Me o Enter
+    openImage();
+  },
+  onClear(){
+    // reset mini-preview e UI
+    setStatus('');
+    setShareVisible(false);
+    idCtrl.resetPreview();
+  }
+});
+  
 /* ===== ID row condivisa (validazione, Enter, X, preview, disable pulsante) ===== */
 // Preview live + clear già gestiti
 // === Controllo ID "tutto in uno" (valida, preview, clear) ===
@@ -529,6 +550,12 @@ function applyBadge(badgeEl, cfg){
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
 
+    // auto-cook se l’URL ha ?id= valido (deep-link da index)
+    const hadIdInUrl = new URLSearchParams(location.search).has('id');
+    if (hadIdInUrl && idCtrl.value != null) {
+      await openImage();
+    }
+    
     // ===== AUTOPLAY da ?id oppure prefilla da localStorage =====
     const qid = p.get('id');
     if (qid != null){
@@ -643,6 +670,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
