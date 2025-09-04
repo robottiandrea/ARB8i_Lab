@@ -175,13 +175,15 @@ const exBadge = document.querySelector('#exampleBadge');
 
 const tokenEl   = document.getElementById('tokenId');
 const idPreview = document.getElementById('idPreview');
+const HAD_ID_AT_LOAD = new URLSearchParams(location.search).has('id');
+  
 /* ===== ID control (unico) ===== */
 const idCtrl = OC.initIdControl({
   input:  '#tokenId',
   preview:'#idPreview',
   button: '#go',
   defaultId: '8929',
-  max: 99999,
+  max: 9999,
   persistKey: 'lastId',   // usa/localStorage
   urlParam:  'id',        // legge ?id= e ripulisce l’URL
   onApply(){
@@ -196,22 +198,6 @@ const idCtrl = OC.initIdControl({
   }
 });
   
-/* ===== ID row condivisa (validazione, Enter, X, preview, disable pulsante) ===== */
-// Preview live + clear già gestiti
-// === Controllo ID "tutto in uno" (valida, preview, clear) ===
-const idCtrl = OC.initIdControl({
-  input:  '#tokenId',
-  preview:'#idPreview',
-  defaultId: '8929',
-  max: 99999,
-  onClear(){
-    setStatus('');
-    setShareVisible(false);
-    idCtrl.resetPreview();
-  }
-});
-
-
 
 
 /* ===== State ===== */
@@ -349,7 +335,9 @@ async function openImage(){
   setStatus('Cooking…');
   setShareVisible(false);
 
-  const raw = tokenEl.value.trim(); const id = parseInt(raw,10);
+  const raw = ((idCtrl && idCtrl.value != null) ? idCtrl.value : (tokenEl?.value || '')).trim();
+  const id = parseInt(raw,10);
+
   if(!Number.isFinite(id) || id<0){ setStatus('Enter a valid ID (≥0).'); return; }
 
   try{
@@ -550,34 +538,10 @@ function applyBadge(badgeEl, cfg){
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
 
-    // auto-cook se l’URL ha ?id= valido (deep-link da index)
-    const hadIdInUrl = new URLSearchParams(location.search).has('id');
-    if (hadIdInUrl && idCtrl.value != null) {
-      await openImage();
-    }
     
-    // ===== AUTOPLAY da ?id oppure prefilla da localStorage =====
-    const qid = p.get('id');
-    if (qid != null){
-      // arriva da index: avvia subito il cooking
-      tokenEl.value = String(qid).replace(/\D+/g,'').slice(0,5);
-      idCtrl.applyPreview(tokenEl.value);        // anteprima live
-      await openImage();               // <-- Cooking parte subito
-
-      // pulisci ?id dall'URL
-      p.delete('id');
-      const q = p.toString();
-      history.replaceState(null, '', location.pathname + (q?('?'+q):''));
-    } else {
-      // opzionale: mostra anteprima del lastId salvato
-      const last = localStorage.getItem('lastId');
-      if (last){
-        tokenEl.value = String(last).replace(/\D+/g,'').slice(0,5);
-        idCtrl.applyPreview(tokenEl.value);
-      } else {
-        // anteprima default (8929)
-        idCtrl.resetPreview();
-      }
+    // auto-cook se la pagina è arrivata con ?id= (l’input è già stato valorizzato da initIdControl)
+    if (HAD_ID_AT_LOAD && idCtrl.value != null) {
+      await openImage();
     }
 
   }catch(e){
@@ -670,6 +634,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
