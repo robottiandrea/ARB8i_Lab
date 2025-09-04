@@ -194,5 +194,20 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
+/* === Editor-only: allinea a sinistra la riga ID (anteprima + input + bottone) === */
+body[data-page="editor"] .id-row,
+body[data-page="editor"] #id-row,
+body[data-page="editor"] [data-component="id-row"],
+body[data-page="editor"] [data-role="id-row"]{
+  justify-content: flex-start !important;
+  text-align: left !important;
+}
+
+body[data-page="editor"] .id-row > *,
+body[data-page="editor"] #id-row > *,
+body[data-page="editor"] [data-component="id-row"] > *,
+body[data-page="editor"] [data-role="id-row"] > *{
+  margin-left: 0 !important;
+}
 
 
