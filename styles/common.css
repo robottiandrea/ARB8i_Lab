@@ -277,3 +277,44 @@ input,button,select,textarea{ font:inherit; }
   @keyframes popHold { from{opacity:1} to{opacity:1} }
   @keyframes popOutLeft { to{opacity:0; transform:translateY(-50%) translateX(12px);} }
 
+  /* ===== Popup centrale (riutilizzabile) ===== */
+.center-pop {
+  position: fixed;
+  inset: 0;
+  display: none;                 /* visibile solo quando serve */
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(0,0,0,.45);   /* sfondo scuro trasparente */
+  backdrop-filter: blur(4px);    /* leggero blur dietro (supportato su iOS) */
+}
+
+.center-pop .box {
+  max-width: min(90vw, 520px);
+  padding: 22px 26px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  text-align: center;
+  animation: popScale .18s ease-out;
+}
+
+.center-pop .title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.center-pop .desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+@keyframes popScale {
+  from { transform: scale(.96); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
