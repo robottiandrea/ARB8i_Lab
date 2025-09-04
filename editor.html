@@ -169,26 +169,29 @@ const mbHandle = $('#mbHandle');
 const mbSep = $('#mbSep');
 const exBadge = document.querySelector('#exampleBadge');
 
-const tokenEl   = document.getElementById('tokenId');
-const idPreview = document.getElementById('idPreview');
+
 const HAD_ID_AT_LOAD = new URLSearchParams(location.search).has('id');
 // === Monta la riga ID nell'Editor (stessa UI dell'index, testo diverso) ===
 if (OC && typeof OC.mountIdRow === 'function') {
-  OC.mountIdRow({
-    inputId: 'tokenId',        // l’editor si aspetta #tokenId
-    previewId: 'idPreview',    // anteprima tonda auto-aggiornata
-    buttonId: 'go',            // ID del bottone (come da editor)
-    buttonText: 'Cook it!',    // testo diverso dall’index
-    buttonClass: 'id-btn',     // stesso stile bottone dell’index
-    buttonContainer: '.id-cta',// dove agganciare il bottone
-    showPreview: true,         // mostra l’anteprima
-    placeholder: '8929',       // default visivo
-    maxLen: 4                  // accetta max 4 cifre (0–9)
-  });
+  OC.mountIdRow('#idRowHost', {
+  inputId: 'tokenId',
+  previewId: 'idPreview',
+  buttonId: 'go',
+  buttonText: 'Cook it!',
+  buttonClass: 'id-btn',
+  buttonContainer: '.id-cta',
+  showPreview: true,
+  placeholder: '8929',
+  maxLen: 4
+});
+
 } else {
   // fallback sicuro: non bloccare la pagina se la funzione non esiste
   console.warn('OC.mountIdRow non disponibile: salto il montaggio UI ID.');
 }  
+let tokenEl = document.getElementById('tokenId');
+let idPreview = document.getElementById('idPreview');
+  
 /* ===== ID control (unico) ===== */
 const idCtrl = OC.initIdControl({
   input:  '#tokenId',
@@ -646,6 +649,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
