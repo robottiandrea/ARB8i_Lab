@@ -426,5 +426,3 @@ OC.alignIdRowToPreview = function(){
     document.addEventListener('DOMContentLoaded', hookPreview, { once:true });
   }
 })();
-
-})();
