@@ -107,6 +107,13 @@
   /* contenitore ID: label a sinistra, riga centrata (stili base in common.css) */
   .hero-id{ display:inline-flex; flex-direction:column; align-items:center; }
   .hero-id .form-label{ align-self:flex-start; margin:0 0 6px; }
+  .hero-id-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+  }
+
   .id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
 
   /* Popover del bottone (solo qui) */
@@ -372,10 +379,6 @@ const idCtrl = OC.initIdControl({
   }
 })();
 
-
-    }
-  });
-})();
 
 /* ====== Manifest overlays ====== */
 async function loadManifest(){
