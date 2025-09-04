@@ -372,4 +372,4 @@ function initIdControl(opts){
   } else {
     autoClearInputs();
   }
-  
+})();
