@@ -152,62 +152,136 @@
     return { apply, reset };
   }
 
-  /* ==== Inizializzatore “tutto in uno” per l’ID ==== */
-  function initIdControl(opts){
-    const {
-      input,            // CSS selector o HTMLElement dell’input
-      preview,          // CSS selector o HTMLElement della mini-anteprima (opzionale)
-      button,           // CSS selector o HTMLElement del bottone Apply (opzionale)
-      defaultId='8929',
-      max=99999,
-      onApply,          // callback(id) quando clicchi il bottone o Enter con ID valido
-      onValidChange,    // callback(boolean) ogni volta che cambia la validità
-      onClear           // callback() quando si clicca la X
-    } = opts || {};
+function initIdControl(opts){
+  const {
+    input,            // CSS selector o HTMLElement
+    preview,          // CSS selector o HTMLElement (opzionale)
+    button,           // CSS selector o HTMLElement (opzionale)
+    defaultId='8929',
+    max=99999,
 
-    const inputEl  = typeof input==='string'  ? document.querySelector(input)  : input;
-    const previewEl= typeof preview==='string'? document.querySelector(preview): preview;
-    const buttonEl = typeof button==='string' ? document.querySelector(button) : button;
+    // --- NUOVO: persistenza & deep-link ---
+    persistKey=null,  // es. 'lastId' → salva/riprende da localStorage
+    urlParam=null,    // es. 'id' → legge da ?id=
+    cleanUrlParam=true,
 
-    if(!inputEl) return null;
+    // --- page-specific hooks ---
+    linkUpdater=null, // es. (id|null) => updateCardLinksWithId(id)
+    onApply,          // (id) quando clicchi il bottone o Enter con ID valido
+    onValidChange,    // (isValid, state)
+    onClear           // () quando clicchi la X
+  } = opts || {};
 
-    // X automatica + hook onClear
-    addClearToInput(inputEl, ()=>{ if(typeof onClear==='function') onClear(); });
+  const inputEl   = typeof input==='string'  ? document.querySelector(input)  : input;
+  const previewEl = typeof preview==='string'? document.querySelector(preview): preview;
+  const buttonEl  = typeof button==='string' ? document.querySelector(button) : button;
+  if(!inputEl) return null;
 
-    // anteprima condivisa
-    const prevCtrl = previewEl ? createIdPreview({ input: inputEl, preview: previewEl, defaultId, max }) : null;
+  // X automatica
+  addClearToInput(inputEl, ()=>{
+    // pulizia storage
+    if (persistKey) localStorage.removeItem(persistKey);
+    // link senza id
+    if (typeof linkUpdater === 'function') linkUpdater(null);
+    // preview default
+    if (previewEl) {
+      const prev = createIdPreview({ input: inputEl, preview: previewEl, defaultId, max });
+      prev.reset?.(); // garantisce default
+    }
+    if (typeof onClear === 'function') onClear();
 
-    // validazione + stato bottone
-    const setValidity = ()=>{
+    // inoltre svuota anche il value e notifica input
+    inputEl.value = '';
+    inputEl.dispatchEvent(new Event('input', {bubbles:true}));
+  });
+
+  // preview live condivisa
+  const prevCtrl = previewEl ? createIdPreview({ input: inputEl, preview: previewEl, defaultId, max }) : null;
+
+  // Stato validità + gestione bottone
+  const setValidity = ()=>{
+    const st = normalizeId(inputEl.value, max);
+    if(buttonEl) buttonEl.disabled = !st.valid;
+    if(typeof onValidChange==='function') onValidChange(!!st.valid, st);
+    return st;
+  };
+  inputEl.addEventListener('input', setValidity);
+  inputEl.addEventListener('keydown', e=>{
+    if(e.key==='Enter' && onApply){
       const st = normalizeId(inputEl.value, max);
-      if(buttonEl) buttonEl.disabled = !st.valid;
-      if(typeof onValidChange==='function') onValidChange(!!st.valid, st);
-      return st;
-    };
-    inputEl.addEventListener('input', setValidity);
-    inputEl.addEventListener('keydown', e=>{
-      if(e.key==='Enter' && onApply){
-        const st = normalizeId(inputEl.value, max);
-        if(st.valid){ e.preventDefault(); onApply(st.value); }
+      if(st.valid){
+        e.preventDefault();
+        if (persistKey) localStorage.setItem(persistKey, st.value);
+        if (typeof linkUpdater==='function') linkUpdater(st.value);
+        onApply(st.value);
+      }
+    }
+  });
+  if(buttonEl && onApply){
+    buttonEl.addEventListener('click', ()=>{
+      const st = normalizeId(inputEl.value, max);
+      if(st.valid){
+        if (persistKey) localStorage.setItem(persistKey, st.value);
+        if (typeof linkUpdater==='function') linkUpdater(st.value);
+        onApply(st.value);
       }
     });
-    if(buttonEl && onApply){
-      buttonEl.addEventListener('click', ()=>{
-        const st = normalizeId(inputEl.value, max);
-        if(st.valid) onApply(st.value);
-      });
+  }
+
+  // Hydrate: ?id= → altrimenti localStorage → altrimenti default
+  (function hydrate(){
+    let hydrated = false;
+    const sp = new URLSearchParams(location.search);
+
+    if(urlParam && sp.has(urlParam)){
+      const raw = sp.get(urlParam);
+      const st = normalizeId(raw, max);
+      inputEl.value = st.valid ? st.value : '';
+      inputEl.dispatchEvent(new Event('input', {bubbles:true}));
+      if(st.valid){
+        if (persistKey) localStorage.setItem(persistKey, st.value);
+        if (typeof linkUpdater==='function') linkUpdater(st.value);
+        prevCtrl?.apply?.(st.value);
+      }else{
+        prevCtrl?.reset?.();
+      }
+      if(cleanUrlParam){
+        sp.delete(urlParam);
+        const q = sp.toString();
+        history.replaceState(null, '', location.pathname + (q?('?'+q):''));
+      }
+      hydrated = true;
     }
 
-    // prima valutazione
-    setValidity();
+    if(!hydrated && persistKey){
+      const last = localStorage.getItem(persistKey);
+      const st = normalizeId(last, max);
+      if(st.valid){
+        inputEl.value = st.value;
+        inputEl.dispatchEvent(new Event('input', {bubbles:true}));
+        prevCtrl?.apply?.(st.value);
+        if (typeof linkUpdater==='function') linkUpdater(st.value);
+        hydrated = true;
+      }
+    }
 
-    return {
-      get value(){ const st=normalizeId(inputEl.value, max); return st.valid?st.value:null; },
-      set value(v){ inputEl.value = (v==null ? '' : String(v)); inputEl.dispatchEvent(new Event('input',{bubbles:true})); },
-      resetPreview(){ prevCtrl?.reset?.(); },
-      applyPreview(id){ prevCtrl?.apply?.(id); }
-    };
-  }
+    if(!hydrated){
+      prevCtrl?.reset?.(); // default 8929
+      inputEl.dispatchEvent(new Event('input', {bubbles:true}));
+    }
+  })();
+
+  // prima valutazione
+  setValidity();
+
+  return {
+    get value(){ const st=normalizeId(inputEl.value, max); return st.valid?st.value:null; },
+    set value(v){ inputEl.value = (v==null ? '' : String(v)); inputEl.dispatchEvent(new Event('input',{bubbles:true})); },
+    resetPreview(){ prevCtrl?.reset?.(); },
+    applyPreview(id){ prevCtrl?.apply?.(id); }
+  };
+}
+
 
     // ==== Crea DOM standard per la riga ID (preview SX + input con X + bottone opz.) ====
   function mountIdRow(containerSel, {
