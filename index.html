@@ -24,41 +24,39 @@
 </script>
 
 <style>
-  :root{ --bg:#0f1115; --card:#171a21; --text:#eef2ff; --muted:#9aa3b2; --acc:#8ab4ff; --border:#232938;
-         --footer-space: calc(44px + env(safe-area-inset-bottom));
+  :root{
+    /* solo variabili usate SOLO qui */
+    --footer-space: calc(44px + env(safe-area-inset-bottom));
+    --card-w:256px;
+    --gap:18px;
+    --id-width:112px;
+
+    /* params sheen chip */
+    --sheen-width:56px;
+    --sheen-alpha:.18;
+    --sheen-angle:-14deg;
+    --sheen-from:-120%;
+    --sheen-to:220%;
+    --sheen-dur:5.2s;
+    --sheen-delay:1.2s;
   }
+
   *{box-sizing:border-box}
-  
-  /*html, body { height: 100%; }*/
+
   body{
-    min-height: 100svh;      /* meglio di 100vh su mobile */
-    display: flex;background:var(--bg); color:var(--text);
-    font:15px/1.45 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-    flex-direction: column;
+    /* integrazione con common.css: qui aggiungiamo solo il layout della pagina */
+    min-height:100svh;
+    display:flex;
+    flex-direction:column;
   }
-  .wrap{ flex: 1 0 auto; }    /* il contenuto riempie lo spazio e spinge il footer in basso */
-  
+  .wrap{ flex:1 0 auto; }
+
   /* centratura SOLO del blocco titolo+descrizione */
   .hero{ text-align:center; margin:8px 0 18px }
-  .hero h1 {
-    margin: 0 0 6px;
-    font-size: clamp(26px, 3vw, 36px); /* circa il doppio di p */
-    font-weight: 600;
-  }
-  
-  .hero p {
-    margin: 0;
-    color: var(--muted);
-    font-size: clamp(13px, 1.5vw, 18px);
-    line-height: 1.35;
-  }
+  .hero h1{ margin:0 0 6px; font-size:clamp(26px,3vw,36px); font-weight:600; }
+  .hero p{ margin:0; font-size:clamp(13px,1.5vw,18px); line-height:1.35; color:var(--muted); }
 
-
-  .toolbar{display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:end; margin:12px 0 18px}
-  .toolbar .field{display:flex; gap:8px; align-items:center}
-  .toolbar input{padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text); width:220px}
-  :root{ --card-w:256px; --gap:18px; }
-
+  /* griglia cards */
   .grid{
     display:grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--card-w), var(--card-w)));
@@ -69,313 +67,137 @@
     margin-inline:auto;
   }
 
-  .card{background:var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.25); position:relative; transition:transform .08s ease, box-shadow .08s ease}
-  .card:hover{transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,.35)}
-  .thumb{position:relative; aspect-ratio:1/1; background:#0d1016}
-  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
-  .badge{position:absolute; top:8px; left:8px; padding:4px 8px; border-radius:10px; font-size:11px; font-weight:600; background:#fff;color:#0F1116; }
-  .titlebar{padding:10px 12px; border-top:1px solid var(--border); background:linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,.15))}
-  .name{font-size:15px; font-weight:600}
-  .by{font-size:12px; color:var(--muted)}
-  a.cardlink{position:absolute; inset:0; display:block; text-decoration:none; color:inherit}
-  .empty{opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px}
-
-/* Footer "made by" con shimmer — identico all'editor */
-.footer-madeby{
-  display:flex; justify-content:center; align-items:center;
-  gap:0; margin:10px 0 0;
-  font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-}
-.madeby-link{
-  display:inline-flex; align-items:center; gap:0;
-  text-decoration:none; color:inherit;
-}
-.madeby-link:hover{ text-decoration:underline; }
-.footer-madeby{ white-space:nowrap; }
-.madeby-link{ white-space:nowrap; }  
-.footer-madeby{
-  position: static;              /* default */
-  display:flex; justify-content:center; align-items:center;
-  gap:0; margin:12px 0 16px;
-  padding-bottom: env(safe-area-inset-bottom); /* per iPhone con notch */
-  white-space:nowrap;
-  font-family:'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-}
-
-/* Testo lucido */
-.shimmer{
-  --shine-start:rgba(192,192,192,.8);
-  --shine-middle:rgba(255,255,255,1);
-  --shine-end:rgba(192,192,192,.8);
-  background-image:linear-gradient(120deg,
-    var(--shine-start) 40%,
-    var(--shine-middle) 50%,
-    var(--shine-end) 60%
-  );
-  background-size:200% 100%;
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
-  animation:shine 8s linear infinite;
-  letter-spacing:.2px;
-}
-@keyframes shine{
-  0%{ background-position:200% 0 }
-  100%{ background-position:-200% 0 }
-}
-@media (prefers-reduced-motion: reduce){
-  .shimmer{ animation: none !important; }
-}
-
-
-/* barra sticky che occupa spazio e centra il chip */
-.navchip-bar{
-  position: sticky;
-  top: calc(12px + env(safe-area-inset-top)); /* sicuro anche con notch */
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  padding: 4px 0;
-}
-
-/* puoi riusare le tue regole .navchip già messe;
-   se non le hai, queste vanno bene: */
-.navchip{
-  display:inline-flex; align-items:center; gap:8px;
-  padding:8px 14px; border-radius:999px;
-  background: color-mix(in oklab, var(--card) 85%, transparent);
-  border:1px solid var(--border);
-  backdrop-filter: blur(8px);
-  box-shadow:0 8px 24px rgba(0,0,0,.35);
-  font:600 14px/1 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-  color:var(--text); text-decoration:none; white-space:nowrap;
-  transition:border-color .15s ease, color .15s ease, transform .05s ease;
-}
-.navchip:hover{ color:var(--acc); border-color:var(--acc); }
-.navchip:active{ transform: translateY(1px); }
-:root{
-  --sheen-width: 56px;     /* fascia un po’ più larga = più morbida */
-  --sheen-alpha: .18;      /* meno brillantezza */
-  --sheen-angle: -14deg;   /* inclinazione più dolce */
-  --sheen-from: -120%;     /* entra poco fuori a sinistra */
-  --sheen-to: 220%;        /* esce poco fuori a destra */
-  --sheen-dur: 5.2s;       /* passata più lenta */
-  --sheen-delay: 1.2s;     /* piccola pausa tra le passate */
-}
-
-.navchip{ position:relative; overflow:hidden; }
-/* ID nella hero */
-.hero-id{ margin-top:12px; }
-.hero-id-row{ display:flex; justify-content:center; gap:8px; }
-:root{ /* aggiungi (o integra) */
-  --id-width: 112px; /* ~4 cifre + aria. Cambia qui se vuoi più/meno largo */
-}
-
-.id-input{
-  width: var(--id-width);
-  flex: 0 0 var(--id-width);   /* fissa in un container flex */
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: #0d1016;
-  color: var(--text);
-  font-size: 16px;             /* evita zoom iOS */
-  font-variant-numeric: tabular-nums; /* cifre a larghezza uniforme */
-  text-align: center;          /* con 4 cifre sta meglio centrato */
-}
-
-.id-input.error{ border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.2); }
-.id-hint{ margin:6px 0 0; color:var(--muted); font-size:13px; }
-.id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
-
-  /* Avatar tondo di anteprima ID */
-.hero-id-row{ align-items:center; } /* allinea verticalmente input + tondo */
-
-.id-preview{
-  width:40px; height:40px; flex:0 0 auto;
-  border-radius:50%; overflow:hidden;
-  border:1px solid var(--border);
-  background:#0d1016; box-shadow:0 6px 16px rgba(0,0,0,.25);
-  display:block; position:relative;
-}
-.id-preview img{
-  width:100%; height:100%; display:block;
-  object-fit:cover; object-position:50% 35%; /* testa leggermente più alta */
-}
-.id-preview .id-badge{
-  position:absolute; inset:0; display:flex;
-  align-items:center; justify-content:center;
-  font:600 12px/1 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  color:var(--muted);
-}
-.id-preview.loading::after{
-  content:""; position:absolute; inset:0;
-  background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
-  background-size:200% 100%;
-  animation:shine 1.8s linear infinite; /* riusa @keyframes shine già presente */
-}
-/* Bottone "It’s me!" */
-.id-cta{ position:relative; display:flex; align-items:center; }
-.id-btn{
-  height:40px; padding:0 14px; margin:0;
-  border-radius:10px; border:1px solid var(--border);
-  background:var(--acc); color:#0f1115; font-weight:700;
-  font-family:'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  cursor:pointer; transition:transform .05s ease, filter .15s ease, opacity .15s;
-}
-.id-btn:hover{ filter:brightness(1.1); }
-.id-btn:active{ transform:translateY(1px); }
-.id-btn:disabled{ opacity:.45; cursor:not-allowed; }
-
-/* Popover ancorato a SINISTRA del bottone */
-.popover{
-  position:absolute;
-  right: calc(100% + 10px);   /* a sinistra del bottone */
-  top: 50%;
-  transform: translateY(-50%) translateX(8px); /* piccola traslazione per animazione */
-  z-index:1000;
-  padding:8px 12px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background: color-mix(in oklab, var(--card) 92%, transparent);
-  box-shadow:0 8px 24px rgba(0,0,0,.35);
-  white-space: nowrap;
-  color:var(--text);
-  font:600 13px/1.2 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  opacity:0; pointer-events:none;
-}
-
-/* freccetta che punta VERSO il bottone (a destra del popover) */
-.popover::after{
-  content:"";
-  position:absolute;
-  left:100%;
-  top:50%;
-  transform: translateY(-50%);
-  width:0; height:0;
-  border-top:6px solid transparent;
-  border-bottom:6px solid transparent;
-  border-left:6px solid var(--card);         /* triangolo verso destra */
-  filter: drop-shadow(1px 0 0 var(--border));/* “bordo” della freccia */
-}
-
-/* Animazioni (da sinistra verso il bottone) */
-.popover.show{
-  animation: popInLeft .18s ease-out, popHold 1.6s linear .18s, popOutLeft .22s ease-in 1.78s forwards;
-}
-@keyframes popInLeft {
-  from { opacity:0; transform: translateY(-50%) translateX(12px); }
-  to   { opacity:1; transform: translateY(-50%) translateX(0); }
-}
-@keyframes popHold { from{ opacity:1 } to{ opacity:1 } }
-@keyframes popOutLeft {
-  to { opacity:0; transform: translateY(-50%) translateX(12px); }
-}
-/* ==== Glow forte + onda sulle card ==== */
-.card{ position:relative; z-index:0; } /* sicuro per gli z-index */
-
-.grid.highlight .card::after{
-  content:"";
-  position:absolute;
-  inset:0;                    /* dentro il bordo: non viene tagliato */
-  border-radius:16px;
-  pointer-events:none;
-  z-index:2;                  /* sopra img e <a> */
-  /* ring interno + bagliore esterno (fallback solido) */
-  box-shadow:
-    inset 0 0 0 3px rgba(138,180,255,.75),
-    0 0 22px rgba(138,180,255,.45),
-    0 0 44px rgba(138,180,255,.25);
-  opacity:0;
-  animation-name: glowPulse;
-  animation-duration: 1.6s;
-  animation-timing-function: ease-in-out;
-  animation-fill-mode: forwards;
-  animation-iteration-count: 1;
-  animation-delay: var(--delay, 0s);  /* ← ritardo per l’onda */
-}
-
-/* Keyframes con visibilità netta */
-@keyframes glowPulse{
-  0%   { opacity:0; box-shadow:
-          inset 0 0 0 0 rgba(138,180,255,0),
-          0 0 0 rgba(138,180,255,0),
-          0 0 0 rgba(138,180,255,0);
+  /* parti di card specifiche della gallery (il resto sta in common.css) */
+  .thumb{ position:relative; aspect-ratio:1/1; background:#0d1016; }
+  .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .badge{
+    position:absolute; top:8px; left:8px;
+    padding:4px 8px; border-radius:10px; font-size:11px; font-weight:600;
+    background:#fff; color:#0F1116;
   }
-  18%  { opacity:1; box-shadow:
-          inset 0 0 0 3px rgba(138,180,255,.85),
-          0 0 26px rgba(138,180,255,.55),
-          0 0 56px rgba(138,180,255,.35);
+  .titlebar{ padding:10px 12px; border-top:1px solid var(--border);
+             background:linear-gradient(0deg, rgba(0,0,0,.45), rgba(0,0,0,.15)); }
+  .name{ font-size:15px; font-weight:600 }
+  .by{ font-size:12px; color:var(--muted) }
+  a.cardlink{ position:absolute; inset:0; display:block; text-decoration:none; color:inherit }
+  .empty{ opacity:.8; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px }
+
+  /* nav chip sticky (solo gallery) */
+  .navchip-bar{
+    position:sticky;
+    top:calc(12px + env(safe-area-inset-top));
+    z-index:9999;
+    display:flex; justify-content:center; padding:4px 0;
   }
-  55%  { opacity:1; }
-  100% { opacity:0; box-shadow:
-          inset 0 0 0 0 rgba(138,180,255,0),
-          0 0 0 rgba(138,180,255,0),
-          0 0 0 rgba(138,180,255,0);
+  .navchip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 14px; border-radius:999px;
+    background: color-mix(in oklab, var(--card) 85%, transparent);
+    border:1px solid var(--border);
+    backdrop-filter: blur(8px);
+    box-shadow:0 8px 24px rgba(0,0,0,.35);
+    font:600 14px/1 'Fredoka', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    color:var(--text); text-decoration:none; white-space:nowrap;
+    transition:border-color .15s ease, color .15s ease, transform .05s ease;
+    position:relative; overflow:hidden;
   }
-}
+  .navchip:hover{ color:var(--acc); border-color:var(--acc); }
+  .navchip:active{ transform: translateY(1px); }
 
-/* === Onda per 3 colonne (desktop) === */
-.grid.highlight .card:nth-child(3n+1)::after { --delay: 0ms;   }
-.grid.highlight .card:nth-child(3n+2)::after { --delay: 140ms; }
-.grid.highlight .card:nth-child(3n+3)::after { --delay: 280ms; }
+  /* blocco ID centrato, ma label a sinistra */
+  .hero-id{ display:inline-flex; flex-direction:column; align-items:center; }
+  .hero-id .form-label{ align-self:flex-start; margin:0 0 6px; } /* il resto della label è in common.css */
 
-/* === Onda per 2 colonne (tablet/mobile medio) === */
-@media (max-width: 620px){
-  .grid.highlight .card:nth-child(2n+1)::after { --delay: 0ms;   }
-  .grid.highlight .card:nth-child(2n+2)::after { --delay: 160ms; }
-}
+  /* input ID + stati (qui teniamo la versione compatta da gallery) */
+  .id-input{
+    width: var(--id-width);
+    flex: 0 0 var(--id-width);
+    height: 40px; padding:0 12px;
+    border-radius:10px; border:1px solid var(--border);
+    background:#0d1016; color:var(--text);
+    font-size:16px; font-variant-numeric:tabular-nums; text-align:center;
+  }
+  .id-input.error{ border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.2); }
+  .id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
 
-/* === 1 colonna (mobile stretto): niente ritardi === */
-@media (max-width: 360px){
-  .grid.highlight .card::after { --delay: 0ms; }
-}
+  /* anteprima tonda */
+  .hero-id-row{ display:flex; justify-content:center; align-items:center; gap:8px; }
+  .id-preview{
+    width:40px; height:40px; flex:0 0 auto; border-radius:50%; overflow:hidden;
+    border:1px solid var(--border); background:#0d1016; box-shadow:0 6px 16px rgba(0,0,0,.25);
+    display:block; position:relative;
+  }
+  .id-preview img{ width:100%; height:100%; display:block; object-fit:cover; object-position:50% 35%; }
+  .id-preview .id-badge{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font:600 12px/1 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--muted);
+  }
+  .id-preview.loading::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+    background-size:200% 100%; animation:shine 1.8s linear infinite;
+  }
 
-@media (prefers-reduced-motion: reduce){
-  .grid.highlight .card::after{ animation:none; opacity:0; }
-}
-/* Come in editor */
-.form-label{
-  display:inline-block;
-  margin: 0 0 6px;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--muted);
-  text-align: left;
-}
+  /* bottone "It’s me!" + popover (solo qui) */
+  .id-cta{ position:relative; display:flex; align-items:center; }
+  .id-btn{
+    height:40px; padding:0 14px; margin:0; border-radius:10px; border:1px solid var(--border);
+    background:var(--acc); color:#0f1115; font-weight:700; font-family:'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    cursor:pointer; transition:transform .05s ease, filter .15s ease, opacity .15s;
+  }
+  .id-btn:hover{ filter:brightness(1.1); }
+  .id-btn:active{ transform:translateY(1px); }
+  .id-btn:disabled{ opacity:.45; cursor:not-allowed; }
 
-.sub{
-  color: var(--muted);
-  font-size: 13px;
-}
+  .popover{
+    position:absolute; right: calc(100% + 10px); top:50%; transform: translateY(-50%) translateX(8px);
+    z-index:1000; padding:8px 12px; border-radius:10px; border:1px solid var(--border);
+    background: color-mix(in oklab, var(--card) 92%, transparent);
+    box-shadow:0 8px 24px rgba(0,0,0,.35); white-space:nowrap; color:var(--text);
+    font:600 13px/1.2 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; opacity:0; pointer-events:none;
+  }
+  .popover::after{
+    content:""; position:absolute; left:100%; top:50%; transform: translateY(-50%);
+    width:0; height:0; border-top:6px solid transparent; border-bottom:6px solid transparent;
+    border-left:6px solid var(--card); filter: drop-shadow(1px 0 0 var(--border));
+  }
+  .popover.show{
+    animation: popInLeft .18s ease-out, popHold 1.6s linear .18s, popOutLeft .22s ease-in 1.78s forwards;
+  }
+  @keyframes popInLeft { from{opacity:0; transform:translateY(-50%) translateX(12px);} to{opacity:1; transform:translateY(-50%) translateX(0);} }
+  @keyframes popHold { from{opacity:1} to{opacity:1} }
+  @keyframes popOutLeft { to{opacity:0; transform:translateY(-50%) translateX(12px);} }
 
-.back{
-  color: var(--acc);
-  text-decoration: none;
-}
-.back:hover{ text-decoration: underline; }
-
-/* Contenitore centrato, ma con label allineata a sinistra */
-.hero-id{
-  display:inline-flex;
-  flex-direction:column;
-  align-items:center;   /* input+button+preview restano centrati */
-}
-
-/* Solo la label va a sinistra rispetto al blocco */
-.form-label{
-  align-self:flex-start;
-  margin:0 0 6px;
-  font-weight:600;
-  font-size:14px;
-  color:var(--muted);
-  text-align:left;
-}
-
-
-
+  /* Glow forte + onda sulle card (solo gallery) */
+  .grid.highlight .card::after{
+    content:""; position:absolute; inset:0; border-radius:16px; pointer-events:none; z-index:2;
+    box-shadow:
+      inset 0 0 0 3px rgba(138,180,255,.75),
+      0 0 22px rgba(138,180,255,.45),
+      0 0 44px rgba(138,180,255,.25);
+    opacity:0; animation: glowPulse 1.6s ease-in-out forwards; animation-delay: var(--delay, 0s);
+  }
+  @keyframes glowPulse{
+    0%{ opacity:0; box-shadow: inset 0 0 0 0 rgba(138,180,255,0), 0 0 0 rgba(138,180,255,0), 0 0 0 rgba(138,180,255,0); }
+    18%{ opacity:1; box-shadow: inset 0 0 0 3px rgba(138,180,255,.85), 0 0 26px rgba(138,180,255,.55), 0 0 56px rgba(138,180,255,.35); }
+    55%{ opacity:1; }
+    100%{ opacity:0; box-shadow: inset 0 0 0 0 rgba(138,180,255,0), 0 0 0 rgba(138,180,255,0), 0 0 0 rgba(138,180,255,0); }
+  }
+  .grid.highlight .card:nth-child(3n+1)::after { --delay:0ms; }
+  .grid.highlight .card:nth-child(3n+2)::after { --delay:140ms; }
+  .grid.highlight .card:nth-child(3n+3)::after { --delay:280ms; }
+  @media (max-width:620px){
+    .grid.highlight .card:nth-child(2n+1)::after { --delay: 0ms; }
+    .grid.highlight .card:nth-child(2n+2)::after { --delay:160ms; }
+  }
+  @media (max-width:360px){
+    .grid.highlight .card::after { --delay: 0ms; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .grid.highlight .card::after{ animation:none; opacity:0; }
+  }
 </style>
+
 </head>
 <body>
   <div class="navchip-bar">
