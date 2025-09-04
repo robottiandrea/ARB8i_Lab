@@ -57,6 +57,14 @@
   .hero{ text-align:center; margin:8px 0 18px }
   .hero h1{ margin:0 0 6px; font-size:clamp(26px,3vw,36px); font-weight:600; }
   .hero p{ margin:0; font-size:clamp(13px,1.5vw,18px); line-height:1.35; color:var(--muted); }
+  .hero h1{ margin:0 0 8px; }
+  .hero .tagline{
+    margin: 10px 0 0;         /* spazio sopra la tagline */
+    font-size: clamp(16px,1.5vw,18px);
+    line-height: 1.35;
+    color: var(--muted);
+  }
+  .hero .sub{ margin-top: 8px !important; }
 
   /* griglia cards */
   .grid{
@@ -149,8 +157,7 @@
   <main class="wrap">
     <header class="hero">
       <h1>ARB8i 💛 Lab</h1>
-      <p>Pick a vibe! Overlay the fun!</p>
-
+      
       <div class="hero-id">
         <label for="idField" class="form-label">Doodles ID</label>
       
@@ -168,10 +175,10 @@
           Missing your Doodle ID?
           <a id="tvLink" class="back shimmer idhelp" href="./Doodles_trait-viewer.html?source=index">Find it here!</a>
         </p>
-      
+        
         <p id="idError" class="id-error" role="status" aria-live="polite" style="display:none"></p>
       </div>
-        
+      <p>Pick a vibe! Overlay the fun!</p>  
     </header>
 
     <div id="grid" class="grid"></div>
