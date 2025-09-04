@@ -67,18 +67,64 @@
     return {value:s, valid:false, empty:false};
   }
 
+  /* ==== NUOVO: gestione universale “input con X” ==== */
+  function ensureId(el){
+    if(!el.id) el.id = 'ocid_' + Math.random().toString(36).slice(2,8);
+    return el.id;
+  }
+  function wrapInInputClear(el){
+    const p = el.parentElement;
+    if(p && p.classList && p.classList.contains('input-clear')) return p;
+    const w = document.createElement('div');
+    w.className = 'input-clear';
+    if(p){ p.insertBefore(w, el); w.appendChild(el); }
+    return w;
+  }
+  function addClearToInput(input, afterClear){
+    if(!input) return;
+    const id = ensureId(input);
+    const wrap = wrapInInputClear(input);
+
+    // evita doppioni
+    if(wrap.querySelector(`.clear-btn[data-clear-for="${id}"]`)) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'clear-btn';
+    btn.setAttribute('data-clear-for', id);
+    btn.setAttribute('aria-label', 'Pulisci');
+    wrap.appendChild(btn);
+
+    const toggle = () => btn.classList.toggle('show', !!input.value);
+    input.addEventListener('input', toggle);
+
+    btn.addEventListener('click', () => {
+      input.value = '';
+      // hook globale opzionale (le pagine possono definire OC.onIdCleared)
+      if (typeof window.OC?.onIdCleared === 'function'){
+        try { window.OC.onIdCleared(input); } catch(_){}
+      }
+      // hook locale opzionale (compat con wireClear)
+      if (typeof afterClear === 'function'){
+        try { afterClear(); } catch(_){}
+      }
+      // rilancia evento input per i listener della pagina
+      input.dispatchEvent(new Event('input', { bubbles:true }));
+      input.focus();
+      toggle();
+    });
+
+    toggle();
+  }
+  function autoClearInputs(selector='.id-input'){
+    document.querySelectorAll(selector).forEach(el => addClearToInput(el));
+  }
+
+  // wireClear retro-compatibile (usato nel Trait Viewer)
   function wireClear(inputId, afterClear){
     const inp = document.getElementById(inputId);
-    const btn = document.querySelector(`[data-clear-for="${inputId}"]`);
-    if(!inp || !btn) return;
-    const toggle = () => btn.classList.toggle('show', !!inp.value);
-    inp.addEventListener('input', toggle);
-    btn.addEventListener('click', () => {
-      inp.value=''; inp.focus();
-      inp.dispatchEvent(new Event('input', {bubbles:true}));
-      if(afterClear) afterClear();
-    });
-    toggle();
+    if(!inp) return;
+    addClearToInput(inp, afterClear);
   }
 
   function createIdPreview({input, preview, defaultId='8929', max=99999}){
@@ -109,5 +155,19 @@
     return { apply, reset };
   }
 
-  window.OC = Object.assign(window.OC||{}, { normalizeId, wireClear, createIdPreview });
+  // Espone API comuni
+  window.OC = Object.assign(window.OC||{}, {
+    normalizeId,
+    wireClear,              // compat Trait Viewer
+    addClearToInput,        // se vuoi usarlo manualmente
+    autoClearInputs,        // auto per .id-input
+    createIdPreview
+  });
+
+  // Auto-init: aggiungi la X a tutti gli .id-input presenti nella pagina
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', () => autoClearInputs());
+  } else {
+    autoClearInputs();
+  }
 })();
