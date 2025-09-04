@@ -209,15 +209,88 @@
     };
   }
 
+    // ==== Crea DOM standard per la riga ID (preview SX + input con X + bottone opz.) ====
+  function mountIdRow(containerSel, {
+    inputId = 'tokenId',
+    previewId = null,
+    buttonId = null,
+    buttonText = null,              // se null => nessun bottone
+    buttonClass = 'btn-outline',    // es. 'id-btn' in index, 'btn-outline' in editor
+    buttonContainer = null,         // se vuoi appendere il bottone altrove (es. dentro .id-cta)
+    showPreview = true,
+    placeholder = '8929',
+    maxLen = 5
+  } = {}){
+    const container = (typeof containerSel==='string')
+      ? document.querySelector(containerSel)
+      : containerSel;
+    if(!container) return null;
+
+    // wrapper riga allineato agli stili di common.css (.id-row, .id-preview, .id-input)
+    const row = document.createElement('div');
+    row.className = 'id-row';
+
+    // preview SX (facoltativa)
+    let previewEl = null;
+    if(showPreview){
+      previewEl = document.createElement('div');
+      previewEl.className = 'id-preview';
+      if(previewId) previewEl.id = previewId;
+      previewEl.innerHTML = '<span class="id-badge">#—</span>';
+      row.appendChild(previewEl);
+    }
+
+    // input numerico con X (la X viene aggiunta da addClearToInput/initIdControl)
+    const inputEl = document.createElement('input');
+    inputEl.type = 'text';
+    inputEl.className = 'id-input';
+    inputEl.id = inputId;
+    inputEl.setAttribute('inputmode', 'numeric');
+    inputEl.setAttribute('pattern', '[0-9]*');
+    inputEl.setAttribute('autocomplete', 'off');
+    inputEl.setAttribute('maxlength', String(maxLen));
+    inputEl.setAttribute('placeholder', placeholder);
+    row.appendChild(inputEl);
+
+    // bottone (opzionale)
+    let btnEl = null;
+    if(buttonText){
+      btnEl = document.createElement('button');
+      btnEl.type = 'button';
+      btnEl.className = buttonClass;
+      if(buttonId) btnEl.id = buttonId;
+      btnEl.textContent = buttonText;
+      btnEl.disabled = true;   // si abilita da initIdControl
+
+      if(buttonContainer){
+        const bc = (typeof buttonContainer==='string')
+          ? document.querySelector(buttonContainer)
+          : buttonContainer;
+        if(bc){ bc.appendChild(btnEl); }
+        else  { row.appendChild(btnEl); }
+      }else{
+        row.appendChild(btnEl);
+      }
+    }
+
+    // monta nel container
+    container.innerHTML = '';
+    container.appendChild(row);
+
+    return { row, input: inputEl, preview: previewEl, button: btnEl };
+  }
+
   // API esposte
-  window.OC = Object.assign(window.OC||{}, {
+    window.OC = Object.assign(window.OC||{}, {
     normalizeId,
     wireClear,              // compat
     addClearToInput,        // opzionale
     autoClearInputs,        // X auto per tutti gli .id-input
     createIdPreview,        // opzionale
-    initIdControl           // ← usa questa nei file pagina
+    initIdControl,          // inizializzatore unico
+    mountIdRow              // crea il markup standard della riga ID
   });
+
 
   // X automatica su tutti gli .id-input presenti
   if (document.readyState === 'loading'){
