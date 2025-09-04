@@ -211,5 +211,20 @@ body[data-page="editor"] [data-component="id-row"] > *,
 body[data-page="editor"] [data-role="id-row"] > *{
   margin-left: 0 !important;
 }
+/* Editor-only: sposta la riga ID esattamente al bordo sx della PNG di anteprima */
+body[data-page="editor"] .id-row,
+body[data-page="editor"] #id-row,
+body[data-page="editor"] [data-component="id-row"],
+body[data-page="editor"] [data-role="id-row"]{
+  justify-content: flex-start !important;
+  text-align: left !important;
+  margin-left: var(--id-row-offset, 0px) !important;
+}
 
+body[data-page="editor"] .id-row > *,
+body[data-page="editor"] #id-row > *,
+body[data-page="editor"] [data-component="id-row"] > *,
+body[data-page="editor"] [data-role="id-row"] > *{
+  margin-left: 0 !important;
+}
 
