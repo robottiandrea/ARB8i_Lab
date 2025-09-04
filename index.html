@@ -266,7 +266,7 @@ function render(){
   }
   if (EMPTY) EMPTY.style.display = 'none';
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
-  const active = OC.normalizeId(localStorage.getItem('lastId'), 99999);
+  const active = OC.normalizeId(localStorage.getItem('lastId'), 9999);
   updateCardLinksWithId(active.valid ? active.value : null);
 }
 /* ====== Riga ID condivisa: mount + init ====== */
@@ -280,7 +280,7 @@ OC.mountIdRow('#idRowHost', {
   buttonContainer: '.id-cta',
   showPreview: true,
   placeholder: '8929',
-  maxLen: 5
+  maxLen: 4
 });
 
 // Inizializza tutto in uno: persistenza + deep-link + update link cards
@@ -289,7 +289,7 @@ const idCtrl = OC.initIdControl({
   preview: '#idPreview',
   button: '#idApplyBtn',
   defaultId: '8929',
-  max: 99999,
+  max: 9999,
   persistKey: 'lastId',
   urlParam: 'id',
   cleanUrlParam: true,
