@@ -81,33 +81,6 @@ input,button,select,textarea{ font:inherit; }
 .madeby-link{ display:inline-flex; align-items:center; gap:0; text-decoration:none; color:inherit; }
 .madeby-link:hover{ text-decoration:underline; }
 
-/* Text shimmer (usato per la firma nel footer) */
-.shimmer{
-  --shine-start: rgba(192,192,192,.8);
-  --shine-middle: rgba(255,255,255,1);
-  --shine-end: rgba(192,192,192,.8);
-  background-image: linear-gradient(120deg,
-    var(--shine-start) 40%,
-    var(--shine-middle) 50%,
-    var(--shine-end) 60%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent; /* Safari */
-  animation: shine 8s linear infinite;
-  letter-spacing: .2px;
-}
-
-@keyframes shine{
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-@media (prefers-reduced-motion: reduce){
-  .shimmer{ animation: none !important; }
-}
 
 
 /* ========== Controlli & Bottoni (coerenti con editor) ========== */
@@ -153,5 +126,67 @@ input,button,select,textarea{ font:inherit; }
 
 /* ========== Chips base ========== */
 .chip{ background:#0d1016; border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:999px; font-size:12px }
+/* ========== ID row condivisa (preview SX + input con X + bottone) ========== */
+:root{ --id-width:136px; } /* 5 cifre comode; regola se vuoi più largo */
+
+.id-row{
+  display:grid;
+  grid-template-columns: auto var(--id-width) auto;
+  gap:10px;
+  align-items:center;
+  justify-content:center;
+}
+
+/* Input numerico “ID” */
+.id-input{
+  width:var(--id-width);
+  height:40px;
+  padding:0 12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#0d1016;
+  color:var(--text);
+  font-size:16px;
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+}
+.id-input.error{ border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.2); }
+
+/* Wrapper per la X interna (stile come Trait Viewer) */
+.input-clear{ position:relative; }
+.input-clear .id-input{ padding-right:34px; }
+.clear-btn{
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; padding:0; border:0; background:transparent;
+  border-radius:0; display:none; cursor:pointer;
+}
+.clear-btn.show{ display:block; }
+.clear-btn::before{
+  content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:14px; height:14px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14"><path d="M1 1L13 13M13 1L1 13" stroke="%23b8bec9" stroke-width="2" stroke-linecap="round"/></svg>')
+             no-repeat center;
+  opacity:.85;
+}
+.clear-btn:hover::before{ opacity:1; }
+.clear-btn:focus-visible{ outline:2px solid #2b62ff; outline-offset:2px; border-radius:6px; }
+
+/* Mini-anteprima tonda a sinistra */
+.id-preview{
+  width:40px; height:40px; border-radius:50%; overflow:hidden;
+  border:1px solid var(--border); background:#0d1016;
+  box-shadow:0 6px 16px rgba(0,0,0,.25); position:relative;
+}
+.id-preview img{ width:100%; height:100%; object-fit:cover; object-position:50% 35%; display:block; }
+.id-preview .id-badge{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font:600 12px/1 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  color:var(--muted);
+}
+.id-preview.loading::after{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+  background-size:200% 100%; animation:shine 1.8s linear infinite;
+}
 
 
