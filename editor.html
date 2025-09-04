@@ -37,10 +37,13 @@
 
   /* header editor */
   .header{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
-  .back{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; opacity:.85; }
-  .back:hover{ opacity:1; }
+  .nav-back{
+    display:inline-flex; align-items:center; gap:8px;
+    text-decoration:none; color:var(--text); opacity:.85;
+  }
+  .nav-back:hover{ opacity:1; }
   h1{ margin:0; font-size:20px; font-weight:600; }
-  .sub{ color:var(--muted); font-size:12px; }
+  
   .badge{ display:inline-block; margin-left:8px; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600; }
 
   /* card (base in common.css): qui solo padding specifico */
@@ -111,16 +114,14 @@
     letter-spacing:.2px;
   }
 
-  /* link di aiuto (editor) */
-  .idhelp{ font-size:14px; font-weight:600; letter-spacing:.2px; margin-left:4px; }
-  @media (min-width:640px){ .idhelp{ font-size:15px; } }
+ 
 </style>
 
 </head>
 <body>
   <main class="wrap">
     <div class="header">
-      <a class="back" href="index.html">← Gallery</a>
+      <a class="nav-back" href="index.html">← Gallery</a>
       <div>
         <h1 id="ovName">Overlay</h1>
         <div class="sub"><span id="ovAuthor"></span><span id="ovBadge" class="badge" style="display:none"></span></div>
@@ -128,7 +129,7 @@
     </div>
 
     <section class="card">
-      <label for="tokenId">Doodles ID</label>
+      <label for="tokenId" class="form-label">Doodles ID</label>
       <div class="row">
         <input id="tokenId" type="text" placeholder="8929" inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off" />
         <button id="go" class="btn-outline" aria-label="Show the image">Show Me!</button>
@@ -668,6 +669,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
