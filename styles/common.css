@@ -44,7 +44,7 @@ input,button,select,textarea{ font:inherit; }
   font-weight:600;
   font-size:16px;
   color:var(--muted);
-  text-align:left;
+  text-align:center;
 }
 /* Piccolo boost al link help (come in editor) */
 .idhelp{
@@ -194,15 +194,17 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
-/* === Editor-only: allinea a sinistra la riga ID (anteprima + input + bottone) === */
+/* === Editor-only: la riga ID eredita un offset dinamico verso sx === */
 body[data-page="editor"] .id-row,
 body[data-page="editor"] #id-row,
 body[data-page="editor"] [data-component="id-row"],
 body[data-page="editor"] [data-role="id-row"]{
   justify-content: flex-start !important;
   text-align: left !important;
+  margin-left: var(--id-row-offset, 0px) !important; /* allinea al bordo sx della PNG */
 }
 
+/* Evita spaziatura extra che falserebbe l'allineamento */
 body[data-page="editor"] .id-row > *,
 body[data-page="editor"] #id-row > *,
 body[data-page="editor"] [data-component="id-row"] > *,
