@@ -67,7 +67,7 @@
     return {value:s, valid:false, empty:false};
   }
 
-  /* ==== NUOVO: gestione universale “input con X” ==== */
+  /* ==== “Input con X” automatico per tutti gli .id-input ==== */
   function ensureId(el){
     if(!el.id) el.id = 'ocid_' + Math.random().toString(36).slice(2,8);
     return el.id;
@@ -84,8 +84,6 @@
     if(!input) return;
     const id = ensureId(input);
     const wrap = wrapInInputClear(input);
-
-    // evita doppioni
     if(wrap.querySelector(`.clear-btn[data-clear-for="${id}"]`)) return;
 
     const btn = document.createElement('button');
@@ -100,15 +98,13 @@
 
     btn.addEventListener('click', () => {
       input.value = '';
-      // hook globale opzionale (le pagine possono definire OC.onIdCleared)
+      // Hook globale (facoltativo per le pagine)
       if (typeof window.OC?.onIdCleared === 'function'){
         try { window.OC.onIdCleared(input); } catch(_){}
       }
-      // hook locale opzionale (compat con wireClear)
       if (typeof afterClear === 'function'){
         try { afterClear(); } catch(_){}
       }
-      // rilancia evento input per i listener della pagina
       input.dispatchEvent(new Event('input', { bubbles:true }));
       input.focus();
       toggle();
@@ -120,13 +116,14 @@
     document.querySelectorAll(selector).forEach(el => addClearToInput(el));
   }
 
-  // wireClear retro-compatibile (usato nel Trait Viewer)
+  // Retro-compat con Trait Viewer (se lo usi lì)
   function wireClear(inputId, afterClear){
     const inp = document.getElementById(inputId);
     if(!inp) return;
     addClearToInput(inp, afterClear);
   }
 
+  /* ==== Mini-anteprima Doodle e controllo unico ==== */
   function createIdPreview({input, preview, defaultId='8929', max=99999}){
     async function apply(id){
       if(!preview) return;
@@ -151,20 +148,78 @@
         if(Number.isFinite(n) && n>=0 && n<=max) apply(n);
       });
     }
-    reset();                 // mostra sempre la default all’avvio
+    reset();
     return { apply, reset };
   }
 
-  // Espone API comuni
+  /* ==== Inizializzatore “tutto in uno” per l’ID ==== */
+  function initIdControl(opts){
+    const {
+      input,            // CSS selector o HTMLElement dell’input
+      preview,          // CSS selector o HTMLElement della mini-anteprima (opzionale)
+      button,           // CSS selector o HTMLElement del bottone Apply (opzionale)
+      defaultId='8929',
+      max=99999,
+      onApply,          // callback(id) quando clicchi il bottone o Enter con ID valido
+      onValidChange,    // callback(boolean) ogni volta che cambia la validità
+      onClear           // callback() quando si clicca la X
+    } = opts || {};
+
+    const inputEl  = typeof input==='string'  ? document.querySelector(input)  : input;
+    const previewEl= typeof preview==='string'? document.querySelector(preview): preview;
+    const buttonEl = typeof button==='string' ? document.querySelector(button) : button;
+
+    if(!inputEl) return null;
+
+    // X automatica + hook onClear
+    addClearToInput(inputEl, ()=>{ if(typeof onClear==='function') onClear(); });
+
+    // anteprima condivisa
+    const prevCtrl = previewEl ? createIdPreview({ input: inputEl, preview: previewEl, defaultId, max }) : null;
+
+    // validazione + stato bottone
+    const setValidity = ()=>{
+      const st = normalizeId(inputEl.value, max);
+      if(buttonEl) buttonEl.disabled = !st.valid;
+      if(typeof onValidChange==='function') onValidChange(!!st.valid, st);
+      return st;
+    };
+    inputEl.addEventListener('input', setValidity);
+    inputEl.addEventListener('keydown', e=>{
+      if(e.key==='Enter' && onApply){
+        const st = normalizeId(inputEl.value, max);
+        if(st.valid){ e.preventDefault(); onApply(st.value); }
+      }
+    });
+    if(buttonEl && onApply){
+      buttonEl.addEventListener('click', ()=>{
+        const st = normalizeId(inputEl.value, max);
+        if(st.valid) onApply(st.value);
+      });
+    }
+
+    // prima valutazione
+    setValidity();
+
+    return {
+      get value(){ const st=normalizeId(inputEl.value, max); return st.valid?st.value:null; },
+      set value(v){ inputEl.value = (v==null ? '' : String(v)); inputEl.dispatchEvent(new Event('input',{bubbles:true})); },
+      resetPreview(){ prevCtrl?.reset?.(); },
+      applyPreview(id){ prevCtrl?.apply?.(id); }
+    };
+  }
+
+  // API esposte
   window.OC = Object.assign(window.OC||{}, {
     normalizeId,
-    wireClear,              // compat Trait Viewer
-    addClearToInput,        // se vuoi usarlo manualmente
-    autoClearInputs,        // auto per .id-input
-    createIdPreview
+    wireClear,              // compat
+    addClearToInput,        // opzionale
+    autoClearInputs,        // X auto per tutti gli .id-input
+    createIdPreview,        // opzionale
+    initIdControl           // ← usa questa nei file pagina
   });
 
-  // Auto-init: aggiungi la X a tutti gli .id-input presenti nella pagina
+  // X automatica su tutti gli .id-input presenti
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', () => autoClearInputs());
   } else {
