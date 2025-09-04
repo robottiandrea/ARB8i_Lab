@@ -740,6 +740,7 @@ function renderPage(){
       if (SOURCE_PARAM === 'index') {
         const u = new URL('./index.html', location.href);
         u.searchParams.set('id', id);
+        u.searchParams.set('lock', '1');
         return `<a class="open" href="${u.toString()}">Use this ID</a>`;
       }
       if (OVERLAY_PARAM || LAST_OVERLAY) {
