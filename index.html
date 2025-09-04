@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./styles/common.css">  
+<link rel="stylesheet" href="./styles/common.css">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0f1115">
 
@@ -17,6 +17,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Doodles">
 
+<!-- libreria condivisa: normalizeId, wireClear, createIdPreview -->
+<script src="./scripts/common.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
@@ -25,11 +27,10 @@
 
 <style>
   :root{
-    /* solo variabili usate SOLO qui */
+    /* solo variabili/parametri usati QUI (non in common) */
     --footer-space: calc(44px + env(safe-area-inset-bottom));
     --card-w:256px;
     --gap:18px;
-    --id-width:112px;
 
     /* params sheen chip */
     --sheen-width:56px;
@@ -44,14 +45,13 @@
   *{box-sizing:border-box}
 
   body{
-    /* integrazione con common.css: qui aggiungiamo solo il layout della pagina */
     min-height:100svh;
     display:flex;
     flex-direction:column;
   }
   .wrap{ flex:1 0 auto; }
 
-  /* centratura SOLO del blocco titolo+descrizione */
+  /* hero */
   .hero{ text-align:center; margin:8px 0 18px }
   .hero h1{ margin:0 0 6px; font-size:clamp(26px,3vw,36px); font-weight:600; }
   .hero p{ margin:0; font-size:clamp(13px,1.5vw,18px); line-height:1.35; color:var(--muted); }
@@ -104,41 +104,12 @@
   .navchip:hover{ color:var(--acc); border-color:var(--acc); }
   .navchip:active{ transform: translateY(1px); }
 
-  /* blocco ID centrato, ma label a sinistra */
+  /* contenitore ID: label a sinistra, riga centrata (stili base in common.css) */
   .hero-id{ display:inline-flex; flex-direction:column; align-items:center; }
-  .hero-id .form-label{ align-self:flex-start; margin:0 0 6px; } /* il resto della label è in common.css */
-
-  /* input ID + stati (qui teniamo la versione compatta da gallery) */
-  .id-input{
-    width: var(--id-width);
-    flex: 0 0 var(--id-width);
-    height: 40px; padding:0 12px;
-    border-radius:10px; border:1px solid var(--border);
-    background:#0d1016; color:var(--text);
-    font-size:16px; font-variant-numeric:tabular-nums; text-align:center;
-  }
-  .id-input.error{ border-color:#ff4d4f; box-shadow:0 0 0 2px rgba(255,77,79,.2); }
+  .hero-id .form-label{ align-self:flex-start; margin:0 0 6px; }
   .id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
 
-  /* anteprima tonda */
-  .hero-id-row{ display:flex; justify-content:center; align-items:center; gap:8px; }
-  .id-preview{
-    width:40px; height:40px; flex:0 0 auto; border-radius:50%; overflow:hidden;
-    border:1px solid var(--border); background:#0d1016; box-shadow:0 6px 16px rgba(0,0,0,.25);
-    display:block; position:relative;
-  }
-  .id-preview img{ width:100%; height:100%; display:block; object-fit:cover; object-position:50% 35%; }
-  .id-preview .id-badge{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font:600 12px/1 'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--muted);
-  }
-  .id-preview.loading::after{
-    content:""; position:absolute; inset:0;
-    background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
-    background-size:200% 100%; animation:shine 1.8s linear infinite;
-  }
-
-  /* bottone "It’s me!" + popover (solo qui) */
+  /* Popover del bottone (solo qui) */
   .id-cta{ position:relative; display:flex; align-items:center; }
   .id-btn{
     height:40px; padding:0 14px; margin:0; border-radius:10px; border:1px solid var(--border);
@@ -210,29 +181,36 @@
     <header class="hero">
       <h1>ARB8i 💛 Lab</h1>
       <p>Pick a vibe! Overlay the fun!</p>
+
       <div class="hero-id">
-      <label for="tokenId" class="form-label">Doodles ID</label>
-      <div class="hero-id-row">
-        <input id="idField" class="id-input" type="text"
-               inputmode="numeric" pattern="[0-9]*" autocomplete="off"
-               maxlength="4" placeholder="8929" />
-        <div class="id-cta">
-          <button id="idApplyBtn" class="id-btn" type="button" disabled>It’s me!</button>
-          <div id="idPopover" class="popover" role="status" aria-live="polite" aria-atomic="true"></div>
+        <label for="idField" class="form-label">Doodles ID</label>
+
+        <!-- riga uniforme: preview SX → input con X (maxlength 5) → bottone -->
+        <div class="id-row">
+          <div id="idPreview" class="id-preview" aria-hidden="true">
+            <span class="id-badge">#—</span>
+          </div>
+
+          <div class="input-clear">
+            <input id="idField" class="id-input" type="text"
+                   inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                   maxlength="5" placeholder="8929" />
+            <button type="button" class="clear-btn" data-clear-for="idField" aria-label="Pulisci"></button>
+          </div>
+
+          <div class="id-cta">
+            <button id="idApplyBtn" class="id-btn" type="button" disabled>It’s me!</button>
+            <div id="idPopover" class="popover" role="status" aria-live="polite" aria-atomic="true"></div>
+          </div>
         </div>
 
-      <div id="idPreview" class="id-preview" aria-hidden="true">
-        <span class="id-badge">#—</span>
-      </div>
+        <p class="sub" style="margin:6px 0 0">
+          Missing your Doodle ID?
+          <a id="tvLink" class="back shimmer idhelp" href="./Doodles_trait-viewer.html?source=index">Find it here!</a>
+        </p>
 
+        <p id="idError" class="id-error" role="status" aria-live="polite" style="display:none"></p>
       </div>
-      <p class="sub" style="margin:6px 0 0">
-        Missing your Doodle ID?
-        <a id="tvLink" class="back shimmer idhelp" href="./Doodles_trait-viewer.html?source=index">Find it here!</a>
-      </p>
-
-      <p id="idError" class="id-error" role="status" aria-live="polite" style="display:none"></p>
-    </div>
     </header>
 
     <div id="grid" class="grid"></div>
@@ -246,81 +224,54 @@
   </div>
 
 <script>
+/* ====== DOM ====== */
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
-const idField = document.getElementById('idField');
-const idError = document.getElementById('idError');
+const idField   = document.getElementById('idField');
+const idError   = document.getElementById('idError');
 const idPreview = document.getElementById('idPreview');
 const idApplyBtn = document.getElementById('idApplyBtn');
 const idPopover  = document.getElementById('idPopover');
-const DEFAULT_PREVIEW_ID = '8929';  
 let popTimer = null;
 
+/* ====== UI helpers ====== */
 function nudgeGrid(){
   if(!GRID) return;
-  GRID.classList.remove('highlight');      // reset se già presente
-  void GRID.offsetWidth;                    // forza reflow per riavviare l’animazione
+  GRID.classList.remove('highlight');
+  void GRID.offsetWidth;
   GRID.classList.add('highlight');
   setTimeout(()=> GRID.classList.remove('highlight'), 1700);
 }
-  
 function showPopover(msg){
   if(!idPopover) return;
-
-  // testo + reset animazione
   idPopover.textContent = msg;
   idPopover.classList.remove('show');
-  void idPopover.offsetWidth; // reflow
+  void idPopover.offsetWidth;
   idPopover.classList.add('show');
 
   let fired = false;
-
   const onEnd = (e)=>{
-    // Ignora popInLeft / popHold; aspetta SOLO popOutLeft
     if(e.animationName !== 'popOutLeft') return;
     fired = true;
     idPopover.removeEventListener('animationend', onEnd);
     idPopover.classList.remove('show');
-    nudgeGrid(); // avvia il bagliore ora
+    nudgeGrid();
   };
-
-  // 👇 NIENTE { once:true } — ci sono più animationend
   idPopover.addEventListener('animationend', onEnd);
-
-  // Failsafe nel caso l'evento non arrivi
   clearTimeout(popTimer);
   popTimer = setTimeout(()=>{
     if(!fired){
       idPopover.classList.remove('show');
       nudgeGrid();
     }
-  }, 2100); // ~0.18 + 1.6 + 0.22
+  }, 2100);
 }
-
-
-
 function setApplyButtonState(valid){
   if(!idApplyBtn) return;
   idApplyBtn.disabled = !valid;
 }
 
-function normalizeId(v){
-  const s = String(v||'').trim().replace(/\D+/g,'');
-  if(s==='') return { value:'', valid:false, empty:true };
-  const n = parseInt(s,10);
-  if(Number.isFinite(n) && n>=0 && n<=9999) return { value:String(n), valid:true, empty:false };
-  return { value:s, valid:false, empty:false };
-}
-
-function updateCardLinksWithId(id){
-  document.querySelectorAll('a.cardlink').forEach(a=>{
-    const u = new URL(a.getAttribute('href'), location.href);
-    if(id==null){ u.searchParams.delete('id'); }
-    else{ u.searchParams.set('id', id); }
-    a.setAttribute('href', u.toString());
-  });
-}
-
+/* ====== Overlays grid ====== */
 let overlays = null;
 
 function cardHTML(item){
@@ -345,6 +296,15 @@ function cardHTML(item){
   </article>`;
 }
 
+function updateCardLinksWithId(id){
+  document.querySelectorAll('a.cardlink').forEach(a=>{
+    const u = new URL(a.getAttribute('href'), location.href);
+    if(id==null){ u.searchParams.delete('id'); }
+    else{ u.searchParams.set('id', id); }
+    a.setAttribute('href', u.toString());
+  });
+}
+
 function render(){
   if(!overlays || !overlays.items || overlays.items.length===0){
     GRID.innerHTML = '';
@@ -353,178 +313,51 @@ function render(){
   }
   if (EMPTY) EMPTY.style.display = 'none';
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
-  const active = normalizeId(localStorage.getItem('lastId'));
+  const active = OC.normalizeId(localStorage.getItem('lastId'), 99999);
   updateCardLinksWithId(active.valid ? active.value : null);
-
 }
 
-/* === Mini-preview Doodle #ID === */
-/* --- METADATA → indice id→image (lazy, con cache) --- */
-const META_SOURCES = ['./Doodles_all_metadata.json']; // aggiungi alternative se serve
+/* ====== ID preview condivisa + X ====== */
+const { apply: applyPrev, reset: resetPrev } = OC.createIdPreview({
+  input: idField,
+  preview: idPreview,
+  defaultId: '8929',
+  max: 99999
+});
+OC.wireClear('idField', () => {
+  idField.classList.remove('error');
+  if (idError) idError.style.display = 'none';
+  setApplyButtonState(false);
+  resetPrev();                         // torna alla preview di default
+  // opzionale: dimentica l’ultimo ID
+  // localStorage.removeItem('lastId');
+});
 
-function ipfsToHttps(u){
-  if(!u) return u;
-  if(u.startsWith('ipfs://')){
-    const hash = u.replace('ipfs://','').replace(/^ipfs\//,'');
-    return `https://dweb.link/ipfs/${hash}`;
-  }
-  return u;
-}
-
-function pickId(obj, fallbackKey){
-  return obj?.id ?? obj?.tokenId ?? obj?.token_id ?? obj?.index ?? fallbackKey ?? null;
-}
-function pickImage(obj){
-  return obj?.image ?? obj?.image_url ?? obj?.imageUrl ?? null;
-}
-
-async function ensureMetaIndex(){
-  if(window.__metaIndexReady) return;
-  for(const src of META_SOURCES){
-    try{
-      const r = await fetch(src, {cache:'no-store'});
-      if(!r.ok) continue;
-      const data = await r.json();
-      const map = new Map();
-      if(Array.isArray(data)){
-        for(const it of data){
-          const id = pickId(it);
-          const img = pickImage(it);
-          if(id!=null && img) map.set(String(id), ipfsToHttps(String(img)));
-        }
-      }else if(data && typeof data==='object'){
-        for(const [k, v] of Object.entries(data)){
-          // se è shape { "1234": {"image": "..."} } oppure { "1234": "url" }
-          const id = pickId(v, k);
-          const img = (typeof v === 'string') ? v : pickImage(v);
-          if(id!=null && img) map.set(String(id), ipfsToHttps(String(img)));
-        }
-      }
-      if(map.size){
-        window.__metaIndex = map;
-        window.__metaIndexReady = true;
-        return;
-      }
-    }catch(e){ /* silenzio */ }
-  }
-  window.__metaIndex = null;
-  window.__metaIndexReady = true;
-}
-
-/* --- (opzionale) indice secondario leggero ./doodles/index.json --- */
-async function ensureDoodleIndex(){
-  if(window.__doodleIndexTried) return;
-  window.__doodleIndexTried = true;
-  try{
-    const r = await fetch('./doodles/index.json', {cache:'no-store'});
-    if(r.ok) window.__doodleIndex = await r.json();
-  }catch{}
-}
-
-async function applyIdPreview(id){
-  if(!idPreview) return;
-  if(!id && id!==0){
-    hideIdPreview();
-    return;
-  }
-  const val = String(id);
-  idPreview.style.display = 'block';
-  idPreview.dataset.id = val;
-  idPreview.classList.add('loading');
-  idPreview.innerHTML = `<span class="id-badge">#${val}</span>`;
-
-  const urls = await buildCandidateUrls(val);
-
-  for (const url of urls){
-    if(idPreview.dataset.id !== val) return; // ID cambiato nel frattempo
-    const ok = await tryLoadIntoPreview(val, url);
-    if(ok) break;
-  }
-  idPreview.classList.remove('loading');
-}
-
-function hideIdPreview(){
-  if(!idPreview) return;
-  idPreview.classList.remove('loading');
-  // Mantieni il posto e mostra la preview di default
-  applyIdPreview(DEFAULT_PREVIEW_ID);
-}
-
-
-async function buildCandidateUrls(id){
-  const urls = [];
-  const key = String(id);
-
-  // 1) metadata principale
-  await ensureMetaIndex();
-  if(window.__metaIndex && window.__metaIndex.has(key)){
-    urls.push(window.__metaIndex.get(key));
-  }
-
-  // 2) indice leggero opzionale
-  await ensureDoodleIndex();
-  if(window.__doodleIndex && window.__doodleIndex[key]){
-    urls.push(String(window.__doodleIndex[key]));
-  }
-
-  // 3) pattern locali di fallback
-  urls.push(
-    `./doodles/thumbs/${key}.png`,
-    `./doodles/thumbs/${key}.jpg`,
-    `./doodles/${key}.png`,
-    `./doodles/${key}.jpg`
-  );
-  return urls;
-}
-
-
-function tryLoadIntoPreview(id, url){
-  return new Promise(resolve=>{
-    const img = new Image();
-    img.decoding = 'async';
-    img.alt = `Anteprima Doodle #${id}`;
-    img.onload = ()=>{
-      if(idPreview.dataset.id === String(id)){
-        idPreview.innerHTML = '';
-        idPreview.appendChild(img);
-        resolve(true);
-      }else{
-        resolve(false);
-      }
-    };
-    img.onerror = ()=> resolve(false);
-    img.src = url;
-  });
-}
-// === CLICK SUL BOTTONE "IT'S ME!" ===
+/* ====== “It’s me!” ====== */
 if(idApplyBtn){
   idApplyBtn.addEventListener('click', ()=>{
-    const n = normalizeId(idField?.value);
+    const n = OC.normalizeId(idField?.value, 99999);
     if(!n || !n.valid){
       if(idField){
         idField.classList.add('error');
-        idError.textContent = 'Inserisci un numero da 0 a 9999';
+        idError.textContent = 'Inserisci un numero da 0 a 99999';
         idError.style.display = '';
       }
       setApplyButtonState(false);
       return;
     }
-    // salva e applica
     localStorage.setItem('lastId', n.value);
     updateCardLinksWithId(n.value);
-    applyIdPreview(n.value);
-
-    // feedback vicino al bottone
+    applyPrev(n.value);               // sync preview (facoltativo)
     showPopover('Locked in! Pick a card!');
-    
   });
 }
 
-/* === Input ID: init & wiring === */
+/* ====== Input ID: init & wiring ====== */
 (function initIdField(){
   if(!idField) return;
 
-  // Enter = click sul bottone (azione "apply")
+  // Enter = click
   idField.addEventListener('keydown', (e)=>{
     if(e.key === 'Enter'){
       e.preventDefault();
@@ -532,48 +365,46 @@ if(idApplyBtn){
     }
   });
 
-  // Prefill da query ?id= o da localStorage; altrimenti usa default 8929
+  // Prefill da query ?id= o da localStorage; altrimenti default (gestito da OC)
   const sp = new URLSearchParams(location.search);
   const fromQuery = sp.get('id');
 
   if(fromQuery != null){
-    const nq = normalizeId(fromQuery);
+    const nq = OC.normalizeId(fromQuery, 99999);
     if(nq.valid){
       idField.value = nq.value;
-      // Applica SUBITO se arriva da query (utile deep-link)
       localStorage.setItem('lastId', nq.value);
-      applyIdPreview(nq.value);
+      applyPrev(nq.value);                // mostra subito quell’ID
       setApplyButtonState(true);
     }else{
       setApplyButtonState(false);
-      applyIdPreview(DEFAULT_PREVIEW_ID);
+      resetPrev();
     }
-    // pulisci URL
     sp.delete('id');
     const q = sp.toString();
     history.replaceState(null, '', location.pathname + (q?('?'+q):''));
   }else{
     const last = localStorage.getItem('lastId');
-    const nl = normalizeId(last);
+    const nl = OC.normalizeId(last, 99999);
     if(nl.valid){
       idField.value = nl.value;
-      applyIdPreview(nl.value);     // mostra l'ID attivo salvato
+      applyPrev(nl.value);                // preview dell’ID salvato
       setApplyButtonState(true);
     }else{
-      applyIdPreview(DEFAULT_PREVIEW_ID); // ← default sempre visibile
+      resetPrev();                        // default (es. #8929)
       setApplyButtonState(false);
     }
   }
 
   idField.addEventListener('input', ()=>{
-    const n = normalizeId(idField.value);
+    const n = OC.normalizeId(idField.value, 99999);
     idField.value = n.value;
 
     if(n.empty){
       idField.classList.remove('error');
       idError.style.display = 'none';
       setApplyButtonState(false);
-      applyIdPreview(DEFAULT_PREVIEW_ID);
+      // preview default è già gestita da OC quando l’input è vuoto
       return;
     }
 
@@ -581,18 +412,18 @@ if(idApplyBtn){
       idField.classList.remove('error');
       idError.style.display = 'none';
       setApplyButtonState(true);
-      applyIdPreview(n.value);  // preview LIVE mentre digiti
+      // preview live gestita da OC
     }else{
       idField.classList.add('error');
-      idError.textContent = 'Inserisci un numero da 0 a 9999';
+      idError.textContent = 'Inserisci un numero da 0 a 99999';
       idError.style.display = '';
       setApplyButtonState(false);
-      applyIdPreview(DEFAULT_PREVIEW_ID);
+      // anteprima default gestita da OC quando l’input si svuota
     }
   });
-})();  // <-- questa riga ti manca
+})();
 
-/* === Manifest overlays === */
+/* ====== Manifest overlays ====== */
 async function loadManifest(){
   for (const url of ['./overlays/overlays.json','./overlays.json']){
     try{
@@ -602,7 +433,6 @@ async function loadManifest(){
   }
   overlays = { items: [] };
 }
-
 loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
 </body>
