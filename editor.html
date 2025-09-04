@@ -176,23 +176,24 @@ const exBadge = document.querySelector('#exampleBadge');
 const tokenEl   = document.getElementById('tokenId');
 const idPreview = document.getElementById('idPreview');
 /* ===== ID row condivisa (validazione, Enter, X, preview, disable pulsante) ===== */
+// Preview live + clear già gestiti
 const idCtrl = OC.initIdControl({
   input: '#tokenId',
   preview: '#idPreview',
   button: '#go',
   defaultId: '8929',
   max: 99999,
-  onApply: openImage,          // ENTER o click “Show Me!” launcha openImage
-  onValidChange(valid){
-    // opzionale: messaggistica custom; il bottone viene disabilitato in automatico
-    if (!valid) setStatus('');
+  persistKey: 'lastId',   // utile per coerenza tra pagine
+  urlParam: 'id',
+  onApply(_id){
+    openImage();          // riusa la tua funzione
   },
   onClear(){
-    // X cliccata: pulisci stato e nascondi controlli share
     setStatus('');
     setShareVisible(false);
   }
 });
+
 
 
 /* ===== State ===== */
@@ -625,5 +626,6 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
