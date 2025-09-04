@@ -102,12 +102,10 @@
           <span class="id-badge">#—</span>
         </div>
 
-        <div class="input-clear">
-          <input id="tokenId" class="id-input" type="text"
-                 inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off"
-                 maxlength="4" placeholder="8929" />
-          <button type="button" class="clear-btn" data-clear-for="tokenId" aria-label="Pulisci"></button>
-        </div>
+        <input id="tokenId" class="id-input" type="text"
+               inputmode="numeric" pattern="[0-9]*" enterkeyhint="go" autocomplete="off"
+               maxlength="5" placeholder="8929" />
+
 
         <button id="go" class="btn-outline" type="button" aria-label="Show the image">Show Me!</button>
       </div>
@@ -177,19 +175,25 @@ const exBadge = document.querySelector('#exampleBadge');
 
 const tokenEl   = document.getElementById('tokenId');
 const idPreview = document.getElementById('idPreview');
-
-/* ===== Anteprima ID + pulsante clear (condivisi) ===== */
-const { apply: applyPrev, reset: resetPrev } = OC.createIdPreview({
-  input: tokenEl,
-  preview: idPreview,
+/* ===== ID row condivisa (validazione, Enter, X, preview, disable pulsante) ===== */
+const idCtrl = OC.initIdControl({
+  input: '#tokenId',
+  preview: '#idPreview',
+  button: '#go',
   defaultId: '8929',
-  max: 99999
+  max: 99999,
+  onApply: openImage,          // ENTER o click “Show Me!” launcha openImage
+  onValidChange(valid){
+    // opzionale: messaggistica custom; il bottone viene disabilitato in automatico
+    if (!valid) setStatus('');
+  },
+  onClear(){
+    // X cliccata: pulisci stato e nascondi controlli share
+    setStatus('');
+    setShareVisible(false);
+  }
 });
-OC.wireClear('tokenId', () => {
-  setStatus('');
-  setShareVisible(false);
-  resetPrev();
-});
+
 
 /* ===== State ===== */
 /* ===== Share (mobile only) ===== */
@@ -526,11 +530,11 @@ function applyBadge(badgeEl, cfg){
     if (oopsEl) oopsEl.style.display = 'none';
 
     const qid = p.get('id');
-    if(qid){
-      tokenEl.value = String(qid).replace(/\D+/g,'').slice(0,5); // prudente
-      applyPrev(tokenEl.value);
-      await openImage();
+    if (qid){
+      idCtrl.value = qid;     // setta input + preview + validazione
+      if (idCtrl.value != null) await openImage();
     }
+
 
   }catch(e){
     setStatus(e?.message || 'Init error');
@@ -616,11 +620,10 @@ async function copyImage(){
 }
 
 /* ===== Events ===== */
-document.getElementById('go')?.addEventListener('click', openImage);
-tokenEl?.addEventListener('keydown', e=>{ if(e.key==='Enter') openImage(); });
 document.getElementById('copyImg')?.addEventListener('click', copyImage);
 document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
