@@ -302,7 +302,10 @@ const idCtrl = OC.initIdControl({
     // (facoltativo) aggiorna live mentre digiti
     updateCardLinksWithId(valid ? st.value : null);
   }
-   (function () {
+   
+});
+
+(function () {
     const qs = new URLSearchParams(location.search);
     if (qs.get('lock') === '1') {
       // mostriamo lo stesso banner usato da "It's me!"
@@ -314,9 +317,6 @@ const idCtrl = OC.initIdControl({
       history.replaceState(null, '', location.pathname + (clean ? '?' + clean : ''));
     }
   })();
-});
-
-
 
 
 
