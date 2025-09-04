@@ -333,21 +333,17 @@ const idCtrl = OC.initIdControl({
   persistKey: 'lastId',
   urlParam: 'id',
   cleanUrlParam: true,
-  linkUpdater: updateCardLinksWithId,
-  onApply(id){ showPopover('Locked in! Pick a card!'); },
-  onValidChange(valid){
-    if (!valid && idError) {
-      idError.textContent = 'Inserisci un numero da 0 a 99999';
-      idError.style.display = '';
-    } else if (idError) {
-      idError.textContent = '';
-      idError.style.display = 'none';
-    }
+  linkUpdater: updateCardLinksWithId, // ok tenerlo, ma non contare SOLO su questo
+  onApply(id){
+    updateCardLinksWithId(id);          // <— AGGIUNTO: scrive ?id=... sulle card
+    showPopover('Locked in! Pick a card!');
   },
-  onClear(){
-    if (idError) { idError.textContent = ''; idError.style.display = 'none'; }
+  onValidChange(valid, st){
+    // (facoltativo) aggiorna live mentre digiti
+    updateCardLinksWithId(valid ? st.value : null);
   }
 });
+
 
 
 
