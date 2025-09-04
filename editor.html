@@ -177,22 +177,19 @@ const tokenEl   = document.getElementById('tokenId');
 const idPreview = document.getElementById('idPreview');
 /* ===== ID row condivisa (validazione, Enter, X, preview, disable pulsante) ===== */
 // Preview live + clear già gestiti
+// === Controllo ID "tutto in uno" (valida, preview, clear) ===
 const idCtrl = OC.initIdControl({
-  input: '#tokenId',
-  preview: '#idPreview',
-  button: '#go',
+  input:  '#tokenId',
+  preview:'#idPreview',
   defaultId: '8929',
   max: 99999,
-  persistKey: 'lastId',   // utile per coerenza tra pagine
-  urlParam: 'id',
-  onApply(_id){
-    openImage();          // riusa la tua funzione
-  },
   onClear(){
     setStatus('');
     setShareVisible(false);
+    idCtrl.resetPreview();
   }
 });
+
 
 
 
@@ -537,7 +534,7 @@ function applyBadge(badgeEl, cfg){
     if (qid != null){
       // arriva da index: avvia subito il cooking
       tokenEl.value = String(qid).replace(/\D+/g,'').slice(0,5);
-      applyPrev(tokenEl.value);        // anteprima live
+      idCtrl.applyPreview(tokenEl.value);        // anteprima live
       await openImage();               // <-- Cooking parte subito
 
       // pulisci ?id dall'URL
@@ -549,10 +546,10 @@ function applyBadge(badgeEl, cfg){
       const last = localStorage.getItem('lastId');
       if (last){
         tokenEl.value = String(last).replace(/\D+/g,'').slice(0,5);
-        applyPrev(tokenEl.value);
+        idCtrl.applyPreview(tokenEl.value);
       } else {
         // anteprima default (8929)
-        resetPrev();
+        idCtrl.resetPreview();
       }
     }
 
@@ -646,6 +643,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
