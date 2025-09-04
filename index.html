@@ -742,30 +742,32 @@ if(idApplyBtn){
     }
   }
 
-  // Digitazione: SOLO validazione UI. NIENTE salvataggi/preview/link.
-  idField.addEventListener('input', ()=>{
-    const n = normalizeId(idField.value);
-    idField.value = n.value;
+ idField.addEventListener('input', ()=>{
+  const n = normalizeId(idField.value);
+  idField.value = n.value;
 
-    if(n.empty){
-      idField.classList.remove('error');
-      idError.style.display = 'none';
-      setApplyButtonState(false);
-      // La preview resta quella corrente (default o ultimo ID applicato)
-      return;
-    }
-    if(n.valid){
-      idField.classList.remove('error');
-      idError.style.display = 'none';
-      setApplyButtonState(true);
-    }else{
-      idField.classList.add('error');
-      idError.textContent = 'Inserisci un numero da 0 a 9999';
-      idError.style.display = '';
-      setApplyButtonState(false);
-    }
-  });
-})();
+  if(n.empty){
+    idField.classList.remove('error');
+    idError.style.display = 'none';
+    setApplyButtonState(false);
+    applyIdPreview(DEFAULT_PREVIEW_ID);   // ← torna alla preview di default
+    return;
+  }
+
+  if(n.valid){
+    idField.classList.remove('error');
+    idError.style.display = 'none';
+    setApplyButtonState(true);
+    applyIdPreview(n.value);              // ← preview LIVE mentre digiti
+    // NON salvare in localStorage e NON aggiornare i link qui
+  }else{
+    idField.classList.add('error');
+    idError.textContent = 'Inserisci un numero da 0 a 9999';
+    idError.style.display = '';
+    setApplyButtonState(false);
+    applyIdPreview(DEFAULT_PREVIEW_ID);   // ← placeholder finché non è valido
+  }
+});
 
 /* === Manifest overlays === */
 async function loadManifest(){
