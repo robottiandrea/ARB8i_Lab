@@ -372,21 +372,59 @@ function initIdControl(opts){
   } else {
     autoClearInputs();
   }
-  /* Editor-only: sposta la riga ID esattamente al bordo sx della PNG di anteprima */
-body[data-page="editor"] .id-row,
-body[data-page="editor"] #id-row,
-body[data-page="editor"] [data-component="id-row"],
-body[data-page="editor"] [data-role="id-row"]{
-  justify-content: flex-start !important;
-  text-align: left !important;
-  margin-left: var(--id-row-offset, 0px) !important;
-}
+  window.OC = window.OC || {};
 
-body[data-page="editor"] .id-row > *,
-body[data-page="editor"] #id-row > *,
-body[data-page="editor"] [data-component="id-row"] > *,
-body[data-page="editor"] [data-role="id-row"] > *{
-  margin-left: 0 !important;
-}
+/**
+ * Allinea la riga ID (anteprima+input+button) al bordo sx della PNG di anteprima.
+ * Tenta questi selettori per la preview: personalizzali se necessario.
+ */
+OC.alignIdRowToPreview = function(){
+  try{
+    if (!document.body || document.body.getAttribute('data-page') !== 'editor') return;
+
+    const row = document.querySelector('.id-row, #id-row, [data-component="id-row"], [data-role="id-row"]');
+    if (!row) return;
+
+    const img = document.querySelector(
+      '[data-role="png-preview"] img, img#pngPreview, canvas#pngPreview, .preview img'
+    );
+    if (!img) return;
+
+    const imgRect = img.getBoundingClientRect();
+    const rowScope = row.parentElement ? row.parentElement.getBoundingClientRect() : document.body.getBoundingClientRect();
+    const offsetLeft = Math.max(0, Math.round(imgRect.left - rowScope.left));
+
+    document.body.style.setProperty('--id-row-offset', offsetLeft + 'px');
+  } catch(e){ /* no-op */ }
+};
+
+// Inizializza/ricalcola quando serve (load, resize, cambio immagine/canvas)
+(function(){
+  const boot = () => OC.alignIdRowToPreview();
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    boot();
+  } else {
+    document.addEventListener('DOMContentLoaded', boot, { once:true });
+  }
+  window.addEventListener('resize', OC.alignIdRowToPreview);
+
+  const hookPreview = () => {
+    const img = document.querySelector('[data-role="png-preview"] img, img#pngPreview, canvas#pngPreview, .preview img');
+    if (!img) return;
+    if (img.tagName.toLowerCase() === 'img') {
+      img.addEventListener('load', OC.alignIdRowToPreview);
+    } else {
+      // canvas: piccole riletture per assestamento dimensioni
+      setTimeout(OC.alignIdRowToPreview, 50);
+      setTimeout(OC.alignIdRowToPreview, 200);
+    }
+  };
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    hookPreview();
+  } else {
+    document.addEventListener('DOMContentLoaded', hookPreview, { once:true });
+  }
+})();
 
 })();
