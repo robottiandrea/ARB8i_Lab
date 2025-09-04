@@ -25,42 +25,13 @@
 </script>
   
 <style>
-html { -webkit-text-size-adjust: 100%; }  
   :root{
-  --bg:#0f1115; --card:#171a21; --text:#eef2ff; --muted:#9aa3b2; --acc:#8ab4ff; --border:#232938;
   --side-w: clamp(220px, 28vw, 330px);
   --gap: 18px;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Fredoka',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-  font-size:15px;
-  line-height:1.45;
-  font-weight:400; /* usa Fredoka 400 che ora è caricato */
-}
-/* Assicura che anche i controlli usino Fredoka */
-input, button, select, textarea { font: inherit; font-family: inherit; }
-
-/* I button su Safari/iOS tengono l'aspetto (e il font) nativo: toglilo */
-button, [role="button"] { -webkit-appearance: none; appearance: none; }
-
-/* Classi dei tuoi bottoni: forza famiglia e peso */
-.btn, .open, .chip, .control { font-family: inherit; }
-.btn  { font-weight:600; }   /* Reset */
-.open { font-weight:500; }   /* Copy ID */
-
-
 /* wrapper a piena larghezza, sidebar attaccata a sx */
 .wrap{ max-width:none; margin:0; padding:0; }
-
-/* header in alto centrato */
-.hero{ text-align:center; padding:20px 28px 12px; }
-.hero h1{ margin:0 0 6px; font-size:28px; font-weight:600 }
-.hero p{ margin:0; color:var(--muted) }
 
 /* layout 2 colonne: [sidebar | contenuto] */
 .layout{
@@ -221,28 +192,6 @@ details .filter-search.control { margin-bottom: 12px; }
   background:#2a3142; border-radius:8px; border:2px solid #0d1016;
 }
 
-.toolbar{ display:flex; gap:10px; align-items:center; justify-content:space-between; margin-top:12px }
-.left, .right{ display:flex; gap:10px; align-items:center }
-.chip{ background:#0d1016; border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:999px; font-size:12px }
-
-.btn{ padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#0d1016; color:var(--text); cursor:pointer }
-.btn-primary{ background:linear-gradient(180deg,#2b62ff,#2753d7); border:0; font-weight:600 }
-.btn:disabled{ opacity:.6; cursor:not-allowed }
-
-.card{ background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; position:relative; transition:transform .08s ease, box-shadow .08s ease }
-.card:hover{ transform:translateY(-2px); box-shadow:0 16px 36px rgba(0,0,0,.35) }
-.thumb{ aspect-ratio:1/1; background:#0d1016; display:flex; align-items:center; justify-content:center }
-.thumb img{ width:100%; height:100%; object-fit:cover; display:block }
-.meta{ padding:8px 10px; display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid var(--border) }
-/* bottoni dentro la barra meta della card */
-.meta .actions{ display:flex; gap:8px; align-items:center; }
-.meta .actions:empty{ display:none; } /* nasconde il contenitore se vuoto */
-.id{ font-weight:600 }
-.open{ font-size:12px; border-radius:9px; padding:6px 10px; border:1px solid var(--border); background:#0d1016; color:var(--text); text-decoration:none }
-.empty{ opacity:.85; text-align:center; border:1px dashed var(--border); border-radius:12px; padding:18px }
-
-.status{ min-height:22px; color:var(--muted); font-size:13px; margin:10px 0 0 }
-
 /* Active chips */
 .active-wrap{ margin-top:10px; }
 .active-label{ font-size:12px; color:var(--muted); margin:6px 0 4px }
@@ -291,20 +240,6 @@ details .filter-search.control { margin-bottom: 12px; }
     html, body{ overflow-x:hidden; }
   }
 }
-/* Header come l'editor */
-.header{
-  display:flex; align-items:center; gap:12px;
-  /* margini allineati al tuo layout */
-  margin:20px 28px 10px;
-}
-.header .back{
-  display:inline-flex; align-items:center; gap:8px;
-  text-decoration:none; color:var(--text); opacity:.85;
-}
-.header .back:hover{ opacity:1; }
-.header h1{ margin:0; font-size:20px; font-weight:600; }
-.header .sub{ color:var(--muted); font-size:12px; }
-
   
 </style>
 </head>
