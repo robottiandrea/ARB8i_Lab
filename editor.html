@@ -477,6 +477,7 @@ function applyBadge(badgeEl, cfg){
       viewerLink.href = u.toString();
     }
 
+    // Badge overlay
     applyBadge(ovBadge, currentCfg);
 
     // Footer "made by"
@@ -515,34 +516,51 @@ function applyBadge(badgeEl, cfg){
       }
     })();
 
+    // Share row
     MOBILE_SHARE = (isMobileLike() || isAppleStandalone()) && !!navigator.share;
     const shareRow = document.getElementById('shareRow');
     const shareBtn = document.getElementById('shareX');
+    if (shareRow) { shareRow.style.display = 'flex'; setShareVisible(false); }
+    if (shareBtn)  shareBtn.style.display = MOBILE_SHARE ? '' : 'none';
 
-    shareRow.style.display = 'flex';
-    setShareVisible(false);
-    if (shareBtn) shareBtn.style.display = MOBILE_SHARE ? '' : 'none';
-
+    // Immagine esempio
     const thumb = currentCfg.thumb || `thumbs/${currentCfg.id}.png`;
     imgEl.src = thumb;
     imgEl.classList.add('is-example');
     if(exBadge) exBadge.style.display = 'inline-block';
     imgEl.alt = currentCfg.name || currentCfg.id;
-
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
 
+    // ===== AUTOPLAY da ?id oppure prefilla da localStorage =====
     const qid = p.get('id');
-    if (qid){
-      idCtrl.value = qid;     // setta input + preview + validazione
-      if (idCtrl.value != null) await openImage();
-    }
+    if (qid != null){
+      // arriva da index: avvia subito il cooking
+      tokenEl.value = String(qid).replace(/\D+/g,'').slice(0,5);
+      applyPrev(tokenEl.value);        // anteprima live
+      await openImage();               // <-- Cooking parte subito
 
+      // pulisci ?id dall'URL
+      p.delete('id');
+      const q = p.toString();
+      history.replaceState(null, '', location.pathname + (q?('?'+q):''));
+    } else {
+      // opzionale: mostra anteprima del lastId salvato
+      const last = localStorage.getItem('lastId');
+      if (last){
+        tokenEl.value = String(last).replace(/\D+/g,'').slice(0,5);
+        applyPrev(tokenEl.value);
+      } else {
+        // anteprima default (8929)
+        resetPrev();
+      }
+    }
 
   }catch(e){
     setStatus(e?.message || 'Init error');
   }
 })();
+
 
 function dataUrlToBlob(dataURL){
   const [head, body] = dataURL.split(',');
@@ -628,6 +646,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
