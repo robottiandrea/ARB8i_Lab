@@ -44,7 +44,7 @@ input,button,select,textarea{ font:inherit; }
   font-weight:600;
   font-size:16px;
   color:var(--muted);
-  text-align:center;
+  text-align:left;
 }
 /* Piccolo boost al link help (come in editor) */
 .idhelp{
@@ -194,4 +194,5 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
+
 
