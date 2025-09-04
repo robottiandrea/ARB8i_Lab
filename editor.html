@@ -397,7 +397,7 @@ async function openImage(){
     if(exBadge) exBadge.style.display = 'none';
 
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
-    setStatus(`Dood ${id}: cooked and ready! (Right-click or long-press to save)`);
+    setStatus(`Dood ${id}: cooked and ready!`);
 
     const traits = Array.isArray(currentCfg.oopsTraits) ? currentCfg.oopsTraits : [];
     const message = (currentCfg.oopsMessage || '').trim();
@@ -606,8 +606,7 @@ Get yours at https://arb8i.xyz !`;
 
     try { await navigator.clipboard.writeText(caption); } catch {}
     await navigator.share({ text: caption, files: [file] });
-    setStatus('Shared. If the caption vanishes on X, paste it (already copied).');
-
+    
   }catch(e){
     console.error('Share failed:', e);
   }
@@ -687,6 +686,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
