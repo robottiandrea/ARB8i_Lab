@@ -184,33 +184,25 @@
 
       <div class="hero-id">
         <label for="idField" class="form-label">Doodles ID</label>
-
-        <!-- riga uniforme: preview SX → input con X (maxlength 5) → bottone -->
-        <div class="id-row">
-          <div id="idPreview" class="id-preview" aria-hidden="true">
-            <span class="id-badge">#—</span>
-          </div>
-
-          <div class="input-clear">
-            <input id="idField" class="id-input" type="text"
-                   inputmode="numeric" pattern="[0-9]*" autocomplete="off"
-                   maxlength="5" placeholder="8929" />
-            <button type="button" class="clear-btn" data-clear-for="idField" aria-label="Pulisci"></button>
-          </div>
-
+      
+        <div class="hero-id-row">
+          <!-- Host dove montiamo preview+input (e NON il bottone) -->
+          <div id="idRowHost"></div>
+      
+          <!-- Contenitore del bottone + popover (il bottone verrà montato qui) -->
           <div class="id-cta">
-            <button id="idApplyBtn" class="id-btn" type="button" disabled>It’s me!</button>
             <div id="idPopover" class="popover" role="status" aria-live="polite" aria-atomic="true"></div>
           </div>
         </div>
-
+      
         <p class="sub" style="margin:6px 0 0">
           Missing your Doodle ID?
           <a id="tvLink" class="back shimmer idhelp" href="./Doodles_trait-viewer.html?source=index">Find it here!</a>
         </p>
-
+      
         <p id="idError" class="id-error" role="status" aria-live="polite" style="display:none"></p>
       </div>
+        
     </header>
 
     <div id="grid" class="grid"></div>
@@ -227,11 +219,7 @@
 /* ====== DOM ====== */
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
-const idField   = document.getElementById('idField');
-const idError   = document.getElementById('idError');
-const idPreview = document.getElementById('idPreview');
-const idApplyBtn = document.getElementById('idApplyBtn');
-const idPopover  = document.getElementById('idPopover');
+const idError   = document.getElementById('idError');const idPopover  = document.getElementById('idPopover');
 let popTimer = null;
 
 /* ====== UI helpers ====== */
@@ -265,10 +253,6 @@ function showPopover(msg){
       nudgeGrid();
     }
   }, 2100);
-}
-function setApplyButtonState(valid){
-  if(!idApplyBtn) return;
-  idApplyBtn.disabled = !valid;
 }
 
 /* ====== Overlays grid ====== */
@@ -316,109 +300,79 @@ function render(){
   const active = OC.normalizeId(localStorage.getItem('lastId'), 99999);
   updateCardLinksWithId(active.valid ? active.value : null);
 }
+/* ====== Riga ID condivisa: mount + init ====== */
 
-/* ====== ID preview condivisa + X ====== */
-const { apply: applyPrev, reset: resetPrev } = OC.createIdPreview({
-  input: idField,
-  preview: idPreview,
+// 1) Monta preview SX + input con X + (solo input/preview dentro #idRowHost)
+//    e monta il BOTTONE dentro .id-cta (accanto al popover)
+const idMount = OC.mountIdRow('#idRowHost', {
+  inputId: 'idField',                // per legare la <label for="idField">
+  previewId: 'idPreview',
+  buttonId: 'idApplyBtn',
+  buttonText: 'It’s me!',
+  buttonClass: 'id-btn',             // stile bottone della gallery (definito nel tuo <style>)
+  buttonContainer: '.id-cta',        // <-- qui viene inserito il bottone
+  showPreview: true,
+  placeholder: '8929',
+  maxLen: 5
+});
+
+// 2) Inizializza controllo: validazione, enter/apply, disable pulsante, preview live
+const idCtrl = OC.initIdControl({
+  input: '#idField',
+  preview: '#idPreview',
+  button: '#idApplyBtn',
   defaultId: '8929',
-  max: 99999
-});
-OC.wireClear('idField', () => {
-  idField.classList.remove('error');
-  if (idError) idError.style.display = 'none';
-  setApplyButtonState(false);
-  resetPrev();                         // torna alla preview di default
-  // opzionale: dimentica l’ultimo ID
-  // localStorage.removeItem('lastId');
-});
-
-/* ====== “It’s me!” ====== */
-if(idApplyBtn){
-  idApplyBtn.addEventListener('click', ()=>{
-    const n = OC.normalizeId(idField?.value, 99999);
-    if(!n || !n.valid){
-      if(idField){
-        idField.classList.add('error');
-        idError.textContent = 'Inserisci un numero da 0 a 99999';
-        idError.style.display = '';
-      }
-      setApplyButtonState(false);
-      return;
-    }
-    localStorage.setItem('lastId', n.value);
-    updateCardLinksWithId(n.value);
-    applyPrev(n.value);               // sync preview (facoltativo)
+  max: 99999,
+  onApply(id){
+    // salva e aggiorna link cards
+    localStorage.setItem('lastId', id);
+    updateCardLinksWithId(id);
+    idCtrl.applyPreview(id);         // sync preview (facoltativo)
     showPopover('Locked in! Pick a card!');
-  });
-}
-
-/* ====== Input ID: init & wiring ====== */
-(function initIdField(){
-  if(!idField) return;
-
-  // Enter = click
-  idField.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      idApplyBtn?.click();
+  },
+  onValidChange(valid){
+    // se vuoi, qui puoi (opzionalmente) gestire l'errore testuale
+    if (!valid) {
+      if (idError) { idError.style.display = 'none'; idError.textContent = ''; }
     }
-  });
+  },
+  onClear(){
+    // X cliccata: pulisci eventuale errore
+    if (idError) { idError.style.display = 'none'; idError.textContent = ''; }
+  }
+});
 
-  // Prefill da query ?id= o da localStorage; altrimenti default (gestito da OC)
+// 3) Prefill da ?id= o localStorage e pulizia query
+(function hydrateIdFromQueryOrStorage(){
   const sp = new URLSearchParams(location.search);
   const fromQuery = sp.get('id');
 
-  if(fromQuery != null){
-    const nq = OC.normalizeId(fromQuery, 99999);
-    if(nq.valid){
-      idField.value = nq.value;
-      localStorage.setItem('lastId', nq.value);
-      applyPrev(nq.value);                // mostra subito quell’ID
-      setApplyButtonState(true);
-    }else{
-      setApplyButtonState(false);
-      resetPrev();
+  if (fromQuery != null){
+    idCtrl.value = fromQuery;               // setta input (con validazione+preview)
+    if (idCtrl.value != null){
+      localStorage.setItem('lastId', idCtrl.value);
+      updateCardLinksWithId(idCtrl.value);
     }
+    // pulisci URL
     sp.delete('id');
     const q = sp.toString();
     history.replaceState(null, '', location.pathname + (q?('?'+q):''));
-  }else{
+  } else {
     const last = localStorage.getItem('lastId');
-    const nl = OC.normalizeId(last, 99999);
-    if(nl.valid){
-      idField.value = nl.value;
-      applyPrev(nl.value);                // preview dell’ID salvato
-      setApplyButtonState(true);
-    }else{
-      resetPrev();                        // default (es. #8929)
-      setApplyButtonState(false);
+    if (last){
+      idCtrl.value = last;
+      if (idCtrl.value != null){
+        updateCardLinksWithId(idCtrl.value);
+        idCtrl.applyPreview(idCtrl.value);
+      }
+    } else {
+      // mostra comunque la default (8929)
+      idCtrl.resetPreview();
     }
   }
+})();
 
-  idField.addEventListener('input', ()=>{
-    const n = OC.normalizeId(idField.value, 99999);
-    idField.value = n.value;
 
-    if(n.empty){
-      idField.classList.remove('error');
-      idError.style.display = 'none';
-      setApplyButtonState(false);
-      // preview default è già gestita da OC quando l’input è vuoto
-      return;
-    }
-
-    if(n.valid){
-      idField.classList.remove('error');
-      idError.style.display = 'none';
-      setApplyButtonState(true);
-      // preview live gestita da OC
-    }else{
-      idField.classList.add('error');
-      idError.textContent = 'Inserisci un numero da 0 a 99999';
-      idError.style.display = '';
-      setApplyButtonState(false);
-      // anteprima default gestita da OC quando l’input si svuota
     }
   });
 })();
