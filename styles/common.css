@@ -23,20 +23,39 @@ input,button,select,textarea{ font:inherit; }
   display:flex; align-items:center; gap:12px;
   margin:20px 28px 10px;
 }
+/* Link “Find it here!” (accentato) */
 .back{
-  display:inline-flex; align-items:center; gap:8px;
-  text-decoration:none; color:var(--text); opacity:.85;
+  color:var(--acc);
+  text-decoration:none;
 }
-.back:hover{ opacity:1; }
+.back:hover{ text-decoration:underline; }
 .header h1{ margin:0; font-size:20px; font-weight:600; }
-.sub{ color:var(--muted); font-size:13px; }
+/* Riga di testo sotto (stesso stile ovunque) */
+.sub{
+  color:var(--muted);
+  font-size:14px;  /* = editor */
+}
 
 /* ========== Label e link “Find it here!” ========== */
+/* Label sopra l’input ID (uguale in index + editor) */
 .form-label{
-  display:inline-block; margin:0 0 6px;
-  font-weight:600; font-size:14px; color:var(--muted); text-align:left;
+  display:inline-block;
+  margin:0 0 6px;
+  font-weight:600;
+  font-size:16px;
+  color:var(--muted);
+  text-align:left;
 }
-.idhelp{ color:var(--acc); text-decoration:none; font-weight:600; letter-spacing:.2px; }
+/* Piccolo boost al link help (come in editor) */
+.idhelp{
+  font-weight:600;
+  letter-spacing:.2px;
+  margin-left:4px;
+  font-size:14px;
+}
+@media (min-width:640px){
+  .idhelp{ font-size:15px; }
+}
 .idhelp:hover{ text-decoration:underline; }
 
 /* ========== Shimmer comune (testo lucido) ========== */
