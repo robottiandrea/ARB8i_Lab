@@ -302,6 +302,18 @@ const idCtrl = OC.initIdControl({
     // (facoltativo) aggiorna live mentre digiti
     updateCardLinksWithId(valid ? st.value : null);
   }
+   (function () {
+    const qs = new URLSearchParams(location.search);
+    if (qs.get('lock') === '1') {
+      // mostriamo lo stesso banner usato da "It's me!"
+      showPopover('Locked in! Pick a card!');
+
+      // pulizia: togli 'lock' dall'URL per non ri-triggerare al refresh
+      qs.delete('lock');
+      const clean = qs.toString();
+      history.replaceState(null, '', location.pathname + (clean ? '?' + clean : ''));
+    }
+  })();
 });
 
 
