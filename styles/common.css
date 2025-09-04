@@ -195,13 +195,16 @@ input,button,select,textarea{ font:inherit; }
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
 /* contenitore ID: label a sinistra, riga centrata (stili base in common.css) */
-  /* Centra .hero-id anche quando il parent NON ha text-align:center (caso Editor) */
+  /* Contenitore dell'ID: grande quanto il contenuto e centrato ovunque */
   .hero-id{
-    display:flex;           /* garantisce il layout a colonna */
+    display:flex;
     flex-direction:column;
     align-items:center;
-    margin:0 auto;          /* centra il contenitore ovunque */
+    width:fit-content;     /* <— NON larghezza piena */
+    max-width:100%;        /* sicurezza su mobile */
+    margin:0 auto;         /* <— centra anche senza parent centrato (caso Editor) */
   }
+
   
   /* La riga di aiuto dentro l'hero-id dev'essere centrata */
   .hero-id .sub{ text-align:center; }
