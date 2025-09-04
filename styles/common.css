@@ -59,18 +59,24 @@ input,button,select,textarea{ font:inherit; }
 .idhelp:hover{ text-decoration:underline; }
 
 /* ========== Shimmer comune (testo lucido) ========== */
-.shimmer{
+.shimmer,
+.shimmer *{
   --shine-start:rgba(192,192,192,.8);
   --shine-middle:rgba(255,255,255,1);
   --shine-end:rgba(192,192,192,.8);
   background-image:linear-gradient(120deg,
-    var(--shine-start) 40%, var(--shine-middle) 50%, var(--shine-end) 60%);
+    var(--shine-start) 40%, var(--shine-middle) 50%, var(--shine-end) 60%
+  );
   background-size:200% 100%;
-  -webkit-background-clip:text; background-clip:text;
-  color:transparent; animation:shine 8s linear infinite; letter-spacing:.2px;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  -webkit-text-fill-color: transparent; /* utile anche su Safari */
+  animation:shine 8s linear infinite;
+  letter-spacing:.2px;
 }
 @keyframes shine{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-@media (prefers-reduced-motion:reduce){ .shimmer{ animation:none!important } }
+@media (prefers-reduced-motion:reduce){ .shimmer, .shimmer *{ animation:none!important } }
 
 /* ========== Footer “made by” ========== */
 .footer-madeby{
