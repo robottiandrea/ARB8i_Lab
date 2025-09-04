@@ -17,8 +17,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Doodles">
 
-<!-- libreria condivisa: normalizeId, wireClear, createIdPreview -->
-<script src="./scripts/common.js"></script>
+<!-- libreria condivisa: mountIdRow, initIdControl, normalizeId, createIdPreview -->
+
+<script src="./scripts/common.js?v=3"></script>
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(()=>{});
@@ -28,6 +29,7 @@
 <style>
   :root{
     /* solo variabili/parametri usati QUI (non in common) */
+    --id-width:112px;
     --footer-space: calc(44px + env(safe-area-inset-bottom));
     --card-w:256px;
     --gap:18px;
@@ -308,76 +310,47 @@ function render(){
   updateCardLinksWithId(active.valid ? active.value : null);
 }
 /* ====== Riga ID condivisa: mount + init ====== */
-
-// 1) Monta preview SX + input con X + (solo input/preview dentro #idRowHost)
-//    e monta il BOTTONE dentro .id-cta (accanto al popover)
-const idMount = OC.mountIdRow('#idRowHost', {
-  inputId: 'idField',                // per legare la <label for="idField">
+// Monta UI (preview SX + input con X) dentro #idRowHost
+OC.mountIdRow('#idRowHost', {
+  inputId: 'idField',
   previewId: 'idPreview',
   buttonId: 'idApplyBtn',
   buttonText: 'It’s me!',
-  buttonClass: 'id-btn',             // stile bottone della gallery (definito nel tuo <style>)
-  buttonContainer: '.id-cta',        // <-- qui viene inserito il bottone
+  buttonClass: 'id-btn',
+  buttonContainer: '.id-cta',
   showPreview: true,
   placeholder: '8929',
   maxLen: 5
 });
 
-// 2) Inizializza controllo: validazione, enter/apply, disable pulsante, preview live
+// Inizializza tutto in uno: persistenza + deep-link + update link cards
 const idCtrl = OC.initIdControl({
   input: '#idField',
   preview: '#idPreview',
   button: '#idApplyBtn',
   defaultId: '8929',
   max: 99999,
-  onApply(id){
-    // salva e aggiorna link cards
-    localStorage.setItem('lastId', id);
-    updateCardLinksWithId(id);
-    idCtrl.applyPreview(id);         // sync preview (facoltativo)
-    showPopover('Locked in! Pick a card!');
-  },
+  persistKey: 'lastId',
+  urlParam: 'id',
+  cleanUrlParam: true,
+  linkUpdater: updateCardLinksWithId,
+  onApply(id){ showPopover('Locked in! Pick a card!'); },
   onValidChange(valid){
-    // se vuoi, qui puoi (opzionalmente) gestire l'errore testuale
-    if (!valid) {
-      if (idError) { idError.style.display = 'none'; idError.textContent = ''; }
+    if (!valid && idError) {
+      idError.textContent = 'Inserisci un numero da 0 a 99999';
+      idError.style.display = '';
+    } else if (idError) {
+      idError.textContent = '';
+      idError.style.display = 'none';
     }
   },
   onClear(){
-    // X cliccata: pulisci eventuale errore
-    if (idError) { idError.style.display = 'none'; idError.textContent = ''; }
+    if (idError) { idError.textContent = ''; idError.style.display = 'none'; }
   }
 });
 
-// 3) Prefill da ?id= o localStorage e pulizia query
-(function hydrateIdFromQueryOrStorage(){
-  const sp = new URLSearchParams(location.search);
-  const fromQuery = sp.get('id');
 
-  if (fromQuery != null){
-    idCtrl.value = fromQuery;               // setta input (con validazione+preview)
-    if (idCtrl.value != null){
-      localStorage.setItem('lastId', idCtrl.value);
-      updateCardLinksWithId(idCtrl.value);
-    }
-    // pulisci URL
-    sp.delete('id');
-    const q = sp.toString();
-    history.replaceState(null, '', location.pathname + (q?('?'+q):''));
-  } else {
-    const last = localStorage.getItem('lastId');
-    if (last){
-      idCtrl.value = last;
-      if (idCtrl.value != null){
-        updateCardLinksWithId(idCtrl.value);
-        idCtrl.applyPreview(idCtrl.value);
-      }
-    } else {
-      // mostra comunque la default (8929)
-      idCtrl.resetPreview();
-    }
-  }
-})();
+
 
 
 /* ====== Manifest overlays ====== */
