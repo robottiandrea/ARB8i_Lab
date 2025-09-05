@@ -203,77 +203,73 @@ input,button,select,textarea{ font:inherit; }
   --id-gap:0px;         /* spazio tra preview / input / bottone */
 }
 
-/* ===== Contenitore ID: label sopra, poi riga 3 colonne, poi help, poi error ===== */
+:root{
+  --id-width:112px;    /* o quanto preferisci */
+  --id-preview:40px;   /* diametro mini-anteprima */
+  --id-gap:8px;        /* spazio tra le colonne */
+}
+
+/* Griglia complessiva (label sopra, poi riga a 3 colonne) */
 .hero-id{
   display:grid;
-  grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
-  grid-auto-rows:auto;
+  grid-template-columns: var(--id-preview) var(--id-width) auto; /* preview | input | bottone */
+  row-gap:6px;
+  column-gap: var(--id-gap);
   justify-content:center;
   align-items:center;
-  row-gap:6px;
-  width:150px;
+  width:fit-content;
+  max-width:100%;
   margin:0 auto;
 }
 
-/* Label centrata sopra TUTTA la riga (look più pulito e stabile) */
+/* Label sopra l'INPUT (colonna 2), allineata a sinistra */
 .hero-id .form-label{
-  grid-column:2;  /* sopra la riga intera */
+  grid-column:2;
   grid-row:1;
-  justify-self:left;
-  align-items:left;
+  justify-self:start;
+  text-align:left;
+  width: var(--id-width);
   margin:0;
-  font-weight:600;
-  font-size:16px;
-  color:var(--muted);
 }
 
-/* --- Riga controlli: griglia a 3 colonne --- */
+/* --- Riga controlli: stessa griglia a 3 colonne --- */
 .hero-id-row{
   grid-column:1 / -1;
   grid-row:2;
 
-  display:grid;                      /* da flex → grid */
-  grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
-  column-gap:8px;
+  display:grid;
+  grid-template-columns: var(--id-preview) var(--id-width) auto;
+  column-gap: var(--id-gap);
   align-items:center;
   justify-content:center;
 }
 
-/* “Appiattisce” il wrapper iniettato da OC così i figli entrano nella grid */
-#idRowHost{ display: contents; }
+/* 🔧 Appiattiamo ENTRAMBI i wrapper creati da OC */
+#idRowHost,
+#idRowHost > .id-row{
+  display: contents;
+}
 
-/* Colonna 1 = mini-preview tonda */
-#idRowHost .id-preview{ grid-column:1; }
+/* Colonna 1 = mini-anteprima */
+#idRowHost .id-preview{
+  grid-column:1;
+  width:var(--id-preview);
+  height:var(--id-preview);
+}
 
-/* Colonna 2 = input (il wrapper dell’input ha classe .input-clear) */
-#idRowHost .id-input{ grid-column:2; }
+/* Colonna 2 = input (il wrapper dell’input è .input-clear) */
+#idRowHost .input-clear{ grid-column:2; }
 
-/* Colonna 3 = bottone (contenitore già presente in HTML) */
+/* Colonna 3 = bottone */
 .hero-id-row .id-cta{
   grid-column:3;
   display:flex; align-items:center; justify-content:center;
   white-space:nowrap;
 }
 
-/* Help sotto ai controlli */
-.hero-id .sub{
-  grid-column:1 / -1;
-  grid-row:3;
-  text-align:center;
-}
-
-/* Error sotto all'help */
-.id-error{
-  grid-column:1 / -1;
-  grid-row:4;
-  margin:6px 0 0;
-  color:#ff8082;
-  font-size:13px;
-  text-align:center;
-}
-
-
-
+/* Help e (se presente) errore restano sotto */
+.hero-id .sub{ grid-column:1 / -1; grid-row:3; text-align:center; }
+.id-error{ grid-column:1 / -1; grid-row:4; text-align:center; margin:6px 0 0; }
 
   /* Popover del bottone (solo qui) */
   .id-cta{ position:relative; display:flex; align-items:center; }
