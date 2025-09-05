@@ -200,7 +200,7 @@ input,button,select,textarea{ font:inherit; }
 :root{
   --id-width:112px;     /* o quanto usi */
   --id-preview:40px;    /* diametro mini-anteprima */
-  --id-gap:8px;         /* spazio tra preview / input / bottone */
+  --id-gap:0px;         /* spazio tra preview / input / bottone */
 }
 
 /* la griglia principale deve conoscere preview+gap, così l’allineamento è preciso */
