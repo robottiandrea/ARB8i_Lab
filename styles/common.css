@@ -221,6 +221,8 @@ input,button,select,textarea{ font:inherit; }
   max-width:100%;
   margin:0 auto;
 }
+.hero-id{ row-gap: 2px; }          /* stringe label ↔ controlli */
+.hero-id .sub{ margin-top: 6px; }  /* mantiene spazio controlli ↔ help */
 
 /* Label sopra l'INPUT (colonna 2), allineata a sinistra */
 .hero-id .form-label{
