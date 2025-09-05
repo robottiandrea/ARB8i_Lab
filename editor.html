@@ -65,6 +65,7 @@
     border:1px dashed var(--border);
     border-radius:12px;
     background:#0d1016;
+    transition: width .12s ease;
   }
 
   
@@ -406,11 +407,19 @@ function updateFrameMaxHeight(){
   frame.style.width    = targetW + 'px';
   frame.style.maxWidth = targetW + 'px';  // fallback extra
 }
+// Debounce per ridurre i ricalcoli durante il resize
+let _ufmhTO;
+function updateFrameMaxHeightDebounced(){
+  clearTimeout(_ufmhTO);
+  _ufmhTO = setTimeout(updateFrameMaxHeight, 60);
+}
 
-window.addEventListener('resize', updateFrameMaxHeight);
-window.addEventListener('orientationchange', updateFrameMaxHeight);
+// Listener (debounced)
+window.addEventListener('resize', updateFrameMaxHeightDebounced);
+window.addEventListener('orientationchange', updateFrameMaxHeightDebounced);
+
+// Quando l'immagine (thumb o PNG “cotta”) finisce di caricarsi, ricalcola subito
 document.getElementById('composite')?.addEventListener('load', updateFrameMaxHeight);
-
 
   
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
@@ -749,6 +758,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
