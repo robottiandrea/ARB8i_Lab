@@ -126,69 +126,71 @@
 
 
   
- /* Runner di luce che corre lungo i bordi (trigger: .grid.highlight) */
-.grid.highlight .card::after{
-  content:"";
+/* Runner di luce che percorre il bordo (trigger: .grid.highlight) */
+
+/* l’SVG sta sopra la card, ma non intercetta click */
+.card{ position:relative; overflow:hidden; }
+.card .runner{
   position:absolute;
-  inset:-2px;                 /* spessore esterno del ring */
-  border-radius:16px;
-  padding:2px;                /* spessore del ring (bordo visibile) */
+  inset:-2px;                  /* abbraccia leggermente fuori per non “tagliare” */
+  width:calc(100% + 4px);
+  height:calc(100% + 4px);
   pointer-events:none;
   z-index:2;
+}
 
-  /* Conic con una sola “linguetta” luminosa, resto trasparente */
-  background:
-    conic-gradient(
-      from 0deg,
-      transparent 0deg 330deg,                 /* 0–330° invisibile */
-      rgba(138,180,255,.10) 333deg,            /* alone largo e morbido */
-      rgba(138,180,255,.55) 344deg,            /* glow medio */
-      #8ab4ff 350deg,                          /* picco luce */
-      rgba(138,180,255,.55) 356deg,
-      rgba(138,180,255,.10) 360deg
-    );
+/* aspetto della traccia luminosa */
+.card .runner rect{
+  fill:none;
+  stroke: #8ab4ff;             /* colore del runner */
+  stroke-width: 2.5;           /* spessore luce */
+  stroke-linejoin: round;
+  stroke-linecap: round;
 
-  /* Mostra SOLO il bordo (trucco della maschera) */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
+  /* segmento visibile + gap lungo il perimetro normalizzato (100) */
+  stroke-dasharray: 10 90;     /* 10% luce, 90% gap */
+  stroke-dashoffset: 100;      /* parte “fuori campo” */
 
   opacity:0;
-  transform: rotate(0deg);
+  filter: drop-shadow(0 0 8px rgba(138,180,255,.55));
+}
+
+/* quando la griglia è in highlight, il runner parte */
+.grid.highlight .card .runner rect{
   animation:
-    ringFade 1.6s ease-out forwards,    /* accendi → mantieni → spegni */
-    ringSpin 1.2s linear infinite;      /* la linguetta gira attorno */
+    runnerFade 1.6s ease-out forwards, /* accendi → tieni → spegni */
+    runnerLap  1.6s linear forwards;   /* percorri tutto il perimetro */
   animation-delay: var(--delay, 0ms), var(--delay, 0ms);
-  filter: drop-shadow(0 0 6px rgba(138,180,255,.5));
 }
 
-@keyframes ringFade{
-  0%{opacity:0}
-  12%{opacity:1}
-  60%{opacity:1}
-  100%{opacity:0}
-}
-
-@keyframes ringSpin{
-  to { transform: rotate(360deg) }
-}
-
-/* “onda” nella griglia come prima */
-.grid.highlight .card:nth-child(3n+1)::after { --delay:0ms; }
-.grid.highlight .card:nth-child(3n+2)::after { --delay:140ms; }
-.grid.highlight .card:nth-child(3n+3)::after { --delay:280ms; }
+/* tempi a onda come prima */
+.grid.highlight .card:nth-child(3n+1) .runner rect { --delay:0ms; }
+.grid.highlight .card:nth-child(3n+2) .runner rect { --delay:140ms; }
+.grid.highlight .card:nth-child(3n+3) .runner rect { --delay:280ms; }
 @media (max-width:620px){
-  .grid.highlight .card:nth-child(2n+1)::after { --delay: 0ms; }
-  .grid.highlight .card:nth-child(2n+2)::after { --delay:160ms; }
+  .grid.highlight .card:nth-child(2n+1) .runner rect { --delay: 0ms; }
+  .grid.highlight .card:nth-child(2n+2) .runner rect { --delay:160ms; }
 }
 @media (max-width:360px){
-  .grid.highlight .card::after { --delay: 0ms; }
+  .grid.highlight .card .runner rect { --delay: 0ms; }
 }
+
+/* animazioni */
+@keyframes runnerFade{
+  0%   { opacity:0 }
+  12%  { opacity:1 }
+  70%  { opacity:1 }
+  100% { opacity:0 }
+}
+@keyframes runnerLap{
+  from { stroke-dashoffset: 100 }  /* 100% del giro da fare */
+  to   { stroke-dashoffset: 0 }    /* segmento arriva dove ha iniziato */
+}
+
+/* rispetto accessibilità: niente movimento per chi riduce */
 @media (prefers-reduced-motion:reduce){
-  .grid.highlight .card::after{
-    animation: ringFade 1.2s ease-out both; /* niente rotazione */
+  .grid.highlight .card .runner rect{
+    animation: runnerFade 0.8s ease-out both; /* solo fade, niente corsa */
   }
 }
 
@@ -277,13 +279,20 @@ function cardHTML(item){
       ${badge}
       <img loading="lazy" src="${thumb}" alt="${item.name||item.id}" />
     </div>
+
+    <!-- RUNNER che anima lungo i bordi -->
+    <svg class="runner" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <!-- pathLength=100 => le percentuali del dash sono comode -->
+      <rect x="1" y="1" width="98" height="98" rx="6" ry="6" pathLength="100"></rect>
+    </svg>
+
     <div class="titlebar">
       <div class="name">${item.name||item.id}</div>
       ${by}
     </div>
     <a class="cardlink" href="${href.toString()}"></a>
   </article>`;
-}
+
 
 function updateCardLinksWithId(id){
   document.querySelectorAll('a.cardlink').forEach(a=>{
