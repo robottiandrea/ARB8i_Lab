@@ -273,5 +273,55 @@ input,button,select,textarea{ font:inherit; }
 .hero-id .sub{ grid-column:1 / -1; grid-row:3; text-align:center; }
 .id-error{ grid-column:1 / -1; grid-row:4; text-align:center; margin:6px 0 0; }
 
-  
+ /* Popover del bottone (solo qui) */
+  .id-cta{ position:relative; display:flex; align-items:center; }
+  .id-btn{
+    height:40px; padding:0 14px; margin:0; border-radius:10px; border:1px solid var(--border);
+    background:var(--acc); color:#0f1115; font-weight:700; font-family:'',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    cursor:pointer; transition:transform .05s ease, filter .15s ease, opacity .15s;
+  }
+  .id-btn:hover{ filter:brightness(1.1); }
+  .id-btn:active{ transform:translateY(1px); }
+  .id-btn:disabled{ opacity:.45; cursor:not-allowed; }
+  /* Popover (più grande, colori invertiti per massima visibilità) */ 
+  /* ===== Popup centrale (riutilizzabile) ===== */
+.center-pop {
+  position: fixed;
+  inset: 0;
+  display: none;                 /* mostrato via JS con display:flex */
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(4px);
+}
+
+.center-pop .box {
+  max-width: min(90vw, 520px);
+  padding: 22px 26px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  text-align: center;
+  animation: popScale .18s ease-out;
+}
+
+.center-pop .title {
+  margin: 0 0 6px;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+}
+
+.center-pop .desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+@keyframes popScale {
+  from { transform: scale(.96); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
 
