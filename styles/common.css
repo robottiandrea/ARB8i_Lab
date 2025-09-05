@@ -196,30 +196,52 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
-/* contenitore ID: label a sinistra, riga centrata (stili base in common.css) */
-  /* Contenitore dell'ID: grande quanto il contenuto e centrato ovunque */
-  .hero-id{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    width:fit-content;     /* <— NON larghezza piena */
-    max-width:100%;        /* sicurezza su mobile */
-    margin:0 auto;         /* <— centra anche senza parent centrato (caso Editor) */
-  }
+/* Contenitore ID: label sopra l'INPUT (centrale) + riga controlli sotto */
+.hero-id{
+  /* da flex → grid */
+  display:grid;
+  grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
+  grid-template-rows: auto auto;                    /* riga label | riga controlli */
+  justify-content:center;
+  align-items:center;
+  row-gap:6px;
+  width:fit-content;
+  max-width:100%;
+  margin:0 auto; /* resta centrato nel container */
+}
 
-  
-  /* La riga di aiuto dentro l'hero-id dev'essere centrata */
-  .hero-id .sub{ text-align:center; }
+/* Help text sempre centrato */
+.hero-id .sub{ text-align:center; }
 
-  .hero-id .form-label{ align-self:flex-start; margin:0 0 6px; }
-  .hero-id-row{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-  }
+/* Label: posizionata sopra la colonna dell'input (colonna 2) */
+.hero-id .form-label{
+  grid-column:2;      /* ← sopra l'INPUT */
+  grid-row:1;
+  justify-self:center;
+  margin:0;           /* rimuove il vecchio margine bottom */
+  font-weight:600;
+  font-size:16px;
+  color:var(--muted);
+}
 
-  .id-error{ margin:6px 0 0; color:#ff8082; font-size:13px; text-align:center; }
+/* Riga con preview + input + bottone sotto la label, centrata */
+.hero-id-row{
+  grid-column:1 / -1; /* occupa tutta la riga sotto */
+  grid-row:2;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+
+/* Messaggio errore (come prima) */
+.id-error{
+  margin:6px 0 0;
+  color:#ff8082;
+  font-size:13px;
+  text-align:center;
+}
+
 
   /* Popover del bottone (solo qui) */
   .id-cta{ position:relative; display:flex; align-items:center; }
