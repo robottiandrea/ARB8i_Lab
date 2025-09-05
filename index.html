@@ -126,26 +126,29 @@
 
 
   
-  /* Bordi cangianti / gradiente animato (trigger: .grid.highlight) */
+ /* Runner di luce che corre lungo i bordi (trigger: .grid.highlight) */
 .grid.highlight .card::after{
   content:"";
   position:absolute;
-  inset:-2px;                 /* il ring “abbraccia” la card */
+  inset:-2px;                 /* spessore esterno del ring */
   border-radius:16px;
-  padding:2px;                /* spessore del ring */
+  padding:2px;                /* spessore del ring (bordo visibile) */
   pointer-events:none;
   z-index:2;
 
-  /* gradiente conico che gira lungo il bordo */
-  background: conic-gradient(
-    from 0deg,
-    #8ab4ff 0%,
-    #ff7edb 33%,
-    #ffd166 66%,
-    #8ab4ff 100%
-  );
+  /* Conic con una sola “linguetta” luminosa, resto trasparente */
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg 330deg,                 /* 0–330° invisibile */
+      rgba(138,180,255,.10) 333deg,            /* alone largo e morbido */
+      rgba(138,180,255,.55) 344deg,            /* glow medio */
+      #8ab4ff 350deg,                          /* picco luce */
+      rgba(138,180,255,.55) 356deg,
+      rgba(138,180,255,.10) 360deg
+    );
 
-  /* mostra SOLO il bordo (mask trick) */
+  /* Mostra SOLO il bordo (trucco della maschera) */
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -155,12 +158,12 @@
   opacity:0;
   transform: rotate(0deg);
   animation:
-    ringFade 1.6s ease-out forwards,       /* accendi → mantieni → spegni */
-    ringSpin 2.4s linear infinite;         /* rotazione del gradiente */
+    ringFade 1.6s ease-out forwards,    /* accendi → mantieni → spegni */
+    ringSpin 1.2s linear infinite;      /* la linguetta gira attorno */
   animation-delay: var(--delay, 0ms), var(--delay, 0ms);
+  filter: drop-shadow(0 0 6px rgba(138,180,255,.5));
 }
 
-/* stessa idea delle vecchie durate: accendi un attimo e poi sfuma */
 @keyframes ringFade{
   0%{opacity:0}
   12%{opacity:1}
@@ -168,10 +171,11 @@
   100%{opacity:0}
 }
 
-/* rotazione continua del gradiente (crea l’effetto “cangiante”) */
-@keyframes ringSpin{ to{ transform: rotate(360deg) } }
+@keyframes ringSpin{
+  to { transform: rotate(360deg) }
+}
 
-/* mantieni i tuoi delay a onda tra le card */
+/* “onda” nella griglia come prima */
 .grid.highlight .card:nth-child(3n+1)::after { --delay:0ms; }
 .grid.highlight .card:nth-child(3n+2)::after { --delay:140ms; }
 .grid.highlight .card:nth-child(3n+3)::after { --delay:280ms; }
@@ -184,9 +188,10 @@
 }
 @media (prefers-reduced-motion:reduce){
   .grid.highlight .card::after{
-    animation: ringFade 1.2s ease-out both; /* niente spin per chi riduce */
+    animation: ringFade 1.2s ease-out both; /* niente rotazione */
   }
 }
+
 
 </style>
 
