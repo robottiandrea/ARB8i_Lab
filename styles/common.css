@@ -212,7 +212,7 @@ input,button,select,textarea{ font:inherit; }
 
 /* Label centrata sopra TUTTA la riga (look più pulito e stabile) */
 .hero-id .form-label{
-  grid-column: 2;        /* sopra la colonna dell'input */
+  grid-column: 1/-1;        /* sopra la colonna dell'input */
   grid-row: 1;
   justify-self: start;
   text-align: left;
