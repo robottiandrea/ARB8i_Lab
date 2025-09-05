@@ -223,10 +223,7 @@ input,button,select,textarea{ font:inherit; }
 .hero-id-row{
   grid-column:1 / -1;
   grid-row:2;
-
   display:grid;                      /* da flex → grid */
-  grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
-  column-gap:8px;
   align-items:center;
   justify-content:center;
 }
