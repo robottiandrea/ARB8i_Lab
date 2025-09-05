@@ -133,7 +133,9 @@ input,button,select,textarea{ font:inherit; }
 /* ========== Chips base ========== */
 .chip{ background:#0d1016; border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:999px; font-size:12px }
 /* ========== ID row condivisa (preview SX + input con X + bottone) ========== */
-:root{ --id-width:136px; } /* 5 cifre comode; regola se vuoi più largo */
+
+:root{ --id-width:112px; }  /* 4 cifre */
+
 
 .id-row{
   display:grid;
