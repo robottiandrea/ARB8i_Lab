@@ -196,11 +196,11 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
-/* Contenitore ID: label sopra l'INPUT (centrale) + righe sotto ben ordinate */
+/* ===== Contenitore ID: label sopra, poi riga 3 colonne, poi help, poi error ===== */
 .hero-id{
   display:grid;
   grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
-  grid-auto-rows: auto;                              /* righe automatiche */
+  grid-auto-rows:auto;
   justify-content:center;
   align-items:center;
   row-gap:6px;
@@ -209,35 +209,53 @@ input,button,select,textarea{ font:inherit; }
   margin:0 auto;
 }
 
-/* Label: sopra la colonna dell'input (colonna 2) */
+/* Label centrata sopra TUTTA la riga (look più pulito e stabile) */
 .hero-id .form-label{
-  grid-column:2;   /* SOLO sopra l'input */
+  grid-column:1 / -1;  /* sopra la riga intera */
   grid-row:1;
-  justify-self:left;
+  justify-self:center;
   margin:0;
   font-weight:600;
   font-size:16px;
   color:var(--muted);
 }
 
-/* Riga con preview + input + bottone */
+/* --- Riga controlli: griglia a 3 colonne --- */
 .hero-id-row{
   grid-column:1 / -1;
   grid-row:2;
-  display:flex;
+
+  display:grid;                      /* da flex → grid */
+  grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
+  column-gap:8px;
   align-items:center;
   justify-content:center;
-  gap:8px;
 }
 
-/* Help: sotto ai controlli, centrato */
+/* “Appiattisce” il wrapper iniettato da OC così i figli entrano nella grid */
+#idRowHost{ display: contents; }
+
+/* Colonna 1 = mini-preview tonda */
+#idRowHost .id-preview{ grid-column:1; }
+
+/* Colonna 2 = input (il wrapper dell’input ha classe .input-clear) */
+#idRowHost .input-clear{ grid-column:2; }
+
+/* Colonna 3 = bottone (contenitore già presente in HTML) */
+.hero-id-row .id-cta{
+  grid-column:3;
+  display:flex; align-items:center; justify-content:center;
+  white-space:nowrap;
+}
+
+/* Help sotto ai controlli */
 .hero-id .sub{
   grid-column:1 / -1;
   grid-row:3;
   text-align:center;
 }
 
-/* Messaggio errore: sotto all'help */
+/* Error sotto all'help */
 .id-error{
   grid-column:1 / -1;
   grid-row:4;
