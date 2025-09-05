@@ -57,7 +57,27 @@
     margin:18px auto 8px; border:1px dashed var(--border);
     border-radius:12px; background:#0d1016;
   }
-  #composite{ display:block; width:100%; height:auto; border-radius:12px; }
+  
+  :root{
+    /* altezza massima dinamica del frame calcolata da JS */
+    --frame-max-h: 70vh; /* fallback */
+  }
+  
+  #composite{
+    display:block;
+    /* prima avevi width:100%; mettiamo width:auto + max-width per far rispettare anche max-height */
+    width:auto;
+    max-width:100%;
+    height:auto;
+    max-height: var(--frame-max-h); /* <-- vincolo chiave */
+    border-radius:12px;
+    object-fit: contain; /* non fa male, in caso l'immagine avesse width/height fissati */
+  }
+
+
+
+
+  
   #composite.is-example{ filter: grayscale(50%) opacity(.9); }
 
   .example-badge{
@@ -354,6 +374,28 @@ function rowHasAnyNeedle(row, needles){
   return keys.some(k => vals.some(v => v.includes(k)));
 }
 
+function updateFrameMaxHeight(){
+  const frame    = document.querySelector('.frame');
+  const shareRow = document.getElementById('shareRow');
+  const footer   = document.getElementById('madeBy');
+
+  if (!frame) return;
+
+  // distanza del frame dal top del viewport
+  const top = frame.getBoundingClientRect().top;
+
+  // spazio che vogliamo lasciare per bottoni + footer (+ margini)
+  const shareH = (shareRow && shareRow.style.display !== 'none') ? (shareRow.offsetHeight + 16) : 0;
+  const footH  = (footer   && footer.style.display   !== 'none') ? (footer.offsetHeight   + 12) : 0;
+  const margin = 16;
+
+  // spazio utile disponibile nel viewport
+  const available = Math.max(240, window.innerHeight - top - shareH - footH - margin);
+  document.documentElement.style.setProperty('--frame-max-h', available + 'px');
+}
+window.addEventListener('resize', updateFrameMaxHeight);
+window.addEventListener('orientationchange', updateFrameMaxHeight);
+window.addEventListener('load', updateFrameMaxHeight);
   
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
@@ -397,7 +439,7 @@ async function openImage(){
     setShareVisible(true);
     imgEl.classList.remove('is-example');
     if(exBadge) exBadge.style.display = 'none';
-
+    updateFrameMaxHeight(); // <-- garantisce che immagine + Copy PNG stiano a vista
     imgEl.alt = `Doodle ${id} + ${currentCfg.name||currentCfg.id}`;
     setStatus(`Dood ${id}: cooked and ready!`);
 
@@ -566,6 +608,8 @@ function applyBadge(badgeEl, cfg){
     const oopsEl = document.getElementById('oopsBadge');
     if (oopsEl) oopsEl.style.display = 'none';
 
+    // calcola subito il layout
+    updateFrameMaxHeight();
     
     // auto-cook se la pagina è arrivata con ?id= (l’input è già stato valorizzato da initIdControl)
     if (HAD_ID_AT_LOAD && idCtrl && idCtrl.value != null) {
@@ -689,3 +733,4 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
