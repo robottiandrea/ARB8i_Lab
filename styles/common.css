@@ -211,8 +211,7 @@ input,button,select,textarea{ font:inherit; }
   justify-content:center;
   align-items:center;
   row-gap:6px;
-  width:fit-content;
-  max-width:100%;
+  width:150px;
   margin:0 auto;
 }
 
@@ -247,7 +246,7 @@ input,button,select,textarea{ font:inherit; }
 #idRowHost .id-preview{ grid-column:1; }
 
 /* Colonna 2 = input (il wrapper dell’input ha classe .input-clear) */
-#idRowHost .input-clear{ grid-column:2; }
+#idRowHost .input-clear{ grid-column:3; }
 
 /* Colonna 3 = bottone (contenitore già presente in HTML) */
 .hero-id-row .id-cta{
