@@ -124,75 +124,65 @@
   .navchip:hover{ color:var(--acc); border-color:var(--acc); }
   .navchip:active{ transform: translateY(1px); }
 
-
-  
-/* Runner di luce che percorre il bordo (trigger: .grid.highlight) */
-
-/* l’SVG sta sopra la card, ma non intercetta click */
+  /* BORDO ARCOBALENO CHE SCORRE SEMPRE */
 .card{ position:relative; overflow:hidden; }
-.card .runner{
+
+/* anello arcobaleno */
+.card::after{
+  content:"";
   position:absolute;
-  inset:-2px;                  /* abbraccia leggermente fuori per non “tagliare” */
-  width:calc(100% + 4px);
-  height:calc(100% + 4px);
+  inset:-2px;                 /* leggermente fuori per non “tagliare” */
+  border-radius: inherit;     /* segue il raggio della card (16px di default) */
+  padding:2px;                /* spessore del bordo visibile */
   pointer-events:none;
   z-index:2;
+
+  /* arcobaleno continuo */
+  background:
+    conic-gradient(
+      from 0deg,
+      #ff5f6d 0deg,
+      #ffc371 60deg,
+      #f9f871 120deg,
+      #42e695 180deg,
+      #3bb2b8 240deg,
+      #7f7fd5 300deg,
+      #ff5f6d 360deg
+    );
+
+  /* mostra SOLO il bordo (trucco della maschera) */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+
+  /* movimento continuo */
+  animation: rainbow-spin 2.8s linear infinite;
+
+  /* alone morbido attorno */
+  filter: drop-shadow(0 0 10px rgba(138,180,255,.35));
 }
 
-/* aspetto della traccia luminosa */
-.card .runner rect{
-  fill:none;
-  stroke: #8ab4ff;             /* colore del runner */
-  stroke-width: 2.5;           /* spessore luce */
-  stroke-linejoin: round;
-  stroke-linecap: round;
-
-  /* segmento visibile + gap lungo il perimetro normalizzato (100) */
-  stroke-dasharray: 10 90;     /* 10% luce, 90% gap */
-  stroke-dashoffset: 100;      /* parte “fuori campo” */
-
-  opacity:0;
-  filter: drop-shadow(0 0 8px rgba(138,180,255,.55));
+/* rotazione del gradiente: i colori “corrono” lungo il perimetro */
+@keyframes rainbow-spin {
+  to { transform: rotate(360deg) }
 }
 
-/* quando la griglia è in highlight, il runner parte */
-.grid.highlight .card .runner rect{
-  animation:
-    runnerFade 1.6s ease-out forwards, /* accendi → tieni → spegni */
-    runnerLap  1.6s linear forwards;   /* percorri tutto il perimetro */
-  animation-delay: var(--delay, 0ms), var(--delay, 0ms);
+/* opzionale: più veloce quando scateni l'effetto “onda” della griglia */
+.grid.highlight .card::after{
+  animation-duration: 1.4s;
+  filter: drop-shadow(0 0 14px rgba(138,180,255,.5));
 }
 
-/* tempi a onda come prima */
-.grid.highlight .card:nth-child(3n+1) .runner rect { --delay:0ms; }
-.grid.highlight .card:nth-child(3n+2) .runner rect { --delay:140ms; }
-.grid.highlight .card:nth-child(3n+3) .runner rect { --delay:280ms; }
-@media (max-width:620px){
-  .grid.highlight .card:nth-child(2n+1) .runner rect { --delay: 0ms; }
-  .grid.highlight .card:nth-child(2n+2) .runner rect { --delay:160ms; }
-}
-@media (max-width:360px){
-  .grid.highlight .card .runner rect { --delay: 0ms; }
+/* accessibilità: niente animazioni per chi le riduce */
+@media (prefers-reduced-motion: reduce){
+  .card::after{ animation: none; }
 }
 
-/* animazioni */
-@keyframes runnerFade{
-  0%   { opacity:0 }
-  12%  { opacity:1 }
-  70%  { opacity:1 }
-  100% { opacity:0 }
-}
-@keyframes runnerLap{
-  from { stroke-dashoffset: 100 }  /* 100% del giro da fare */
-  to   { stroke-dashoffset: 0 }    /* segmento arriva dove ha iniziato */
-}
 
-/* rispetto accessibilità: niente movimento per chi riduce */
-@media (prefers-reduced-motion:reduce){
-  .grid.highlight .card .runner rect{
-    animation: runnerFade 0.8s ease-out both; /* solo fade, niente corsa */
-  }
-}
+  
+
 
 
 </style>
@@ -280,11 +270,7 @@ function cardHTML(item){
       <img loading="lazy" src="${thumb}" alt="${item.name||item.id}" />
     </div>
 
-    <!-- RUNNER che anima lungo i bordi -->
-    <svg class="runner" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <!-- pathLength=100 => le percentuali del dash sono comode -->
-      <rect x="1" y="1" width="98" height="98" rx="6" ry="6" pathLength="100"></rect>
-    </svg>
+   
 
     <div class="titlebar">
       <div class="name">${item.name||item.id}</div>
