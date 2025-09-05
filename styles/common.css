@@ -211,12 +211,13 @@ input,button,select,textarea{ font:inherit; }
 
 /* LABEL: sopra TUTTA la riga, agganciata a sinistra */
 .hero-id .form-label{
-  grid-column: 1 / -1;     /* sta sulla riga intera */
+  grid-column: 1/-1;     /* sta sulla riga intera */
   grid-row: 1;
   justify-self: start;     /* allinea a sinistra */
   text-align: left;
   width: max-content;      /* non si allarga inutilmente */
   margin: 0;
+  padding-inline-start: calc(var(--id-preview) + var(--id-gap)); /* allinea all’input */
 }
 
 /* (già ok) riga controlli in 3 colonne */
