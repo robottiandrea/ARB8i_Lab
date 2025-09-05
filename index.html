@@ -245,7 +245,7 @@ function cardHTML(item){
   const href = new URL('editor.html', location.href);
   href.searchParams.set('overlay', item.id);
 
-  const gradId = `rg-${item.id}`; // id unico per il gradient
+  const gradId = `rg-${item.id}`;
   const thumb  = item.thumb || `thumbs/${item.id}.png`;
   const badge  = item.badge ? `<div class="badge" style="${item.badgeColor?`background:${item.badgeColor}`:''}">${item.badge}</div>` : '';
   const by     = item.author ? `<div class="by">by ${item.author}</div>` : '';
@@ -261,7 +261,6 @@ function cardHTML(item){
     <svg class="runner" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       <defs>
         <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="objectBoundingBox">
-          <!-- palette rainbow (puoi cambiare i colori) -->
           <stop offset="0%"   stop-color="#ff5f6d"/>
           <stop offset="16%"  stop-color="#ffc371"/>
           <stop offset="33%"  stop-color="#f9f871"/>
@@ -269,8 +268,6 @@ function cardHTML(item){
           <stop offset="66%"  stop-color="#3bb2b8"/>
           <stop offset="83%"  stop-color="#7f7fd5"/>
           <stop offset="100%" stop-color="#ff5f6d"/>
-
-          <!-- rotazione del gradiente (scorrimento colori lungo il bordo) -->
           <animateTransform
             attributeName="gradientTransform"
             type="rotate"
@@ -282,9 +279,8 @@ function cardHTML(item){
         </linearGradient>
       </defs>
 
-      <!-- rettangolo del bordo: rx in linea col border-radius della .card -->
-      <rect x="1" y="1" width="98" height="98" rx="16" ry="16"
-            stroke="url(#${gradId})" />
+      <rect x="1" y="1" width="98" height="98" rx="6" ry="6"
+            stroke="url(#${gradId})" fill="none" vector-effect="non-scaling-stroke" />
     </svg>
 
     <div class="titlebar">
