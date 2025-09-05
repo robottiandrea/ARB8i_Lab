@@ -59,7 +59,8 @@
   
   .frame{
     position:relative;
-    width: min(100%, var(--frame-w));   /* <— niente più 640px fisso */
+    width:100%;
+    max-width: var(--frame-w);   /* <— vincolo reale della larghezza */
     margin:18px auto 8px;
     border:1px dashed var(--border);
     border-radius:12px;
@@ -268,10 +269,13 @@ function setShareVisible(visible){
   const row = document.getElementById('shareRow');
   const btn = document.getElementById('shareX');
   if (!row || !btn) return;
-  row.style.visibility   = visible ? 'visible' : 'hidden';
+  row.style.visibility    = visible ? 'visible' : 'hidden';
   row.style.pointerEvents = visible ? 'auto' : 'none';
   btn.disabled = !visible;
+
+  updateFrameMaxHeight(); // <— ricalcola subito dopo il toggle
 }
+
 
 function setStatus(t){ statusEl.textContent = t || ''; }
 function pad32hex(n){ const h = BigInt(n).toString(16); return h.padStart(64,'0'); }
@@ -400,8 +404,10 @@ function updateFrameMaxHeight(){
   const parentW = frame.parentElement ? frame.parentElement.clientWidth : window.innerWidth;
   const targetW = Math.min(parentW, Math.round(availableH * ratio));
 
-  // la frame "abbraccia" l'immagine: niente spazio scuro
+  // imposta sia la CSS var (tema) sia l'inline (fallback hard)
   document.documentElement.style.setProperty('--frame-w', targetW + 'px');
+  frame.style.maxWidth = targetW + 'px';   // <— garantisce l’effetto anche se la var non “vince”
+
 }
 window.addEventListener('resize', updateFrameMaxHeight);
 window.addEventListener('orientationchange', updateFrameMaxHeight);
@@ -745,6 +751,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
