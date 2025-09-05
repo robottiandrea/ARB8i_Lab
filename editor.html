@@ -59,20 +59,19 @@
   }
   
   :root{
-    /* altezza massima dinamica del frame calcolata da JS */
-    --frame-max-h: 70vh; /* fallback */
+    --frame-max-h: 70vh; /* fallback, poi la aggiorniamo via JS */
   }
   
   #composite{
     display:block;
-    /* prima avevi width:100%; mettiamo width:auto + max-width per far rispettare anche max-height */
-    width:auto;
+    width:100%;          /* <-- riempi la frame in larghezza */
     max-width:100%;
     height:auto;
-    max-height: var(--frame-max-h); /* <-- vincolo chiave */
+    max-height: var(--frame-max-h);  /* <-- vincolo in altezza */
     border-radius:12px;
-    object-fit: contain; /* non fa male, in caso l'immagine avesse width/height fissati */
+    object-fit: contain;
   }
+
 
 
 
@@ -376,26 +375,42 @@ function rowHasAnyNeedle(row, needles){
 
 function updateFrameMaxHeight(){
   const frame    = document.querySelector('.frame');
+  const img      = document.getElementById('composite');
   const shareRow = document.getElementById('shareRow');
   const footer   = document.getElementById('madeBy');
+  if (!frame || !img) return;
 
-  if (!frame) return;
-
-  // distanza del frame dal top del viewport
+  // 1) Altezza disponibile nel viewport sotto la label/ID-row
   const top = frame.getBoundingClientRect().top;
 
-  // spazio che vogliamo lasciare per bottoni + footer (+ margini)
-  const shareH = (shareRow && shareRow.style.display !== 'none') ? (shareRow.offsetHeight + 16) : 0;
-  const footH  = (footer   && footer.style.display   !== 'none') ? (footer.offsetHeight   + 12) : 0;
-  const margin = 16;
+  // conta lo spazio bottoni solo se effettivamente visibili (visibility)
+  const shareVisible = shareRow && getComputedStyle(shareRow).visibility !== 'hidden';
+  const shareH = shareVisible ? (shareRow.offsetHeight + 16) : 0;
 
-  // spazio utile disponibile nel viewport
-  const available = Math.max(240, window.innerHeight - top - shareH - footH - margin);
-  document.documentElement.style.setProperty('--frame-max-h', available + 'px');
+  const footerShown = footer && getComputedStyle(footer).display !== 'none';
+  const footH  = footerShown ? (footer.offsetHeight + 12) : 0;
+
+  const margin = 16;
+  const availableH = Math.max(240, window.innerHeight - top - shareH - footH - margin);
+
+  // passa il vincolo di altezza all'immagine
+  document.documentElement.style.setProperty('--frame-max-h', availableH + 'px');
+
+  // 2) Calcola la larghezza target della frame per evitare “vuoti”
+  const ratio = (img.naturalWidth && img.naturalHeight)
+    ? (img.naturalWidth / img.naturalHeight)
+    : 1; // fallback quadrato
+
+  const parentW = frame.parentElement ? frame.parentElement.clientWidth : window.innerWidth;
+  const targetW = Math.min(parentW, Math.round(availableH * ratio));
+
+  frame.style.width = targetW + 'px';   // <-- la frame abbraccia l’immagine
 }
 window.addEventListener('resize', updateFrameMaxHeight);
 window.addEventListener('orientationchange', updateFrameMaxHeight);
-window.addEventListener('load', updateFrameMaxHeight);
+// ricalcola quando l'immagine (thumb o PNG finale) finisce di caricarsi
+document.getElementById('composite')?.addEventListener('load', updateFrameMaxHeight);
+
   
 /* ===== Pipeline: on-chain → IPFS → compose ===== */
 async function openImage(){
@@ -733,4 +748,5 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
