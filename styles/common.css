@@ -196,37 +196,33 @@ input,button,select,textarea{ font:inherit; }
   background:linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14), rgba(255,255,255,0.06));
   background-size:200% 100%; animation:shine 1.8s linear infinite;
 }
-/* Contenitore ID: label sopra l'INPUT (centrale) + riga controlli sotto */
+/* Contenitore ID: label sopra l'INPUT (centrale) + righe sotto ben ordinate */
 .hero-id{
-  /* da flex → grid */
   display:grid;
   grid-template-columns: auto var(--id-width) auto; /* preview | input | bottone */
-  grid-template-rows: auto auto;                    /* riga label | riga controlli */
+  grid-auto-rows: auto;                              /* righe automatiche */
   justify-content:center;
   align-items:center;
   row-gap:6px;
   width:fit-content;
   max-width:100%;
-  margin:0 auto; /* resta centrato nel container */
+  margin:0 auto;
 }
 
-/* Help text sempre centrato */
-.hero-id .sub{ text-align:center; }
-
-/* Label: posizionata sopra la colonna dell'input (colonna 2) */
+/* Label: sopra la colonna dell'input (colonna 2) */
 .hero-id .form-label{
-  grid-column:2;      /* ← sopra l'INPUT */
+  grid-column:2;   /* SOLO sopra l'input */
   grid-row:1;
   justify-self:center;
-  margin:0;           /* rimuove il vecchio margine bottom */
+  margin:0;
   font-weight:600;
   font-size:16px;
   color:var(--muted);
 }
 
-/* Riga con preview + input + bottone sotto la label, centrata */
+/* Riga con preview + input + bottone */
 .hero-id-row{
-  grid-column:1 / -1; /* occupa tutta la riga sotto */
+  grid-column:1 / -1;
   grid-row:2;
   display:flex;
   align-items:center;
@@ -234,8 +230,17 @@ input,button,select,textarea{ font:inherit; }
   gap:8px;
 }
 
-/* Messaggio errore (come prima) */
+/* Help: sotto ai controlli, centrato */
+.hero-id .sub{
+  grid-column:1 / -1;
+  grid-row:3;
+  text-align:center;
+}
+
+/* Messaggio errore: sotto all'help */
 .id-error{
+  grid-column:1 / -1;
+  grid-row:4;
   margin:6px 0 0;
   color:#ff8082;
   font-size:13px;
