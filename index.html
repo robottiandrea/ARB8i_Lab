@@ -248,13 +248,31 @@ const EMPTY = document.getElementById('empty');
 const idError = document.getElementById('idError');
 
 /* ====== UI helpers ====== */
+// Ruota un <linearGradient> da 0 a 360° in "dur" ms (fallback senza SMIL)
+function spinGradient(gradEl, dur = 1600){
+  if (!gradEl) return;
+  const t0 = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now - t0) / dur);
+    const angle = 360 * p;
+    gradEl.setAttribute('gradientTransform', `rotate(${angle} 0.5 0.5)`);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+  
 function nudgeGrid(){
   if(!GRID) return;
   GRID.classList.remove('highlight');
   void GRID.offsetWidth;
   GRID.classList.add('highlight');
+
+  // avvia la rotazione rainbow su TUTTI i gradient delle card
+  document.querySelectorAll('.runner linearGradient').forEach(g => spinGradient(g, 1600));
+
   setTimeout(()=> GRID.classList.remove('highlight'), 1700);
 }
+
 function showPopover(msg){
   showCenterPop(msg, '', 1600);
   // Resta l’effetto “onda” sulla griglia dopo la scomparsa del popup
@@ -280,11 +298,27 @@ function cardHTML(item){
       <img loading="lazy" src="${thumb}" alt="${item.name||item.id}" />
     </div>
 
-    <!-- RUNNER che anima lungo i bordi -->
+    
+    <!-- Runner SVG con stroke rainbow -->
     <svg class="runner" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <!-- pathLength=100 => le percentuali del dash sono comode -->
-      <rect x="1" y="1" width="98" height="98" rx="6" ry="6" pathLength="100"></rect>
-    </svg>
+      <defs>
+        <!-- id unico per card -->
+        <linearGradient id="rg-${item.id}" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+          <stop offset="0%"   stop-color="#ff5f6d"/>
+          <stop offset="16%"  stop-color="#ffc371"/>
+          <stop offset="33%"  stop-color="#f9f871"/>
+          <stop offset="50%"  stop-color="#42e695"/>
+          <stop offset="66%"  stop-color="#3bb2b8"/>
+          <stop offset="83%"  stop-color="#7f7fd5"/>
+          <stop offset="100%" stop-color="#ff5f6d"/>
+        </linearGradient>
+      </defs>
+
+  <!-- pathLength=100 così i tuoi dash 10 90 lavorano uguale a prima -->
+  <rect x="1" y="1" width="98" height="98" rx="16" ry="16" pathLength="100"
+        stroke="url(#rg-${item.id})" fill="none" vector-effect="non-scaling-stroke" />
+</svg>
+
 
     <div class="titlebar">
       <div class="name">${item.name||item.id}</div>
