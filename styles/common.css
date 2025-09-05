@@ -246,7 +246,7 @@ input,button,select,textarea{ font:inherit; }
 #idRowHost .id-preview{ grid-column:1; }
 
 /* Colonna 2 = input (il wrapper dell’input ha classe .input-clear) */
-#idRowHost .input-clear{ grid-column:3; }
+#idRowHost .id-input{ grid-column:2; }
 
 /* Colonna 3 = bottone (contenitore già presente in HTML) */
 .hero-id-row .id-cta{
