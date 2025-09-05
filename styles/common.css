@@ -211,13 +211,12 @@ input,button,select,textarea{ font:inherit; }
 
 /* Label centrata sopra TUTTA la riga (look più pulito e stabile) */
 .hero-id .form-label{
-  grid-column:1 / -1;  /* sopra la riga intera */
-  grid-row:1;
-  justify-self:center;
-  margin:0;
-  font-weight:600;
-  font-size:16px;
-  color:var(--muted);
+  grid-column: 2;        /* sopra la colonna dell'input */
+  grid-row: 1;
+  justify-self: start;
+  text-align: left;
+  width: var(--id-width); /* stessa larghezza dell'input = allineamento netto */
+  margin: 0;
 }
 
 /* --- Riga controlli: griglia a 3 colonne --- */
