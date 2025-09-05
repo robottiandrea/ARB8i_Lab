@@ -213,7 +213,7 @@ input,button,select,textarea{ font:inherit; }
 .hero-id .form-label{
   grid-column:2;   /* SOLO sopra l'input */
   grid-row:1;
-  justify-self:center;
+  justify-self:left;
   margin:0;
   font-weight:600;
   font-size:16px;
