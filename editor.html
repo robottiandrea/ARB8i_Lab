@@ -59,13 +59,14 @@
   
   .frame{
     position:relative;
-    width:100%;
-    max-width: var(--frame-w);   /* <— vincolo reale della larghezza */
+    width:auto;              /* ← niente 100% fisso */
+    max-width:100%;          /* resta responsiva */
     margin:18px auto 8px;
     border:1px dashed var(--border);
     border-radius:12px;
     background:#0d1016;
   }
+
   
   /* l'immagine riempie la frame in larghezza ma rispetta l'altezza max */
   #composite{
@@ -386,12 +387,9 @@ function updateFrameMaxHeight(){
   // spazio disponibile in altezza sotto alla ID-row
   const top = frame.getBoundingClientRect().top;
 
-  // shareRow: considerala “visibile” se la sua visibility è diversa da hidden
-  const shareVisible = shareRow && getComputedStyle(shareRow).visibility !== 'hidden';
-  const shareH = shareVisible ? (shareRow.offsetHeight + 16) : 0;
-
-  const footerShown = footer && getComputedStyle(footer).display !== 'none';
-  const footH  = footerShown ? (footer.offsetHeight + 12) : 0;
+  // lo shareRow, nel tuo layout, occupa spazio anche quando visibility:hidden
+  const shareH = shareRow ? (shareRow.offsetHeight + 16) : 0;
+  const footH  = (footer && getComputedStyle(footer).display !== 'none') ? (footer.offsetHeight + 12) : 0;
 
   const margin = 16;
   const availableH = Math.max(240, window.innerHeight - top - shareH - footH - margin);
@@ -399,16 +397,16 @@ function updateFrameMaxHeight(){
   // vincolo di altezza all'immagine
   document.documentElement.style.setProperty('--frame-max-h', availableH + 'px');
 
-  // calcola larghezza frame in base al rapporto dell'immagine
-  const ratio = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth / img.naturalHeight) : 1;
+  // calcola la larghezza target (stessa dell'immagine con quell'altezza)
+  const ratio   = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth / img.naturalHeight) : 1;
   const parentW = frame.parentElement ? frame.parentElement.clientWidth : window.innerWidth;
-  const targetW = Math.min(parentW, Math.round(availableH * ratio));
+  const targetW = Math.min(parentW, Math.floor(availableH * ratio));
 
-  // imposta sia la CSS var (tema) sia l'inline (fallback hard)
-  document.documentElement.style.setProperty('--frame-w', targetW + 'px');
-  frame.style.maxWidth = targetW + 'px';   // <— garantisce l’effetto anche se la var non “vince”
-
+  // imposta davvero la larghezza della frame (niente spazi scuri)
+  frame.style.width    = targetW + 'px';
+  frame.style.maxWidth = targetW + 'px';  // fallback extra
 }
+
 window.addEventListener('resize', updateFrameMaxHeight);
 window.addEventListener('orientationchange', updateFrameMaxHeight);
 document.getElementById('composite')?.addEventListener('load', updateFrameMaxHeight);
@@ -751,6 +749,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
