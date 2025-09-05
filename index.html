@@ -177,7 +177,6 @@
       
           <!-- Contenitore del bottone + popover (il bottone verrà montato qui) -->
           <div class="id-cta">
-            <div id="idPopover" class="popover" role="status" aria-live="polite" aria-atomic="true"></div>
           </div>
         </div>
       
@@ -205,8 +204,7 @@
 /* ====== DOM ====== */
 const GRID = document.getElementById('grid');
 const EMPTY = document.getElementById('empty');
-const idError   = document.getElementById('idError');const idPopover  = document.getElementById('idPopover');
-let popTimer = null;
+const idError = document.getElementById('idError');
 
 /* ====== UI helpers ====== */
 function nudgeGrid(){
@@ -217,11 +215,11 @@ function nudgeGrid(){
   setTimeout(()=> GRID.classList.remove('highlight'), 1700);
 }
 function showPopover(msg){
-  if(!idPopover) return;
-  idPopover.textContent = msg;
-  idPopover.classList.remove('show');
-  void idPopover.offsetWidth;
-  idPopover.classList.add('show');
+  showCenterPop(msg, '', 1600);
+  // Resta l’effetto “onda” sulla griglia dopo la scomparsa del popup
+  setTimeout(nudgeGrid, 1700);
+}
+
 
   let fired = false;
   const onEnd = (e)=>{
@@ -331,6 +329,30 @@ if (OCNS && typeof OCNS.initIdControl === 'function') {
 } else {
   console.warn('OC.initIdControl non disponibile.');
 }
+/* ===== Popup centrale helpers ===== */
+function showCenterPop(title, desc = '', autoHideMs = 1600){
+  const el = document.getElementById('centerPop');
+  const t  = document.getElementById('cpTitle');
+  const d  = document.getElementById('cpDesc');
+  if(!el || !t || !d) return;
+
+  t.textContent = title || '';
+  d.textContent = desc || '';
+  d.style.display = desc ? '' : 'none';
+
+  el.style.display = 'flex';
+
+  if (autoHideMs > 0){
+    clearTimeout(showCenterPop._t);
+    showCenterPop._t = setTimeout(hideCenterPop, autoHideMs);
+  }
+}
+function hideCenterPop(){
+  const el = document.getElementById('centerPop');
+  if (el) el.style.display = 'none';
+}
+// opzionale: chiudi toccando lo sfondo
+document.getElementById('centerPop')?.addEventListener('click', hideCenterPop);
 
 (function () {
     const qs = new URLSearchParams(location.search);
@@ -360,5 +382,13 @@ async function loadManifest(){
 }
 loadManifest().then(render).catch(()=>{ overlays = { items: [] }; render(); });
 </script>
+<!-- Popup centrale (riutilizzabile) -->
+<div id="centerPop" class="center-pop" role="dialog" aria-modal="true" aria-live="assertive" style="display:none">
+  <div class="box">
+    <div id="cpTitle" class="title"></div>
+    <p id="cpDesc" class="desc"></p>
+  </div>
+</div>
+  
 </body>
 </html>
