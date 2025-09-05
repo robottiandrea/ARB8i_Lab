@@ -126,74 +126,44 @@
 
 
   
-/* Runner di luce che percorre il bordo (trigger: .grid.highlight) */
-
-/* l’SVG sta sopra la card, ma non intercetta click */
+/* BORDO RAINBOW sul rettangolo SVG (accende → gira → spegne) */
 .card{ position:relative; overflow:hidden; }
+
+/* l’SVG sta sopra la card ma non intercetta click */
 .card .runner{
   position:absolute;
-  inset:-2px;                  /* abbraccia leggermente fuori per non “tagliare” */
+  inset:-2px;                 /* leggermente fuori per non tagliare */
   width:calc(100% + 4px);
   height:calc(100% + 4px);
   pointer-events:none;
   z-index:2;
+  opacity:0;                  /* verrà gestito dall’animazione */
 }
 
-/* aspetto della traccia luminosa */
+/* aspetto del contorno */
 .card .runner rect{
   fill:none;
-  stroke: #8ab4ff;             /* colore del runner */
-  stroke-width: 2.5;           /* spessore luce */
+  stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
-
-  /* segmento visibile + gap lungo il perimetro normalizzato (100) */
-  stroke-dasharray: 10 90;     /* 10% luce, 90% gap */
-  stroke-dashoffset: 100;      /* parte “fuori campo” */
-
-  opacity:0;
-  filter: drop-shadow(0 0 8px rgba(138,180,255,.55));
+  filter: drop-shadow(0 0 8px rgba(138,180,255,.45)); /* alone morbido */
 }
 
-/* quando la griglia è in highlight, il runner parte */
-.grid.highlight .card .runner rect{
-  animation:
-    runnerFade 1.6s ease-out forwards, /* accendi → tieni → spegni */
-    runnerLap  1.6s linear forwards;   /* percorri tutto il perimetro */
-  animation-delay: var(--delay, 0ms), var(--delay, 0ms);
+/* quando parte l’effetto (nudgeGrid applica .highlight alla griglia) */
+.grid.highlight .card .runner{
+  animation: rainbowFade 1.6s ease-out forwards;
 }
-
-/* tempi a onda come prima */
-.grid.highlight .card:nth-child(3n+1) .runner rect { --delay:0ms; }
-.grid.highlight .card:nth-child(3n+2) .runner rect { --delay:140ms; }
-.grid.highlight .card:nth-child(3n+3) .runner rect { --delay:280ms; }
-@media (max-width:620px){
-  .grid.highlight .card:nth-child(2n+1) .runner rect { --delay: 0ms; }
-  .grid.highlight .card:nth-child(2n+2) .runner rect { --delay:160ms; }
-}
-@media (max-width:360px){
-  .grid.highlight .card .runner rect { --delay: 0ms; }
-}
-
-/* animazioni */
-@keyframes runnerFade{
-  0%   { opacity:0 }
-  12%  { opacity:1 }
-  70%  { opacity:1 }
-  100% { opacity:0 }
-}
-@keyframes runnerLap{
-  from { stroke-dashoffset: 100 }  /* 100% del giro da fare */
-  to   { stroke-dashoffset: 0 }    /* segmento arriva dove ha iniziato */
+@keyframes rainbowFade{
+  0%{opacity:0}
+  12%{opacity:1}
+  70%{opacity:1}
+  100%{opacity:0}
 }
 
 /* rispetto accessibilità: niente movimento per chi riduce */
-@media (prefers-reduced-motion:reduce){
-  .grid.highlight .card .runner rect{
-    animation: runnerFade 0.8s ease-out both; /* solo fade, niente corsa */
-  }
+@media (prefers-reduced-motion: reduce){
+  .grid.highlight .card .runner{ animation: rainbowFade .8s ease-out both; }
 }
-
 
 </style>
 
@@ -250,16 +220,22 @@ const idError = document.getElementById('idError');
 /* ====== UI helpers ====== */
 function nudgeGrid(){
   if(!GRID) return;
+
+  // reset + trigger classe highlight (come prima)
   GRID.classList.remove('highlight');
   void GRID.offsetWidth;
   GRID.classList.add('highlight');
+
+  // avvia la rotazione dei gradienti rainbow su tutte le card
+  document.querySelectorAll('.runner linearGradient animateTransform').forEach(a=>{
+    if (typeof a.beginElement === 'function'){
+      try{ a.beginElement(); }catch{}
+    }
+  });
+
   setTimeout(()=> GRID.classList.remove('highlight'), 1700);
 }
-function showPopover(msg){
-  showCenterPop(msg, '', 1600);
-  // Resta l’effetto “onda” sulla griglia dopo la scomparsa del popup
-  setTimeout(nudgeGrid, 1700);
-}
+
 
 
 /* ====== Overlays grid ====== */
@@ -269,9 +245,10 @@ function cardHTML(item){
   const href = new URL('editor.html', location.href);
   href.searchParams.set('overlay', item.id);
 
-  const thumb = item.thumb || `thumbs/${item.id}.png`;
-  const badge = item.badge ? `<div class="badge" style="${item.badgeColor?`background:${item.badgeColor}`:''}">${item.badge}</div>` : '';
-  const by = item.author ? `<div class="by">by ${item.author}</div>` : '';
+  const gradId = `rg-${item.id}`; // id unico per il gradient
+  const thumb  = item.thumb || `thumbs/${item.id}.png`;
+  const badge  = item.badge ? `<div class="badge" style="${item.badgeColor?`background:${item.badgeColor}`:''}">${item.badge}</div>` : '';
+  const by     = item.author ? `<div class="by">by ${item.author}</div>` : '';
 
   return `
   <article class="card">
@@ -280,10 +257,34 @@ function cardHTML(item){
       <img loading="lazy" src="${thumb}" alt="${item.name||item.id}" />
     </div>
 
-    <!-- RUNNER che anima lungo i bordi -->
+    <!-- Runner SVG con stroke=gradient -->
     <svg class="runner" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <!-- pathLength=100 => le percentuali del dash sono comode -->
-      <rect x="1" y="1" width="98" height="98" rx="6" ry="6" pathLength="100"></rect>
+      <defs>
+        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="objectBoundingBox">
+          <!-- palette rainbow (puoi cambiare i colori) -->
+          <stop offset="0%"   stop-color="#ff5f6d"/>
+          <stop offset="16%"  stop-color="#ffc371"/>
+          <stop offset="33%"  stop-color="#f9f871"/>
+          <stop offset="50%"  stop-color="#42e695"/>
+          <stop offset="66%"  stop-color="#3bb2b8"/>
+          <stop offset="83%"  stop-color="#7f7fd5"/>
+          <stop offset="100%" stop-color="#ff5f6d"/>
+
+          <!-- rotazione del gradiente (scorrimento colori lungo il bordo) -->
+          <animateTransform
+            attributeName="gradientTransform"
+            type="rotate"
+            from="0 0.5 0.5"
+            to="360 0.5 0.5"
+            dur="1.6s"
+            begin="indefinite"
+            fill="freeze" />
+        </linearGradient>
+      </defs>
+
+      <!-- rettangolo del bordo: rx in linea col border-radius della .card -->
+      <rect x="1" y="1" width="98" height="98" rx="16" ry="16"
+            stroke="url(#${gradId})" />
     </svg>
 
     <div class="titlebar">
