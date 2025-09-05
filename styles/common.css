@@ -218,9 +218,10 @@ input,button,select,textarea{ font:inherit; }
 
 /* Label centrata sopra TUTTA la riga (look più pulito e stabile) */
 .hero-id .form-label{
-  grid-column:1 / -1;  /* sopra la riga intera */
+  grid-column:2;  /* sopra la riga intera */
   grid-row:1;
-  justify-self:center;
+  justify-self:left;
+  align-items:left;
   margin:0;
   font-weight:600;
   font-size:16px;
