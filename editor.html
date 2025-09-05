@@ -176,49 +176,52 @@ const exBadge = document.querySelector('#exampleBadge');
 
 const HAD_ID_AT_LOAD = new URLSearchParams(location.search).has('id');
 // === Monta la riga ID nell'Editor (stessa UI dell'index, testo diverso) ===
-if (OC && typeof OC.mountIdRow === 'function') {
-  OC.mountIdRow('#idRowHost', {
-  inputId: 'tokenId',
-  previewId: 'idPreview',
-  buttonId: 'go',
-  buttonText: 'Cook it!',
-  buttonClass: 'id-btn',
-  buttonContainer: '.id-cta',
-  showPreview: true,
-  placeholder: '8929',
-  maxLen: 4
-} else {
-  console.warn('OC.mountIdRow non disponibile: salto il montaggio UI ID.');
-}    
-});
+// === Monta la riga ID nell'Editor (stessa UI dell'index, testo diverso) ===
+const OCNS = window.OC; // usa window.OC per evitare ReferenceError se OC non esiste
 
+if (OCNS && typeof OCNS.mountIdRow === 'function') {
+  OCNS.mountIdRow('#idRowHost', {
+    inputId: 'tokenId',
+    previewId: 'idPreview',
+    buttonId: 'go',
+    buttonText: 'Cook it!',
+    buttonClass: 'id-btn',
+    buttonContainer: '.id-cta',
+    showPreview: true,
+    placeholder: '8929',
+    maxLen: 4
+  });
 } else {
-  // fallback sicuro: non bloccare la pagina se la funzione non esiste
   console.warn('OC.mountIdRow non disponibile: salto il montaggio UI ID.');
-}  
+}
+
 let tokenEl = document.getElementById('tokenId');
 let idPreview = document.getElementById('idPreview');
-  
+
 /* ===== ID control (unico) ===== */
-const idCtrl = OC.initIdControl({
-  input:  '#tokenId',
-  preview:'#idPreview',
-  button: '#go',
-  defaultId: '8929',
-  max: 9999,
-  persistKey: 'lastId',   // usa/localStorage
-  urlParam:  'id',        // legge ?id= e ripulisce l’URL
-  onApply(){
-    // qui scatta SEMPRE il render quando premi Show Me o Enter
-    openImage();
-  },
-  onClear(){
-    // reset mini-preview e UI
-    setStatus('');
-    setShareVisible(false);
-    idCtrl.resetPreview();
-  }
-});
+let idCtrl = null;
+if (OCNS && typeof OCNS.initIdControl === 'function') {
+  idCtrl = OCNS.initIdControl({
+    input:  '#tokenId',
+    preview:'#idPreview',
+    button: '#go',
+    defaultId: '8929',
+    max: 9999,
+    persistKey: 'lastId',
+    urlParam:  'id',
+    onApply(){
+      openImage();
+    },
+    onClear(){
+      setStatus('');
+      setShareVisible(false);
+      idCtrl && idCtrl.resetPreview();
+    }
+  });
+} else {
+  console.warn('OC.initIdControl non disponibile.');
+}
+
   
 
 
@@ -565,9 +568,10 @@ function applyBadge(badgeEl, cfg){
 
     
     // auto-cook se la pagina è arrivata con ?id= (l’input è già stato valorizzato da initIdControl)
-    if (HAD_ID_AT_LOAD && idCtrl.value != null) {
+    if (HAD_ID_AT_LOAD && idCtrl && idCtrl.value != null) {
       await openImage();
     }
+
 
   }catch(e){
     setStatus(e?.message || 'Init error');
@@ -685,20 +689,3 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
