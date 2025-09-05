@@ -221,24 +221,6 @@ function showPopover(msg){
 }
 
 
-  let fired = false;
-  const onEnd = (e)=>{
-    if(e.animationName !== 'popOutLeft') return;
-    fired = true;
-    idPopover.removeEventListener('animationend', onEnd);
-    idPopover.classList.remove('show');
-    nudgeGrid();
-  };
-  idPopover.addEventListener('animationend', onEnd);
-  clearTimeout(popTimer);
-  popTimer = setTimeout(()=>{
-    if(!fired){
-      idPopover.classList.remove('show');
-      nudgeGrid();
-    }
-  }, 2100);
-}
-
 /* ====== Overlays grid ====== */
 let overlays = null;
 
