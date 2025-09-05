@@ -218,23 +218,36 @@ const EMPTY = document.getElementById('empty');
 const idError = document.getElementById('idError');
 
 /* ====== UI helpers ====== */
+
+function spinGradientOnce(svg, durMs = 1600){
+  const grad = svg.querySelector('linearGradient');
+  if(!grad) return;
+  let start = null;
+
+  function tick(ts){
+    if(start === null) start = ts;
+    const p = Math.min((ts - start) / durMs, 1);   // 0 → 1
+    const angle = 360 * p;
+    grad.setAttribute('gradientTransform', `rotate(${angle} 0.5 0.5)`);
+    if(p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+  
 function nudgeGrid(){
   if(!GRID) return;
 
-  // reset + trigger classe highlight (come prima)
+  // reset + trigger della classe highlight (per il fade-in/out del bordo)
   GRID.classList.remove('highlight');
   void GRID.offsetWidth;
   GRID.classList.add('highlight');
 
-  // avvia la rotazione dei gradienti rainbow su tutte le card
-  document.querySelectorAll('.runner linearGradient animateTransform').forEach(a=>{
-    if (typeof a.beginElement === 'function'){
-      try{ a.beginElement(); }catch{}
-    }
-  });
+  // avvia la rotazione dei gradienti su tutte le card
+  document.querySelectorAll('.runner').forEach(svg => spinGradientOnce(svg));
 
   setTimeout(()=> GRID.classList.remove('highlight'), 1700);
 }
+
 
 
 
@@ -259,8 +272,8 @@ function cardHTML(item){
 
     <!-- Runner SVG con stroke=gradient -->
     <svg class="runner" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%" gradientUnits="objectBoundingBox">
+     <defs>
+        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stop-color="#ff5f6d"/>
           <stop offset="16%"  stop-color="#ffc371"/>
           <stop offset="33%"  stop-color="#f9f871"/>
@@ -268,14 +281,6 @@ function cardHTML(item){
           <stop offset="66%"  stop-color="#3bb2b8"/>
           <stop offset="83%"  stop-color="#7f7fd5"/>
           <stop offset="100%" stop-color="#ff5f6d"/>
-          <animateTransform
-            attributeName="gradientTransform"
-            type="rotate"
-            from="0 0.5 0.5"
-            to="360 0.5 0.5"
-            dur="1.6s"
-            begin="indefinite"
-            fill="freeze" />
         </linearGradient>
       </defs>
 
