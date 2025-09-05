@@ -29,7 +29,6 @@
 <style>
   :root{
     /* solo variabili/parametri usati QUI (non in common) */
-    --id-width:112px;
     --footer-space: calc(44px + env(safe-area-inset-bottom));
     --card-w:256px;
     --gap:18px;
@@ -102,6 +101,7 @@
   .navchip{
     display:inline-flex; align-items:center; gap:8px;
     padding:8px 14px; border-radius:999px;
+    background: rgba(23,26,33,.85);
     background: color-mix(in oklab, var(--card) 85%, transparent);
     border:1px solid var(--border);
     backdrop-filter: blur(8px);
@@ -273,42 +273,54 @@ function render(){
   }
   if (EMPTY) EMPTY.style.display = 'none';
   GRID.innerHTML = overlays.items.map(cardHTML).join('');
-  const active = OC.normalizeId(localStorage.getItem('lastId'), 9999);
-  updateCardLinksWithId(active.valid ? active.value : null);
+  const active = (OCNS && typeof OCNS.normalizeId === 'function')
+  ? OCNS.normalizeId(localStorage.getItem('lastId'), 9999)
+  : { valid:false };
+updateCardLinksWithId(active.valid ? active.value : null);
+
 }
 /* ====== Riga ID condivisa: mount + init ====== */
-// Monta UI (preview SX + input con X) dentro #idRowHost
-OC.mountIdRow('#idRowHost', {
-  inputId: 'idField',
-  previewId: 'idPreview',
-  buttonId: 'idApplyBtn',
-  buttonText: 'It’s me!',
-  buttonClass: 'id-btn',
-  buttonContainer: '.id-cta',
-  showPreview: true,
-  placeholder: '8929',
-  maxLen: 4
-});
+const OCNS = window.OC;
 
-// Inizializza tutto in uno: persistenza + deep-link + update link cards
-const idCtrl = OC.initIdControl({
-  input: '#idField',
-  preview: '#idPreview',
-  button: '#idApplyBtn',
-  defaultId: '8929',
-  max: 9999,
-  persistKey: 'lastId',
-  urlParam: 'id',
-  cleanUrlParam: true,
-  linkUpdater: updateCardLinksWithId, // ok tenerlo, ma non contare SOLO su questo
-  onApply(id){
-    updateCardLinksWithId(id);          // <— AGGIUNTO: scrive ?id=... sulle card
-    showPopover('Locked in! Pick a card!');
-  },
-  onValidChange(valid, st){
-    // (facoltativo) aggiorna live mentre digiti
-    updateCardLinksWithId(valid ? st.value : null);
-  }
+if (OCNS && typeof OCNS.mountIdRow === 'function') {
+  OCNS.mountIdRow('#idRowHost', {
+    inputId: 'idField',
+    previewId: 'idPreview',
+    buttonId: 'idApplyBtn',
+    buttonText: 'It’s me!',
+    buttonClass: 'id-btn',
+    buttonContainer: '.id-cta',
+    showPreview: true,
+    placeholder: '8929',
+    maxLen: 4
+  });
+} else {
+  console.warn('OC.mountIdRow non disponibile.');
+}
+
+let idCtrl = null;
+if (OCNS && typeof OCNS.initIdControl === 'function') {
+  idCtrl = OCNS.initIdControl({
+    input: '#idField',
+    preview: '#idPreview',
+    button: '#idApplyBtn',
+    defaultId: '8929',
+    max: 9999,
+    persistKey: 'lastId',
+    urlParam: 'id',
+    cleanUrlParam: true,
+    linkUpdater: updateCardLinksWithId,
+    onApply(id){
+      updateCardLinksWithId(id);
+      showPopover('Locked in! Pick a card!');
+    },
+    onValidChange(valid, st){
+      updateCardLinksWithId(valid ? st.value : null);
+    }
+  });
+} else {
+  console.warn('OC.initIdControl non disponibile.');
+}
    
 });
 
