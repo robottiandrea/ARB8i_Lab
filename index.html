@@ -386,7 +386,7 @@ if (OCNS && typeof OCNS.initIdControl === 'function') {
     linkUpdater: updateCardLinksWithId,
     onApply(id){
       updateCardLinksWithId(id);
-      showPopover('Locked in ! Pick a card !');
+      showPopover('Locked in! Pick a card!');
     },
     onValidChange(valid, st){
       updateCardLinksWithId(valid ? st.value : null);
@@ -423,7 +423,7 @@ document.getElementById('centerPop')?.addEventListener('click', hideCenterPop);
 window.addEventListener('DOMContentLoaded', () => {
   const qs = new URLSearchParams(location.search);
   if (qs.get('lock') === '1') {
-    showPopover('Locked in ! Pick a card !');
+    showPopover('Locked in! Pick a card!');
 
     // pulizia: togli 'lock' dall'URL per non ri-triggerare al refresh
     qs.delete('lock');
