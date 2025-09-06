@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Doodles Overlays — Gallery</title>
+<title>ARB8i Lab — Gallery</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -199,7 +199,7 @@
 </head>
 <body>
   <div class="navchip-bar">
-    <a class="navchip" href="./Doodles_trait-viewer.html?source=index" title="Apri Trait Viewer">
+    <a class="navchip" href="./Doodles_trait-viewer.html?source=index" title=" Trait Viewer">
       <span class="shine">Trait Viewer</span>
     </a>
   </div>
@@ -418,20 +418,17 @@ function hideCenterPop(){
 // opzionale: chiudi toccando lo sfondo
 document.getElementById('centerPop')?.addEventListener('click', hideCenterPop);
 
-(function () {
-    const qs = new URLSearchParams(location.search);
-    if (qs.get('lock') === '1') {
-      // mostriamo lo stesso banner usato da "It's me!"
-      showPopover('Locked in! Pick a card!');
+window.addEventListener('DOMContentLoaded', () => {
+  const qs = new URLSearchParams(location.search);
+  if (qs.get('lock') === '1') {
+    showPopover('Locked in! Pick a card!');
 
-      // pulizia: togli 'lock' dall'URL per non ri-triggerare al refresh
-      qs.delete('lock');
-      const clean = qs.toString();
-      history.replaceState(null, '', location.pathname + (clean ? '?' + clean : ''));
-    }
-  })();
-
-
+    // pulizia: togli 'lock' dall'URL per non ri-triggerare al refresh
+    qs.delete('lock');
+    const clean = qs.toString();
+    history.replaceState(null, '', location.pathname + (clean ? '?' + clean : ''));
+  }
+});
 
 
 /* ====== Manifest overlays ====== */
