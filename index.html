@@ -147,7 +147,7 @@
   stroke-linecap: round;
 
   /* segmento visibile + gap lungo il perimetro normalizzato (100) */
-  stroke-dasharray: 90 10;     /* 10% luce, 90% gap */
+  stroke-dasharray: 100 0;     /* 10% luce, 90% gap */
   stroke-dashoffset: 100;      /* parte “fuori campo” */
 
   opacity:0;
@@ -314,7 +314,7 @@ function cardHTML(item){
       </defs>
 
   <!-- pathLength=100 così i tuoi dash 10 90 lavorano uguale a prima -->
-  <rect x="1" y="1" width="98" height="98" rx="16" ry="16" pathLength="100"
+  <rect x="1" y="1" width="98" height="98" rx="6" ry="6" pathLength="100"
         stroke="url(#rg-${item.id})" fill="none" vector-effect="non-scaling-stroke" />
 </svg>
 
