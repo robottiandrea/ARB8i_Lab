@@ -3,8 +3,9 @@ Blue 1;#8FCFFF
 Blue 2;#81B2FF
 Devil 1;#FC7DC6
 Gold 1;#FDDD77
-Gradient 1;#F8AFE1
-Gradient 2;#E6BCFA
+Gradient 1;##B2BFFC | #FBB0E1
+Gradient 2;##95EAEC | #E6BCF9
+Holo:#7FB1FF| #FFAFC0 | #FFE897 | #9AEF91 | #7EBAF7
 Green 1;#B3FFC7
 Green 2;#84FFC2
 Green 3;#7AE9B4
