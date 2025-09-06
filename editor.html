@@ -307,38 +307,118 @@ async function loadManifest(){
 function getCfg(id){ return OVERLAYS?.items?.find(o=>o.id===id) || null; }
 
 function parseCsv(text){
-  const m={}; text.replace(/\r\n/g,'\n').split('\n').forEach(line=>{
-    line=line.trim(); if(!line || /^name\s*[,;\t]/i.test(line)) return;
-    const [name,hexRaw]=line.split(/[,;\t]/).map(s=>s?.trim().replace(/^"+|"+$/g,''));
-    if(!name||!hexRaw) return; const hex = hexRaw.startsWith('#')?hexRaw:('#'+hexRaw);
-    if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(hex)) m[name]=hex;
-  }); return m;
+  const map = {};
+  text
+    .replace(/\ufeff/g,'')            // BOM
+    .replace(/\r\n?/g,'\n')
+    .split('\n')
+    .forEach(line=>{
+      let s = line.trim();
+      if(!s) return;
+      // split su ; , o :
+      const parts = s.split(/[,;:]\s*/);
+      if(parts.length < 2) return;
+      const name = (parts[0] || '').replace(/^"+|"+$/g,'').trim();
+      let raw   = (parts.slice(1).join(':') || '').replace(/^"+|"+$/g,'').trim();
+      if(!name || !raw) return;
+      if (/^name$/i.test(name) && /^hex$/i.test(raw)) return; // header
+
+      // normalizza valore: doppi #, spazi intorno a |
+      raw = raw.replace(/##/g, '#').replace(/\s*\|\s*/g, '|');
+
+      // Salviamo la stringa così com'è: "#RRGGBB" (flat) o "#...|#...|#..." (gradiente)
+      map[name] = raw;
+    });
+  return map;
 }
+
 async function loadMaps(){
   if(!NAME_TO_HEX){ const r=await fetch('./Corrispondenze_Nome_Hex.csv'); if(!r.ok) throw new Error('CSV not found'); NAME_TO_HEX=parseCsv(await r.text()); }
   if(!META){ const r=await fetch('./Doodles_all_metadata.json'); if(!r.ok) throw new Error('Metadata JSON not found'); META=await r.json(); }
 }
 
 /* ===== Compose: base + overlay → dataURL ===== */
-async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
+async function composeDataUrl(baseBlob, cfg, sleeveSpec, skinSpec){
   const r = await fetch(`./overlays/${cfg.file}`);
   if(!r.ok) throw new Error(`Overlay not found: ${cfg.file}`);
   const svgText = await r.text();
 
-  const temp = document.createElement('div'); temp.innerHTML = svgText;
-  const svg = temp.querySelector('svg'); if(!svg) throw new Error('Overlay SVG missing <svg>');
+  // parse SVG inline
+  const temp = document.createElement('div');
+  temp.innerHTML = svgText;
+  const svg = temp.querySelector('svg');
+  if(!svg) throw new Error('Overlay SVG missing <svg>');
   svg.removeAttribute('width'); svg.removeAttribute('height');
   svg.setAttribute('viewBox', svg.getAttribute('viewBox') || '0 0 1800 1800');
   svg.setAttribute('preserveAspectRatio','xMidYMid meet');
 
   const sleeveId = cfg.sleeveId || 'Sleeve_fill';
   const skinId   = cfg.skinId   || 'Skin_fill';
-  if(hexSleeve){ temp.querySelectorAll(`#${sleeveId}, #${sleeveId} *`).forEach(n=>n.setAttribute('fill', hexSleeve)); }
-  if(hexSkin){   temp.querySelectorAll(`#${skinId}, #${skinId} *`).forEach(n=>n.setAttribute('fill', hexSkin)); }
 
+  // ==== helper gradient ====
+  const NS = 'http://www.w3.org/2000/svg';
+  const SHAPE_RE = /^(path|rect|circle|ellipse|polygon|polyline|use)$/i;
+  const DEFAULT_ANGLE = { skin: 0, sleeve: 0 }; // 0° = sx→dx
+
+  function ensureDefs(s){
+    let defs = s.querySelector('defs');
+    if(!defs){ defs = document.createElementNS(NS,'defs'); s.prepend(defs); }
+    return defs;
+  }
+  function splitStops(spec){
+    if(!spec) return [];
+    return String(spec).trim().replace(/##/g,'#').replace(/\s*\|\s*/g,'|').split('|').filter(Boolean);
+  }
+  function upsertLinearGradient(s, id, colors, angleDeg){
+    const defs = ensureDefs(s);
+    let g = s.querySelector('#'+id);
+    if(!g || g.tagName !== 'linearGradient'){
+      if(g) g.remove();
+      g = document.createElementNS(NS,'linearGradient');
+      g.setAttribute('id', id);
+      defs.appendChild(g);
+    }
+    g.setAttribute('x1','0%'); g.setAttribute('y1','0%');
+    g.setAttribute('x2','100%'); g.setAttribute('y2','0%');
+    if (Number.isFinite(angleDeg)) g.setAttribute('gradientTransform', `rotate(${angleDeg} .5 .5)`);
+
+    const n = colors.length;
+    const stops = colors.map((c,i)=>{
+      const st = document.createElementNS(NS,'stop');
+      const off = n === 1 ? 0 : (i/(n-1))*100;
+      st.setAttribute('offset', off + '%');
+      st.setAttribute('stop-color', c);
+      return st;
+    });
+    g.replaceChildren(...stops);
+    return `url(#${id})`;
+  }
+  function applySpecToTarget(s, targetId, spec, angleDeg){
+    if(!spec) return;
+    const target = s.querySelector('#'+CSS.escape(targetId));
+    if(!target) return;
+
+    const colors = splitStops(spec);
+    if(colors.length <= 1){
+      const hex = colors[0] || spec; // safety
+      target.setAttribute('fill', hex);
+      target.querySelectorAll('*').forEach(n=>{ if(SHAPE_RE.test(n.tagName)) n.setAttribute('fill', hex); });
+      return;
+    }
+    const fillUrl = upsertLinearGradient(s, `grad-${targetId}`, colors, angleDeg);
+    target.setAttribute('fill', fillUrl);
+    target.querySelectorAll('*').forEach(n=>{ if(SHAPE_RE.test(n.tagName)) n.setAttribute('fill', fillUrl); });
+  }
+
+  // === Applica skin/sleeve ===
+  if(sleeveSpec) applySpecToTarget(svg, sleeveId, sleeveSpec, DEFAULT_ANGLE.sleeve);
+  if(skinSpec)   applySpecToTarget(svg, skinId,   skinSpec,   DEFAULT_ANGLE.skin);
+
+  // === Compose su canvas ===
   const baseUrl = URL.createObjectURL(baseBlob);
   const baseImg = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=baseUrl; });
   const W = baseImg.naturalWidth, H = baseImg.naturalHeight;
+
   const canvas = document.createElement('canvas'); canvas.width=W; canvas.height=H;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(baseImg,0,0,W,H);
@@ -351,6 +431,7 @@ async function composeDataUrl(baseBlob, cfg, hexSleeve, hexSkin){
 
   return canvas.toDataURL('image/png');
 }
+
 
 /* ===== OOPS: match tratti SOLO nei value di attributes ===== */
 function rowHasAnyNeedle(row, needles){
@@ -758,6 +839,7 @@ document.getElementById('shareX')?.addEventListener('click', shareMobileX);
 </script>
 </body>
 </html>
+
 
 
 
